@@ -1,45 +1,95 @@
-# Sistema Web de Gestión de Ventas y Facturación
+# UrbanWear
+
+## Sistema E-commerce y Panel Administrativo para Tienda de Ropa Urbana
+
+---
 
 ## Descripción
 
-Aplicación web empresarial desarrollada para gestionar productos, clientes y ventas, permitiendo el control automático de stock y visualización de métricas administrativas mediante un dashboard interactivo.
+UrbanWear es un sistema web e-commerce desarrollado para la gestión y comercialización de ropa urbana oversize.
 
-Este proyecto está diseñado como base escalable para futuras integraciones de automatización empresarial.
+El proyecto combina:
+
+- Tienda online moderna
+- Carrito de compras funcional
+- Checkout simulado
+- Control automático de stock
+- Panel administrativo con dashboard
+- Base de datos PostgreSQL
+
+Está diseñado con una arquitectura híbrida preparada para futuras integraciones como pasarelas de pago y automatización empresarial.
 
 ---
 
 ## Características Principales
 
-- Autenticación con roles (Admin / Usuario)
-- Gestión de productos (CRUD completo)
-- Gestión de clientes
-- Registro de ventas con actualización automática de stock
-- Dashboard con indicadores clave
-- Base de datos relacional con PostgreSQL
+### Parte Pública (Clientes)
+
+- Catálogo de productos
+- Filtros por categoría
+- Vista detallada del producto
+- Carrito dinámico
+- Checkout simulado
+- Registro e inicio de sesión
+- Historial de pedidos
 
 ---
 
-## 🛠 Tecnologías Utilizadas
+### Panel Administrativo
 
-- Python (Flask + Blueprints)
+- Dashboard con métricas clave
+- Gestión de productos (CRUD)
+- Gestión de categorías
+- Gestión de pedidos
+- Gestión de clientes
+- Control automático de inventario
+
+---
+
+## Arquitectura
+
+Arquitectura híbrida:
+
+Frontend (Templates + JS)
+↓
+Flask (renderizado + API interna)
+↓
+PostgreSQL
+
+- Las vistas públicas se renderizan con Flask.
+- Los datos dinámicos se consumen desde endpoints `/api/`.
+- La lógica de negocio se maneja en servicios.
+- La base de datos está estructurada con modelo relacional.
+
+---
+
+## Tecnologías Utilizadas
+
+- Python
+- Flask
 - PostgreSQL
+- SQLAlchemy
 - HTML5
 - CSS3
-- JavaScript
+- JavaScript (Fetch API)
 - Chart.js
 - Git & GitHub
 
 ---
 
-## 🏗 Arquitectura
+## Modelo de Base de Datos
 
-Frontend (HTML, CSS, JS)
-↓  
-API REST (Flask)
-↓  
-PostgreSQL
+Tablas principales:
 
-El frontend consume los endpoints del backend mediante JSON.
+- users
+- categories
+- products
+- carts
+- cart_items
+- orders
+- order_items
+
+Diseñado para escalabilidad y automatización futura.
 
 ---
 
@@ -48,21 +98,43 @@ El frontend consume los endpoints del backend mediante JSON.
 sistema-ventas/
 │
 ├── backend/
-│ ├── app.py
+│ ├── models/
+│ ├── routes/
+│ ├── services/
 │
 ├── frontend/
+│ ├── templates/
+│ ├── static/
 │
-└── README.md
+├── database/
+│
+├── README.md
+└── requirements.txt
 
 ---
 
 ## Equipo de Desarrollo
 
-- Backend Developer
-- Frontend Developer
+- Backend Developer – Arquitectura, lógica de negocio y base de datos.
+- Frontend Developer – Experiencia visual, catálogo, carrito y dashboard.
 
 ---
 
 ## Estado del Proyecto
 
-En desarrollo activo – Fase 1 (Base administrativa).
+En desarrollo activo – Fase 1:
+
+- Estructura base
+- Modelado de base de datos
+- Implementación módulo productos
+
+---
+
+## Objetivo Profesional
+
+Este proyecto está diseñado como pieza principal de portafolio para:
+
+- Aplicaciones a proyectos en Workana
+- Desarrollo de e-commerce personalizados
+- Sistemas administrativos empresariales
+- Automatización e integración futura con APIs externas
