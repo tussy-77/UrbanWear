@@ -1,9 +1,9 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from config import Config
 from sqlalchemy import text
+from backend.config import Config
+from backend.database import db
 
-db = SQLAlchemy()
+
 
 def create_app():
     app = Flask(__name__)
@@ -15,7 +15,6 @@ def create_app():
     def home():
         return "UrbanWear Backend Running"
 
-    
     @app.route("/test-db")
     def test_db():
         try:
