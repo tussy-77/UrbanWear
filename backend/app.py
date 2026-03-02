@@ -2,7 +2,7 @@ from flask import Flask
 from sqlalchemy import text
 from backend.config import Config
 from backend.database import db
-
+from backend.models import User
 
 
 def create_app():
@@ -14,7 +14,7 @@ def create_app():
     @app.route("/")
     def home():
         return "UrbanWear Backend Running"
-
+    
     @app.route("/test-db")
     def test_db():
         try:
