@@ -1,20 +1,26 @@
-from flask import Flask
+from flask import Flask, render_template
 from sqlalchemy import text
 from backend.config import Config
 from backend.database import db
 from backend.models import User
+import os
 
 
 def create_app():
-    app = Flask(__name__)
+    # Obtener la ruta base del proyecto
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    template_folder = os.path.join(base_dir, 'frontend', 'templates')
+    static_folder = os.path.join(base_dir, 'frontend', 'static')
+
+    app = Flask(__name__, template_folder=template_folder, static_folder=static_folder, static_url_path='/static')
     app.config.from_object(Config)
 
     db.init_app(app)
 
     @app.route("/")
     def home():
-        return "UrbanWear Backend Running"
-    
+        return render_template('public/home.html')
+
     @app.route("/test-db")
     def test_db():
         try:

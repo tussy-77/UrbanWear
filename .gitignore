@@ -1,3 +1,5 @@
 venv/
 .env
 __pycache__/
+# Temporales de Claude/Cline
+tmpclaude-*

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UrbanWear - Moda Urbana Moderna</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- HEADER / NAVEGACIÓN -->
+    <header class="header">
+        <div class="container">
+            <div class="header__wrapper">
+                <div class="logo">
+                    <span class="logo__icon">◆</span>
+                    <span class="logo__text">UrbanWear</span>
+                </div>
+                <nav class="nav">
+                    <a href="#" class="nav__link">Catálogo</a>
+                    <a href="#" class="nav__link">Nuevo</a>
+                    <a href="#" class="nav__link">Sobre</a>
+                    <a href="#" class="nav__link">Contacto</a>
+                </nav>
+                <div class="header__actions">
+                    <a href="#" class="btn btn--secondary btn--sm">Ingresar</a>
+                    <a href="#" class="btn btn--primary btn--sm">Registrarse</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="hero__content">
+            <h1 class="hero__title">Estilo Urbano<br>Hecho para Ti</h1>
+            <p class="hero__subtitle">Descubre la colección que define la moda moderna</p>
+            <a href="#" class="btn btn--primary btn--lg">Explorar Colección</a>
+        </div>
+        <div class="hero__image">
+            <div class="hero__image-placeholder">
+                <!-- Tu imagen del producto va aquí -->
+                <span class="placeholder-text">Imagen Destacada</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN NEWS / TENDENCIAS -->
+    <section class="featured">
+        <div class="container">
+            <div class="featured__header">
+                <h2 class="section-title">Colecciones Destacadas</h2>
+                <a href="#" class="link-see-all">Ver Todo →</a>
+            </div>
+
+            <div class="featured__grid">
+                <!-- PRODUCTO 1 -->
+                <div class="product-card">
+                    <div class="product-card__image">
+                        <div class="product-card__image-placeholder">
+                            <span class="placeholder-text">Producto 1</span>
+                        </div>
+                        <span class="product-card__badge">Nuevo</span>
+                    </div>
+                    <div class="product-card__content">
+                        <span class="product-card__category">Camisetas</span>
+                        <h3 class="product-card__title">Camiseta Essentials</h3>
+                        <p class="product-card__price">$24.99</p>
+                        <button class="btn btn--secondary btn--sm btn--full">Agregar al carrito</button>
+                    </div>
+                </div>
+
+                <!-- PRODUCTO 2 -->
+                <div class="product-card">
+                    <div class="product-card__image">
+                        <div class="product-card__image-placeholder">
+                            <span class="placeholder-text">Producto 2</span>
+                        </div>
+                        <span class="product-card__badge">Destacado</span>
+                    </div>
+                    <div class="product-card__content">
+                        <span class="product-card__category">Pantalones</span>
+                        <h3 class="product-card__title">Jeans Urban</h3>
+                        <p class="product-card__price">$54.99</p>
+                        <button class="btn btn--secondary btn--sm btn--full">Agregar al carrito</button>
+                    </div>
+                </div>
+
+                <!-- PRODUCTO 3 -->
+                <div class="product-card">
+                    <div class="product-card__image">
+                        <div class="product-card__image-placeholder">
+                            <span class="placeholder-text">Producto 3</span>
+                        </div>
+                        <span class="product-card__badge">Limited</span>
+                    </div>
+                    <div class="product-card__content">
+                        <span class="product-card__category">Accesorios</span>
+                        <h3 class="product-card__title">Gorra Snapback</h3>
+                        <p class="product-card__price">$19.99</p>
+                        <button class="btn btn--secondary btn--sm btn--full">Agregar al carrito</button>
+                    </div>
+                </div>
+
+                <!-- PRODUCTO 4 -->
+                <div class="product-card">
+                    <div class="product-card__image">
+                        <div class="product-card__image-placeholder">
+                            <span class="placeholder-text">Producto 4</span>
+                        </div>
+                    </div>
+                    <div class="product-card__content">
+                        <span class="product-card__category">Sudaderas</span>
+                        <h3 class="product-card__title">Hoodie Oversized</h3>
+                        <p class="product-card__price">$39.99</p>
+                        <button class="btn btn--secondary btn--sm btn--full">Agregar al carrito</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN CATEGORÍAS -->
+    <section class="categories">
+        <div class="container">
+            <h2 class="section-title">Explora por Categoría</h2>
+            <div class="categories__grid">
+                <div class="category-card">
+                    <div class="category-card__image-placeholder">
+                        <span class="placeholder-text">Hombres</span>
+                    </div>
+                    <h3 class="category-card__title">Para Hombres</h3>
+                </div>
+                <div class="category-card">
+                    <div class="category-card__image-placeholder">
+                        <span class="placeholder-text">Mujeres</span>
+                    </div>
+                    <h3 class="category-card__title">Para Mujeres</h3>
+                </div>
+                <div class="category-card">
+                    <div class="category-card__image-placeholder">
+                        <span class="placeholder-text">Accesorios</span>
+                    </div>
+                    <h3 class="category-card__title">Accesorios</h3>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN CARACTERÍSTICAS -->
+    <section class="features">
+        <div class="container">
+            <div class="features__grid">
+                <div class="feature">
+                    <div class="feature__icon"></div>
+                    <h4 class="feature__title">Envío Rápido</h4>
+                    <p class="feature__description">Entrega en todo el país en 2-3 días hábiles</p>
+                </div>
+                <div class="feature">
+                    <div class="feature__icon"></div>
+                    <h4 class="feature__title">Pagos Seguros</h4>
+                    <p class="feature__description">Todos tus pagos están 100% protegidos</p>
+                </div>
+                <div class="feature">
+                    <div class="feature__icon"></div>
+                    <h4 class="feature__title">Devolución Fácil</h4>
+                    <p class="feature__description">30 días para cambios y devoluciones</p>
+                </div>
+                <div class="feature">
+                    <div class="feature__icon"></div>
+                    <h4 class="feature__title">Soporte 24/7</h4>
+                    <p class="feature__description">Estamos aquí para ayudarte siempre</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- NEWSLETTER -->
+    <section class="newsletter">
+        <div class="container">
+            <div class="newsletter__content">
+                <h2 class="newsletter__title">Suscríbete a Nuestras Novedades</h2>
+                <p class="newsletter__subtitle">Recibe acceso exclusivo a nuevas colecciones y descuentos especiales</p>
+                <form class="newsletter__form">
+                    <input type="email" placeholder="tu@email.com" class="newsletter__input" required>
+                    <button type="submit" class="btn btn--primary">Suscribirse</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__grid">
+                <div class="footer__column">
+                    <h4 class="footer__title">UrbanWear</h4>
+                    <p class="footer__text">Moda urbana para gente urbana</p>
+                </div>
+                <div class="footer__column">
+                    <h4 class="footer__title">Tienda</h4>
+                    <ul class="footer__list">
+                        <li><a href="#">Catálogo</a></li>
+                        <li><a href="#">Hombres</a></li>
+                        <li><a href="#">Mujeres</a></li>
+                        <li><a href="#">Accesorios</a></li>
+                    </ul>
+                </div>
+                <div class="footer__column">
+                    <h4 class="footer__title">Información</h4>
+                    <ul class="footer__list">
+                        <li><a href="#">Sobre Nosotros</a></li>
+                        <li><a href="#">Contacto</a></li>
+                        <li><a href="#">F.A.Q</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer__column">
+                    <h4 class="footer__title">Síguenos</h4>
+                    <ul class="footer__list">
+                        <li><a href="#">Instagram</a></li>
+                        <li><a href="#">Twitter</a></li>
+                        <li><a href="#">TikTok</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer__bottom">
+                <p>&copy; 2024 UrbanWear. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
