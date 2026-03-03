@@ -3,6 +3,7 @@ from sqlalchemy import text
 from backend.config import Config
 from backend.database import db
 from backend.models import User
+from backend.models import User, Category, Product
 
 
 def create_app():
@@ -10,6 +11,13 @@ def create_app():
     app.config.from_object(Config)
 
     db.init_app(app)
+    
+    @app.route("/api/products")
+    def get_products():
+        products = Product.query.all()
+        return {
+            "products": [product.to_dict() for product in products]
+    }
 
     @app.route("/")
     def home():
