@@ -18,12 +18,23 @@ def create_app():
 
     db.init_app(app)
     
+    from flask import request
+
     @app.route("/api/products")
     def get_products():
-        products = Product.query.all()
+
+        category = request.args.get("category")
+
+        query = Product.query
+
+        if category:
+            query = query.join(Category).filter(Category.name == category)
+
+        products = query.all()
+
         return {
             "products": [product.to_dict() for product in products]
-    }
+        }
 
     @app.route("/")
     def home():

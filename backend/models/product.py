@@ -30,5 +30,5 @@ class Product(db.Model):
             "price": float(self.price),
             "stock": self.stock,
             "image_url": self.image_url,
-            "category_id": self.category_id
-        }
+            "category": self.category.name if self.category else None
+    }
