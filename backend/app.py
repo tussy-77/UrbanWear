@@ -1,11 +1,12 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify # Añadido jsonify
 from sqlalchemy import text
 from backend.config import Config
 from backend.database import db
-from backend.models import User
-import os
 from backend.models import User, Category, Product
-
+import os
+from flask_bcrypt import Bcrypt
+from flask_jwt_extended import JWTManager, create_access_token
+from backend.routes.auth import auth_bp
 
 def create_app():
     # Obtener la ruta base del proyecto
@@ -16,22 +17,21 @@ def create_app():
     app = Flask(__name__, template_folder=template_folder, static_folder=static_folder, static_url_path='/static')
     app.config.from_object(Config)
 
+    # Inicialización de extensiones
     db.init_app(app)
+    bcrypt = Bcrypt(app)
+    jwt = JWTManager(app)
     
-    from flask import request
+    
+    app.register_blueprint(auth_bp)
 
     @app.route("/api/products")
     def get_products():
-
         category = request.args.get("category")
-
         query = Product.query
-
         if category:
             query = query.join(Category).filter(Category.name == category)
-
         products = query.all()
-
         return {
             "products": [product.to_dict() for product in products]
         }
@@ -48,8 +48,23 @@ def create_app():
         except Exception as e:
             return str(e)
 
-    return app
+    
+    @app.route('/api/auth/login', methods=['POST'])
+    def login():
+        data = request.get_json()
+        user = User.query.filter_by(email=data.get('email')).first()
 
+        if user and user.check_password(data.get('password')):
+            access_token = create_access_token(identity=str(user.id))
+            return jsonify({
+                "msg": "Login exitoso",
+                "access_token": access_token,
+                "user": user.to_dict()
+            }), 200
+
+        return jsonify({"msg": "Credenciales inválidas"}), 401
+
+    return app 
 
 app = create_app()
 

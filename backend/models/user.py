@@ -1,6 +1,7 @@
 from backend.database import db
 from sqlalchemy import Enum
 import enum
+from flask_bcrypt import generate_password_hash, check_password_hash 
 
 
 class UserRole(enum.Enum):
@@ -15,15 +16,19 @@ class User(db.Model):
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password_hash = db.Column(db.Text, nullable=False)
-    role = db.Column(
-        Enum(UserRole, name="user_role"),
-        default=UserRole.customer,
-        nullable=False
-    )
-    created_at = db.Column(
-        db.DateTime,
-        server_default=db.func.current_timestamp()
-    )
+    role = db.Column(Enum(UserRole, name="user_role"), default=UserRole.customer, nullable=False)
+    created_at = db.Column(db.DateTime, server_default=db.func.current_timestamp())
+
+    # Método para encriptar la contraseña antes de guardarla
+    
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password).decode('utf-8')
+
+    
+    # Método para verificar si la contraseña ingresada es correcta
+    
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
     def to_dict(self):
         return {
