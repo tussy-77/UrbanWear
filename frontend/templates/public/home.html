@@ -23,6 +23,22 @@
                     <a href="#" class="nav__link">Contacto</a>
                 </nav>
                 <div class="header__actions">
+                    <div class="cart-wrapper">
+                        <button class="cart-button" id="cart-toggle">
+                            <span class="cart-icon">🛒</span>
+                            <span class="cart-count" id="cart-badge">0</span>
+                        </button>
+        
+                        <div class="cart-dropdown" id="cart-dropdown">
+                            <div id="cart-items-container">
+                                <p style="padding: 10px;">Cargando...</p>
+                            </div>
+                            <div class="cart-footer">
+                                <strong>Total: $<span id="cart-total-value">0</span></strong>
+                                <button class="btn btn--primary btn--sm btn--full">Pagar ahora</button>
+                            </div>
+                        </div>
+                    </div>
                     <a href="#" class="btn btn--secondary btn--sm">Ingresar</a>
                     <a href="#" class="btn btn--primary btn--sm">Registrarse</a>
                 </div>
@@ -66,7 +82,7 @@
                         <span class="product-card__category">Camisetas</span>
                         <h3 class="product-card__title">Camiseta Essentials</h3>
                         <p class="product-card__price">$24.99</p>
-                        <button class="btn btn--secondary btn--sm btn--full">Agregar al carrito</button>
+                        <button class="btn btn--secondary" onclick="agregarAlCarrito(1)">Agregar al carrito</button>
                     </div>
                 </div>
 
@@ -82,7 +98,7 @@
                         <span class="product-card__category">Pantalones</span>
                         <h3 class="product-card__title">Jeans Urban</h3>
                         <p class="product-card__price">$54.99</p>
-                        <button class="btn btn--secondary btn--sm btn--full">Agregar al carrito</button>
+                        <button class="btn btn--secondary" onclick="agregarAlCarrito(1)">Agregar al carrito</button>
                     </div>
                 </div>
 
@@ -98,7 +114,7 @@
                         <span class="product-card__category">Accesorios</span>
                         <h3 class="product-card__title">Gorra Snapback</h3>
                         <p class="product-card__price">$19.99</p>
-                        <button class="btn btn--secondary btn--sm btn--full">Agregar al carrito</button>
+                        <button class="btn btn--secondary" onclick="agregarAlCarrito(3)">Agregar al carrito</button>
                     </div>
                 </div>
 
@@ -113,7 +129,7 @@
                         <span class="product-card__category">Sudaderas</span>
                         <h3 class="product-card__title">Hoodie Oversized</h3>
                         <p class="product-card__price">$39.99</p>
-                        <button class="btn btn--secondary btn--sm btn--full">Agregar al carrito</button>
+                        <button class="btn btn--secondary" onclick="agregarAlCarrito(4)">Agregar al carrito</button>
                     </div>
                 </div>
             </div>

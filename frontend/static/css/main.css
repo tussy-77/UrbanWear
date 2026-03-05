@@ -697,3 +697,60 @@ button {
         grid-template-columns: 1fr;
     }
 }
+/* Estilos para el Carrito en el Header */
+.cart-wrapper {
+    position: relative;
+    margin-right: 15px;
+}
+
+.cart-button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    position: relative;
+}
+
+.cart-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #000;
+    color: #fff;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 50%;
+    font-weight: bold;
+}
+
+.cart-dropdown {
+    display: none; /* Se activa con JS */
+    position: absolute;
+    top: 40px;
+    right: 0;
+    width: 280px;
+    background: #fff;
+    border: 1px solid #eee;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    z-index: 1000;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.cart-dropdown.active {
+    display: block;
+}
+
+.cart-item-mini {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f9f9f9;
+    font-size: 0.9rem;
+}
+
+.cart-footer {
+    padding-top: 10px;
+    margin-top: 5px;
+}

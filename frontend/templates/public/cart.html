@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>Test Carrito UrbanWear</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+        .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        button { background: #000; color: white; border: none; padding: 10px; cursor: pointer; }
+        .item { border-bottom: 1px solid #eee; padding: 10px 0; display: flex; justify-content: space-between; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>🛒 Mi Carrito</h2>
+        <div id="cart-content">Cargando...</div>
+        <hr>
+        <h3>Total: $<span id="cart-total">0</span></h3>
+        <button onclick="fetchCart()">Actualizar Carrito</button>
+    </div>
+
+    <script>
+        // PEGA AQUÍ EL TOKEN QUE OBTUVISTE EN POWERSHELL
+        const TOKEN = "TU_TOKEN_AQUI"; 
+
+        async function fetchCart() {
+            const response = await fetch('http://127.0.0.1:5000/api/cart', {
+                headers: { 'Authorization': `Bearer ${TOKEN}` }
+            });
+            const data = await response.json();
+            
+            const container = document.getElementById('cart-content');
+            const totalSpan = document.getElementById('cart-total');
+            
+            container.innerHTML = "";
+            data.items.forEach(item => {
+                container.innerHTML += `
+                    <div class="item">
+                        <span>${item.product_name} (x${item.quantity})</span>
+                        <b>$${item.subtotal}</b>
+                    </div>
+                `;
+            });
+            totalSpan.innerText = data.total;
+        }
+
+        fetchCart();
+    </script>
+</body>
+</html>

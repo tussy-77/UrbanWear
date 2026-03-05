@@ -7,23 +7,37 @@ import os
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token
 from backend.routes.auth import auth_bp
+from flask_migrate import Migrate 
+from backend.models.cart import Cart, CartItem
+from backend.routes.cart import cart_bp
+from flask_cors import CORS
 
 def create_app():
-    # Obtener la ruta base del proyecto
+    
+    # ---------Obtener la ruta base del proyecto-------------
+    
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     template_folder = os.path.join(base_dir, 'frontend', 'templates')
     static_folder = os.path.join(base_dir, 'frontend', 'static')
 
     app = Flask(__name__, template_folder=template_folder, static_folder=static_folder, static_url_path='/static')
     app.config.from_object(Config)
+    CORS(app)
 
-    # Inicialización de extensiones
+    # ---------Inicialización de extensiones-----------------
+    
     db.init_app(app)
     bcrypt = Bcrypt(app)
     jwt = JWTManager(app)
     
-    
+    migrate = Migrate(app, db)
+     
     app.register_blueprint(auth_bp)
+    app.register_blueprint(cart_bp)
+    
+    with app.app_context():
+        db.create_all()
+        print("¡Tablas del carrito creadas en PostgreSQL!")
 
     @app.route("/api/products")
     def get_products():
