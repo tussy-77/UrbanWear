@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceder - Sistema de Ventas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+<body>
+    <div class="login-left">
+        <div class="login-content">
+            <div class="login-logo">🛒</div>
+            <h1 class="login-title">VentasHub</h1>
+            <p class="login-subtitle">Gestiona tu negocio con eficiencia</p>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>Dashboard intuitivo y poderoso</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>Gestión de inventario en tiempo real</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>Reportes y análisis detallados</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>Seguridad de nivel empresarial</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="login-right">
+        <div class="login-form-container">
+            <div class="form-header">
+                <h2 class="form-title">Acceder</h2>
+                <p class="form-subtitle">Ingresa tus credenciales para continuar</p>
+            </div>
+
+            <div id="alertBox" class="alert"></div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">📧 Correo Electrónico</label>
+                    <input
+                        type="email"
+                        id="email"
+                        class="form-input"
+                        placeholder="tu@correo.com"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">🔐 Contraseña</label>
+                    <input
+                        type="password"
+                        id="password"
+                        class="form-input"
+                        placeholder="••••••••"
+                        required
+                    >
+                </div>
+
+                <div class="form-remember">
+                    <input type="checkbox" id="remember" class="form-checkbox">
+                    <label for="remember">Recuérdame en este dispositivo</label>
+                </div>
+
+                <button type="submit" class="btn-login" id="btnSubmit">
+                    Acceder
+                </button>
+            </form>
+
+            <div class="form-divider">o</div>
+
+            <div class="form-footer">
+                ¿No tienes cuenta? <a href="/register">Regístrate aquí</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const alertBox = document.getElementById('alertBox');
+        const btnSubmit = document.getElementById('btnSubmit');
+
+        function showAlert(message, type) {
+            alertBox.className = `alert show alert-${type}`;
+            alertBox.textContent = message;
+        }
+
+        function hideAlert() {
+            alertBox.classList.remove('show');
+        }
+
+        function setLoading(isLoading) {
+            btnSubmit.disabled = isLoading;
+            if (isLoading) {
+                btnSubmit.innerHTML = '<div class="spinner"></div> Accediendo...';
+            } else {
+                btnSubmit.textContent = 'Acceder';
+            }
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            hideAlert();
+
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+
+            if (!email || !password) {
+                showAlert('Por favor completa todos los campos', 'error');
+                return;
+            }
+
+            setLoading(true);
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.access_token) {
+                    // ✅ Token generado automáticamente por el backend
+                    // Guardamos el token y datos del usuario
+                    localStorage.setItem('access_token', data.access_token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    showAlert('¡Login exitoso! Redirigiendo...', 'success');
+                    
+                    // Redirigir a home después de 1.5 segundos
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1500);
+                } else {
+                    showAlert(data.msg || 'Error al iniciar sesión', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('Error de conexión. Intenta de nuevo.', 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Limpiar alerta cuando el usuario empieza a escribir
+        emailInput.addEventListener('focus', hideAlert);
+        passwordInput.addEventListener('focus', hideAlert);
+    </script>
+</body>
+</html>

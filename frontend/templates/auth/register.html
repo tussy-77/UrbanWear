@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrarse - Sistema de Ventas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
+</head>
+<body>
+    <div class="register-left">
+        <div class="register-content">
+            <div class="register-logo">🚀</div>
+            <h1 class="register-title">Únete a VentasHub</h1>
+            <p class="register-subtitle">Comienza tu viaje hacia el éxito comercial</p>
+            <div class="benefit-list">
+                <div class="benefit-item">
+                    <div class="benefit-icon">✓</div>
+                    <span>Acceso ilimitado a todas las características</span>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">✓</div>
+                    <span>Soporte técnico 24/7</span>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">✓</div>
+                    <span>Integración con múltiples plataformas</span>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">✓</div>
+                    <span>Actualizaciones constantes y nuevas mejoras</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="register-right">
+        <div class="register-form-container">
+            <div class="form-header">
+                <h2 class="form-title">Crear Cuenta</h2>
+                <p class="form-subtitle">Únete ahora y comienza a vender</p>
+            </div>
+
+            <div id="alertBox" class="alert"></div>
+
+            <form id="registerForm" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label class="form-label">👤 Nombre Completo</label>
+                    <input
+                        type="text"
+                        id="name"
+                        class="form-input"
+                        placeholder="Tu nombre completo"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">📧 Correo Electrónico</label>
+                    <input
+                        type="email"
+                        id="email"
+                        class="form-input"
+                        placeholder="tu@correo.com"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">🔐 Contraseña</label>
+                    <input
+                        type="password"
+                        id="password"
+                        class="form-input"
+                        placeholder="••••••••"
+                        required
+                    >
+                    <div id="passwordHints" class="password-hints">
+                        <div class="hint-item">
+                            <div class="hint-check" id="check-length">○</div>
+                            <span>Mínimo 8 caracteres</span>
+                        </div>
+                        <div class="hint-item">
+                            <div class="hint-check" id="check-upper">○</div>
+                            <span>Una letra mayúscula</span>
+                        </div>
+                        <div class="hint-item">
+                            <div class="hint-check" id="check-lower">○</div>
+                            <span>Una letra minúscula</span>
+                        </div>
+                        <div class="hint-item">
+                            <div class="hint-check" id="check-number">○</div>
+                            <span>Un número</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">✓ Confirmar Contraseña</label>
+                    <input
+                        type="password"
+                        id="confirmPassword"
+                        class="form-input"
+                        placeholder="••••••••"
+                        required
+                    >
+                </div>
+
+                <div class="terms">
+                    Al crear tu cuenta, aceptas nuestros <a href="#">Términos de Servicio</a> y <a href="#">Política de Privacidad</a>
+                </div>
+
+                <button type="submit" class="btn-register" id="btnSubmit">
+                    Crear Cuenta
+                </button>
+            </form>
+
+            <div class="form-footer">
+                ¿Ya tienes cuenta? <a href="/login">Accede aquí</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const registerForm = document.getElementById('registerForm');
+        const nameInput = document.getElementById('name');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const alertBox = document.getElementById('alertBox');
+        const btnSubmit = document.getElementById('btnSubmit');
+        const passwordHints = document.getElementById('passwordHints');
+
+        function showAlert(message, type) {
+            alertBox.className = `alert show alert-${type}`;
+            alertBox.textContent = message;
+        }
+
+        function hideAlert() {
+            alertBox.classList.remove('show');
+        }
+
+        function setLoading(isLoading) {
+            btnSubmit.disabled = isLoading;
+            if (isLoading) {
+                btnSubmit.innerHTML = '<div class="spinner"></div> Creando cuenta...';
+            } else {
+                btnSubmit.textContent = 'Crear Cuenta';
+            }
+        }
+
+        // Validar requisitos de contraseña
+        const checkLength = document.getElementById('check-length');
+        const checkUpper = document.getElementById('check-upper');
+        const checkLower = document.getElementById('check-lower');
+        const checkNumber = document.getElementById('check-number');
+
+        passwordInput.addEventListener('focus', () => {
+            passwordHints.classList.add('show');
+        });
+
+        passwordInput.addEventListener('input', (e) => {
+            const password = e.target.value;
+
+            const hasLength = password.length >= 8;
+            const hasUpper = /[A-Z]/.test(password);
+            const hasLower = /[a-z]/.test(password);
+            const hasNumber = /[0-9]/.test(password);
+
+            updateCheck(checkLength, hasLength);
+            updateCheck(checkUpper, hasUpper);
+            updateCheck(checkLower, hasLower);
+            updateCheck(checkNumber, hasNumber);
+        });
+
+        passwordInput.addEventListener('blur', () => {
+            if (!passwordInput.value) {
+                passwordHints.classList.remove('show');
+            }
+        });
+
+        function updateCheck(element, met) {
+            if (met) {
+                element.classList.add('met');
+                element.textContent = '✓';
+            } else {
+                element.classList.remove('met');
+                element.textContent = '○';
+            }
+        }
+
+        async function handleRegister(event) {
+            event.preventDefault();
+            hideAlert();
+
+            const name = nameInput.value.trim();
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+
+            // Validaciones
+            if (!name || !email || !password || !confirmPassword) {
+                showAlert('Por favor completa todos los campos', 'error');
+                return;
+            }
+
+            if (name.length < 3) {
+                showAlert('El nombre debe tener al menos 3 caracteres', 'error');
+                return;
+            }
+
+            if (!email.includes('@')) {
+                showAlert('Por favor ingresa un correo válido', 'error');
+                return;
+            }
+
+            if (password.length < 8) {
+                showAlert('La contraseña debe tener al menos 8 caracteres', 'error');
+                return;
+            }
+
+            if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+                showAlert('La contraseña debe contener mayúsculas, minúsculas y números', 'error');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showAlert('Las contraseñas no coinciden', 'error');
+                return;
+            }
+
+            setLoading(true);
+
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        email: email,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert('¡Registro exitoso! Redirigiendo al login...', 'success');
+
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 2000);
+                } else {
+                    showAlert(data.msg || 'Error al registrar', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('Error de conexión. Intenta de nuevo.', 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Limpiar alerta al escribir
+        [nameInput, emailInput, passwordInput, confirmPasswordInput].forEach(input => {
+            input.addEventListener('focus', hideAlert);
+        });
+    </script>
+</body>
+</html>

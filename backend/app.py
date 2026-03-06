@@ -54,6 +54,14 @@ def create_app():
     def home():
         return render_template('public/home.html')
 
+    @app.route("/login")
+    def login_page():
+        return render_template('auth/login.html')
+
+    @app.route("/register")
+    def register_page():
+        return render_template('auth/register.html')
+
     @app.route("/test-db")
     def test_db():
         try:
@@ -61,22 +69,6 @@ def create_app():
             return "Database connected successfully!"
         except Exception as e:
             return str(e)
-
-    
-    @app.route('/api/auth/login', methods=['POST'])
-    def login():
-        data = request.get_json()
-        user = User.query.filter_by(email=data.get('email')).first()
-
-        if user and user.check_password(data.get('password')):
-            access_token = create_access_token(identity=str(user.id))
-            return jsonify({
-                "msg": "Login exitoso",
-                "access_token": access_token,
-                "user": user.to_dict()
-            }), 200
-
-        return jsonify({"msg": "Credenciales inválidas"}), 401
 
     return app 
 
