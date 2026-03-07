@@ -1,37 +1,9 @@
-// --------------------------  ---  ESTO ES PARA AUTOMATIZAR EL USO DEL TOKEN  --- ------------------------------------- \\
-
-// El token lo vamos a manejar con localStorage para que las peticiones vayan firmadas automáticamente en los Headers \\
-
-// SI NO SABE PREGUNTELE A SU NOVIA CLAUDIA :V 
-
-// 1. CONFIGURACIÓN INICIAL
+// 1. CONFIGURACIÓN
 let TOKEN = localStorage.getItem('urban_token');
+const cartToggle = document.getElementById('cart-toggle');
 const cartDropdown = document.getElementById('cart-dropdown');
-const cartBadge = document.getElementById('cart-badge');
 
-
-async function loginManual() {
-    const email = prompt("Introduce tu email:");
-    const password = prompt("Introduce tu contraseña:");
-
-    const response = await fetch('http://127.0.0.1:5000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-    });
-
-    const data = await response.json();
-    if (data.access_token) {
-        localStorage.setItem('urban_token', data.access_token);
-        TOKEN = data.access_token;
-        alert("¡Login exitoso!");
-        actualizarVistaCarrito(); 
-    } else {
-        alert("Error en el login");
-    }
-}
-
-
+// 2. FUNCIÓN PARA LLENAR EL DESPLEGABLE
 async function actualizarVistaCarrito() {
     if (!TOKEN) return;
 
@@ -42,55 +14,38 @@ async function actualizarVistaCarrito() {
         const data = await res.json();
         
         const container = document.getElementById('cart-items-container');
+        const badge = document.getElementById('cart-badge');
         const totalText = document.getElementById('cart-total-value');
 
+        // Limpiamos el "Cargando..."
         container.innerHTML = "";
-        cartBadge.innerText = data.items.length; 
+        badge.innerText = data.items.length;
         totalText.innerText = data.total.toLocaleString();
 
         if (data.items.length === 0) {
-            container.innerHTML = '<p style="text-align:center; padding:10px;">Vacío</p>';
+            container.innerHTML = '<p style="padding: 15px; text-align:center; color:#666;">Tu carrito está vacío</p>';
         } else {
             data.items.forEach(item => {
                 container.innerHTML += `
-                    <div class="cart-item-mini">
+                    <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; font-size:14px;">
                         <span>${item.product_name} (x${item.quantity})</span>
-                        <b>$${item.subtotal}</b>
+                        <b>$${item.subtotal.toLocaleString()}</b>
                     </div>`;
             });
         }
     } catch (e) {
-        console.error("Error cargando carrito", e);
+        console.error("Error al obtener el carrito:", e);
     }
 }
 
-
-async function agregarAlCarrito(productId) {
-    if (!TOKEN) {
-        alert("Debes iniciar sesión primero");
-        loginManual();
-        return;
+// 3. EVENTO PARA ABRIR/CERRAR
+cartToggle.addEventListener('click', (e) => {
+    e.preventDefault();
+    cartDropdown.classList.toggle('active'); // Tu compa debe tener la clase .active en CSS
+    if (cartDropdown.classList.contains('active')) {
+        actualizarVistaCarrito();
     }
-
-    const response = await fetch('http://127.0.0.1:5000/api/cart/add', {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${TOKEN}`
-        },
-        body: JSON.stringify({ product_id: productId, quantity: 1 })
-    });
-
-    if (response.ok) {
-        actualizarVistaCarrito(); 
-        alert("¡Producto añadido!");
-    }
-}
-
-
-document.getElementById('cart-toggle').addEventListener('click', () => {
-    cartDropdown.classList.toggle('active');
 });
 
-
+// Cargar el numerito (badge) apenas abra la página
 actualizarVistaCarrito();
