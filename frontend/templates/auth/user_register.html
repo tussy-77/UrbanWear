@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Cuenta - UrbanWear</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <style>
+        .auth-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 90vh;
+            padding: 20px;
+        }
+        .auth-card {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+        .auth-card h2 { font-family: 'Poppins', sans-serif; margin-bottom: 10px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px; }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+        .auth-footer { margin-top: 20px; text-align: center; color: #666; font-size: 14px; }
+        .auth-footer a { color: var(--primary-color); font-weight: 600; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <h2>Crea tu cuenta</h2>
+            <p style="color: #666; margin-bottom: 25px;">Únete a la comunidad Urban y empieza a comprar.</p>
+            
+            <form id="client-register-form">
+                <div class="form-group">
+                    <label>Nombre de Usuario</label>
+                    <input type="text" id="reg-username" placeholder="Ej: darwin_valeM" required>
+                </div>
+                <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" id="reg-email" placeholder="correo@ejemplo.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres" required>
+                </div>
+                <button type="submit" class="btn btn--primary btn--full">Registrarme</button>
+            </form>
+
+            <div class="auth-footer">
+                ¿Ya tienes una cuenta? <a href="/user_login">Inicia sesión</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.getElementById('client-register-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const username = document.getElementById('reg-username').value;
+        const email = document.getElementById('reg-email').value;
+        const password = document.getElementById('reg-password').value;
+
+        try {
+            const res = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json'
+                },
+                // ENVIAMOS AMBAS OPCIONES PARA ASEGURARNOS
+                body: JSON.stringify({ 
+                    "username": username, 
+                    "name": username, 
+                    "email": email, 
+                    "password": password 
+                })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                alert("¡Registro exitoso!");
+                window.location.href = "/user_login";
+            } else {
+                // Aquí verás el mensaje de "Faltan datos obligatorios"
+                alert("Error del servidor: " + (data.msg || "Verifica los datos"));
+                console.log("Respuesta completa del error:", data);
+            }
+        } catch (error) {
+            console.error("Error en el registro:", error);
+        }
+    });
+</script>
+</body>
+</html>

@@ -6,9 +6,43 @@
     <title>UrbanWear - Moda Urbana Moderna</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Ajustes visuales rápidos para el menú de usuario */
+        .header__actions { display: flex; align-items: center; gap: 20px; }
+        .user-profile { display: flex; align-items: center; gap: 12px; }
+        .profile-dropdown-wrapper { position: relative; }
+        .profile-dropdown {
+            display: none;
+            position: absolute;
+            top: 110%;
+            right: 0;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            min-width: 160px;
+            z-index: 1000;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+        .profile-dropdown.active { display: block; }
+        .profile-dropdown a, .profile-dropdown button {
+            display: block;
+            width: 100%;
+            padding: 12px 16px;
+            color: white;
+            text-decoration: none;
+            text-align: left;
+            font-size: 14px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .profile-dropdown a:hover, .profile-dropdown button:hover { background: #252525; }
+        .logout-link { color: #ff4d4d !important; border-top: 1px solid #333 !important; }
+        .welcome-text { color: #888; font-size: 14px; }
+        .welcome-text strong { color: #fff; }
+    </style>
 </head>
 <body>
-    <!-- HEADER / NAVEGACIÓN -->
     <header class="header">
         <div class="container">
             <div class="header__wrapper">
@@ -16,37 +50,56 @@
                     <span class="logo__icon">◆</span>
                     <span class="logo__text">UrbanWear</span>
                 </div>
+                
                 <nav class="nav">
                     <a href="#" class="nav__link">Catálogo</a>
                     <a href="#" class="nav__link">Nuevo</a>
                     <a href="#" class="nav__link">Sobre</a>
                     <a href="#" class="nav__link">Contacto</a>
                 </nav>
+
                 <div class="header__actions">
                     <div class="cart-wrapper">
                         <button class="cart-button" id="cart-toggle">
                             <span class="cart-icon">🛒</span>
-                            <span class="cart-count" id="cart-badge">0</span>
+                            <span class="cart-badge" id="cart-badge">0</span>
                         </button>
-        
                         <div class="cart-dropdown" id="cart-dropdown">
-                            <div id="cart-items-container">
-                                <p style="padding: 10px;">Cargando...</p>
+                            <div class="cart-dropdown__header"><h3>Tu Carrito</h3></div>
+                            <div class="cart-dropdown__body" id="cart-items-container">
+                                <p class="cart-empty-msg">Cargando...</p>
                             </div>
-                            <div class="cart-footer">
-                                <strong>Total: $<span id="cart-total-value">0</span></strong>
-                                <button class="btn btn--primary btn--sm btn--full">Pagar ahora</button>
+                            <div class="cart-dropdown__footer">
+                                <div class="cart-total">
+                                    <span>Total:</span>
+                                    <span class="cart-total-amount">$<span id="cart-total-value">0</span></span>
+                                </div>
+                                <button class="btn btn--primary btn--full" onclick="procesarPago()">Finalizar Compra</button>
                             </div>
                         </div>
                     </div>
-                    <a href="#" class="btn btn--secondary btn--sm">Ingresar</a>
-                    <a href="#" class="btn btn--primary btn--sm">Registrarse</a>
-                </div>
-            </div>
+
+                    <div id="user-menu-container">
+                        <div id="guest-buttons" class="user-auth-buttons">
+                            <a href="/user_login" class="btn btn--secondary btn--sm">Ingresar</a>
+                            <a href="/user_register" class="btn btn--primary btn--sm">Registrarse</a>
+                        </div>
+
+                        <div id="user-profile-menu" style="display: none;" class="user-profile">
+                            <span class="welcome-text">Hola, <strong id="user-display-name">Usuario</strong></span>
+                            <div class="profile-dropdown-wrapper">
+                                <button class="btn btn--secondary btn--sm" onclick="toggleProfileMenu()">Mi Perfil 👤</button>
+                                <div id="profile-dropdown" class="profile-dropdown">
+                                    <a href="/mis-pedidos">Mis Pedidos</a>
+                                    <button onclick="cerrarSesion()" class="logout-link">Cerrar Sesión</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> </div>
         </div>
     </header>
 
-    <!-- HERO SECTION -->
     <section class="hero">
         <div class="hero__content">
             <h1 class="hero__title">Estilo Urbano<br>Hecho para Ti</h1>
@@ -55,199 +108,58 @@
         </div>
         <div class="hero__image">
             <div class="hero__image-placeholder">
-                <!-- Tu imagen del producto va aquí -->
                 <span class="placeholder-text">Imagen Destacada</span>
             </div>
         </div>
     </section>
 
-    <!-- SECCIÓN NEWS / TENDENCIAS -->
-    <section class="featured">
-        <div class="container">
-            <div class="featured__header">
-                <h2 class="section-title">Colecciones Destacadas</h2>
-                <a href="#" class="link-see-all">Ver Todo →</a>
-            </div>
-
-            <div class="featured__grid">
-                <!-- PRODUCTO 1 -->
-                <div class="product-card">
-                    <div class="product-card__image">
-                        <div class="product-card__image-placeholder">
-                            <span class="placeholder-text">Producto 1</span>
-                        </div>
-                        <span class="product-card__badge">Nuevo</span>
-                    </div>
-                    <div class="product-card__content">
-                        <span class="product-card__category">Camisetas</span>
-                        <h3 class="product-card__title">Camiseta Essentials</h3>
-                        <p class="product-card__price">$24.99</p>
-                        <button class="btn btn--secondary" onclick="agregarAlCarrito(1)">Agregar al carrito</button>
-                    </div>
-                </div>
-
-                <!-- PRODUCTO 2 -->
-                <div class="product-card">
-                    <div class="product-card__image">
-                        <div class="product-card__image-placeholder">
-                            <span class="placeholder-text">Producto 2</span>
-                        </div>
-                        <span class="product-card__badge">Destacado</span>
-                    </div>
-                    <div class="product-card__content">
-                        <span class="product-card__category">Pantalones</span>
-                        <h3 class="product-card__title">Jeans Urban</h3>
-                        <p class="product-card__price">$54.99</p>
-                        <button class="btn btn--secondary" onclick="agregarAlCarrito(1)">Agregar al carrito</button>
-                    </div>
-                </div>
-
-                <!-- PRODUCTO 3 -->
-                <div class="product-card">
-                    <div class="product-card__image">
-                        <div class="product-card__image-placeholder">
-                            <span class="placeholder-text">Producto 3</span>
-                        </div>
-                        <span class="product-card__badge">Limited</span>
-                    </div>
-                    <div class="product-card__content">
-                        <span class="product-card__category">Accesorios</span>
-                        <h3 class="product-card__title">Gorra Snapback</h3>
-                        <p class="product-card__price">$19.99</p>
-                        <button class="btn btn--secondary" onclick="agregarAlCarrito(3)">Agregar al carrito</button>
-                    </div>
-                </div>
-
-                <!-- PRODUCTO 4 -->
-                <div class="product-card">
-                    <div class="product-card__image">
-                        <div class="product-card__image-placeholder">
-                            <span class="placeholder-text">Producto 4</span>
-                        </div>
-                    </div>
-                    <div class="product-card__content">
-                        <span class="product-card__category">Sudaderas</span>
-                        <h3 class="product-card__title">Hoodie Oversized</h3>
-                        <p class="product-card__price">$39.99</p>
-                        <button class="btn btn--secondary" onclick="agregarAlCarrito(4)">Agregar al carrito</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- SECCIÓN CATEGORÍAS -->
-    <section class="categories">
-        <div class="container">
-            <h2 class="section-title">Explora por Categoría</h2>
-            <div class="categories__grid">
-                <div class="category-card">
-                    <div class="category-card__image-placeholder">
-                        <span class="placeholder-text">Hombres</span>
-                    </div>
-                    <h3 class="category-card__title">Para Hombres</h3>
-                </div>
-                <div class="category-card">
-                    <div class="category-card__image-placeholder">
-                        <span class="placeholder-text">Mujeres</span>
-                    </div>
-                    <h3 class="category-card__title">Para Mujeres</h3>
-                </div>
-                <div class="category-card">
-                    <div class="category-card__image-placeholder">
-                        <span class="placeholder-text">Accesorios</span>
-                    </div>
-                    <h3 class="category-card__title">Accesorios</h3>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- SECCIÓN CARACTERÍSTICAS -->
-    <section class="features">
-        <div class="container">
-            <div class="features__grid">
-                <div class="feature">
-                    <div class="feature__icon"></div>
-                    <h4 class="feature__title">Envío Rápido</h4>
-                    <p class="feature__description">Entrega en todo el país en 2-3 días hábiles</p>
-                </div>
-                <div class="feature">
-                    <div class="feature__icon"></div>
-                    <h4 class="feature__title">Pagos Seguros</h4>
-                    <p class="feature__description">Todos tus pagos están 100% protegidos</p>
-                </div>
-                <div class="feature">
-                    <div class="feature__icon"></div>
-                    <h4 class="feature__title">Devolución Fácil</h4>
-                    <p class="feature__description">30 días para cambios y devoluciones</p>
-                </div>
-                <div class="feature">
-                    <div class="feature__icon"></div>
-                    <h4 class="feature__title">Soporte 24/7</h4>
-                    <p class="feature__description">Estamos aquí para ayudarte siempre</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- NEWSLETTER -->
-    <section class="newsletter">
-        <div class="container">
-            <div class="newsletter__content">
-                <h2 class="newsletter__title">Suscríbete a Nuestras Novedades</h2>
-                <p class="newsletter__subtitle">Recibe acceso exclusivo a nuevas colecciones y descuentos especiales</p>
-                <form class="newsletter__form">
-                    <input type="email" placeholder="tu@email.com" class="newsletter__input" required>
-                    <button type="submit" class="btn btn--primary">Suscribirse</button>
-                </form>
-            </div>
-        </div>
-    </section>
-
-    <!-- FOOTER -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer__grid">
-                <div class="footer__column">
-                    <h4 class="footer__title">UrbanWear</h4>
-                    <p class="footer__text">Moda urbana para gente urbana</p>
-                </div>
-                <div class="footer__column">
-                    <h4 class="footer__title">Tienda</h4>
-                    <ul class="footer__list">
-                        <li><a href="#">Catálogo</a></li>
-                        <li><a href="#">Hombres</a></li>
-                        <li><a href="#">Mujeres</a></li>
-                        <li><a href="#">Accesorios</a></li>
-                    </ul>
-                </div>
-                <div class="footer__column">
-                    <h4 class="footer__title">Información</h4>
-                    <ul class="footer__list">
-                        <li><a href="#">Sobre Nosotros</a></li>
-                        <li><a href="#">Contacto</a></li>
-                        <li><a href="#">F.A.Q</a></li>
-                        <li><a href="#">Blog</a></li>
-                    </ul>
-                </div>
-                <div class="footer__column">
-                    <h4 class="footer__title">Síguenos</h4>
-                    <ul class="footer__list">
-                        <li><a href="#">Instagram</a></li>
-                        <li><a href="#">Twitter</a></li>
-                        <li><a href="#">TikTok</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer__bottom">
-                <p>&copy; 2024 UrbanWear. Todos los derechos reservados.</p>
-            </div>
-        </div>
-    </footer>
-
     <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
+    <script>
+        // Función visual para el dropdown
+        function toggleProfileMenu() {
+            document.getElementById('profile-dropdown').classList.toggle('active');
+        }
+        // Cerrar al hacer clic fuera
+        window.onclick = function(event) {
+            if (!event.target.matches('.btn--secondary')) {
+                var dropdowns = document.getElementsByClassName("profile-dropdown");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    if (dropdowns[i].classList.contains('active')) {
+                        dropdowns[i].classList.remove('active');
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+    // 1. Verificar sesión al cargar la página
+    document.addEventListener('DOMContentLoaded', () => {
+        const token = localStorage.getItem('urban_token');
+        const nombre = localStorage.getItem('client_name');
 
-</body>
+        const guestButtons = document.getElementById('guest-buttons');
+        const userProfileMenu = document.getElementById('user-profile-menu');
+        const displayName = document.getElementById('user-display-name');
+
+        if (token && nombre) {
+            // Si hay sesión, ocultamos botones de ingreso y mostramos perfil
+            guestButtons.style.display = 'none';
+            userProfileMenu.style.display = 'flex';
+            displayName.innerText = nombre;
+        } else {
+            // Si no hay sesión, aseguramos que se vean los botones de ingreso
+            guestButtons.style.display = 'flex';
+            userProfileMenu.style.display = 'none';
+        }
+    });
+
+    // 2. Función para Cerrar Sesión
+    function cerrarSesion() {
+        localStorage.removeItem('urban_token');
+        localStorage.removeItem('client_name');
+        alert("Sesión cerrada correctamente.");
+        window.location.reload(); // Recarga para volver al estado inicial
+    }
+</script>
 </body>
 </html>

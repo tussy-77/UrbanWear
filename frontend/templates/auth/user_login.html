@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingresar - UrbanWear</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <style>
+        /* Estilos específicos para la tarjeta de login */
+        .auth-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f9f9f9;
+        }
+        .auth-card {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 400px;
+        }
+        .auth-card h2 { margin-bottom: 10px; font-family: 'Poppins', sans-serif; text-align: center; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .auth-footer { margin-top: 25px; text-align: center; color: #666; }
+        .auth-footer a { color: #000; font-weight: 600; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <h2>Bienvenido</h2>
+            <p style="text-align: center; color: #666; margin-bottom: 30px;">Ingresa tus credenciales para continuar.</p>
+            
+            <form id="client-login-form">
+                <div class="form-group">
+                    <label for="login-email">Correo Electrónico</label>
+                    <input type="email" id="login-email" placeholder="tu@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Contraseña</label>
+                    <input type="password" id="login-password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn--primary btn--full">Iniciar Sesión</button>
+            </form>
+
+            <div class="auth-footer">
+                ¿No tienes cuenta? <a href="/user_register">Regístrate aquí</a>
+                <br><br>
+                <a href="/" style="font-size: 13px; color: #999;">← Volver a la tienda</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.getElementById('client-login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const email = document.getElementById('login-email').value.trim();
+        const password = document.getElementById('login-password').value;
+
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    "email": email, 
+                    "password": password 
+                })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                // Guardar el token y el nombre del usuario
+                localStorage.setItem('urban_token', data.access_token);
+                
+                // Buscamos el nombre en 'username' o 'name' según envíe tu API
+                const userData = data.user || {};
+                const nombreParaGuardar = userData.username || userData.name || "Usuario";
+                localStorage.setItem('client_name', nombreParaGuardar);
+
+                // REDIRECCIÓN DIRECTA AL HOME
+                window.location.assign("/"); 
+            } else {
+                alert(data.msg || "Credenciales incorrectas");
+            }
+        } catch (error) {
+            console.error("Error en el proceso:", error);
+            alert("Error de conexión con el servidor.");
+        }
+    });
+    </script>
+</body>
+</html>

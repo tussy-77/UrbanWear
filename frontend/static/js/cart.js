@@ -1,15 +1,20 @@
-// 1. CONFIGURACIÓN
-let TOKEN = localStorage.getItem('urban_token');
+// 1. CONFIGURACIÓN (Elementos del DOM)
 const cartToggle = document.getElementById('cart-toggle');
 const cartDropdown = document.getElementById('cart-dropdown');
 
-// 2. FUNCIÓN PARA LLENAR EL DESPLEGABLE
+// 2. FUNCIÓN PARA OBTENER EL TOKEN FRESCO
+function getAuthToken() {
+    return localStorage.getItem('urban_token');
+}
+
+// 3. FUNCIÓN PARA LLENAR EL DESPLEGABLE
 async function actualizarVistaCarrito() {
-    if (!TOKEN) return;
+    const token = getAuthToken();
+    if (!token) return;
 
     try {
         const res = await fetch('http://127.0.0.1:5000/api/cart', {
-            headers: { 'Authorization': `Bearer ${TOKEN}` }
+            headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
         
@@ -17,7 +22,6 @@ async function actualizarVistaCarrito() {
         const badge = document.getElementById('cart-badge');
         const totalText = document.getElementById('cart-total-value');
 
-        // Limpiamos el "Cargando..."
         container.innerHTML = "";
         badge.innerText = data.items.length;
         totalText.innerText = data.total.toLocaleString();
@@ -27,10 +31,15 @@ async function actualizarVistaCarrito() {
         } else {
             data.items.forEach(item => {
                 container.innerHTML += `
-                    <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; font-size:14px;">
-                        <span>${item.product_name} (x${item.quantity})</span>
-                        <b>$${item.subtotal.toLocaleString()}</b>
-                    </div>`;
+                    <div class="cart-item">
+                        <div class="cart-item__info">
+                            <b>${item.product_name}</b>
+                            <span>Cantidad: ${item.quantity}</span>
+                        </div>
+                    <div class="cart-item__price">
+                        <strong>$${item.subtotal.toLocaleString()}</strong>
+                    </div>
+                </div>`;
             });
         }
     } catch (e) {
@@ -38,14 +47,108 @@ async function actualizarVistaCarrito() {
     }
 }
 
-// 3. EVENTO PARA ABRIR/CERRAR
+// 4. FUNCIÓN PARA AGREGAR PRODUCTOS
+async function agregarAlCarrito(productId) {
+    const token = getAuthToken();
+    
+    if (!token) {
+        alert("Debes iniciar sesión para agregar productos.");
+        return;
+    }
+
+    try {
+        const res = await fetch('http://127.0.0.1:5000/api/cart/add', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ product_id: productId, quantity: 1 })
+        });
+
+        if (res.ok) {
+            actualizarVistaCarrito();
+            alert("Producto añadido con éxito");
+        } else {
+            const error = await res.json();
+            alert("No se pudo agregar: " + error.msg);
+        }
+    } catch (e) {
+        console.error("Error al añadir producto:", e);
+    }
+}
+
+// 5. FUNCIÓN PARA PROCESAR EL PAGO (CHECKOUT)
+async function procesarPago() {
+    const token = getAuthToken();
+    
+    if (!token) {
+        alert("Inicia sesión para completar la compra.");
+        return;
+    }
+
+    try {
+        const response = await fetch('http://127.0.0.1:5000/api/orders/checkout', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert(`¡Compra exitosa! Orden ID: ${data.order_id}`);
+            actualizarVistaCarrito(); 
+            cartDropdown.classList.remove('active');
+        } else {
+            alert("Error: " + data.msg);
+        }
+    } catch (error) {
+        console.error("Error en el checkout:", error);
+    }
+}
+
+function actualizarInterfazUsuario() {
+    const token = localStorage.getItem('urban_token');
+    const userName = localStorage.getItem('client_name') || 'Cliente';
+    
+    const guestButtons = document.getElementById('guest-buttons');
+    const userProfile = document.getElementById('user-profile-menu');
+    const displayName = document.getElementById('user-display-name');
+
+    if (token) {
+        // Hay sesión iniciada
+        guestButtons.style.display = 'none';
+        userProfile.style.display = 'flex';
+        displayName.innerText = userName;
+    } else {
+        // No hay sesión
+        guestButtons.style.display = 'flex';
+        userProfile.style.display = 'none';
+    }
+}
+
+// Función para cerrar sesión
+function cerrarSesion() {
+    localStorage.removeItem('urban_token');
+    localStorage.removeItem('client_name');
+    alert("Sesión cerrada correctamente.");
+    window.location.href = "/";
+}
+
+// Ejecutar al cargar la página
+document.addEventListener('DOMContentLoaded', actualizarInterfazUsuario);
+
+// 6. EVENTOS
 cartToggle.addEventListener('click', (e) => {
     e.preventDefault();
-    cartDropdown.classList.toggle('active'); // Tu compa debe tener la clase .active en CSS
+    cartDropdown.classList.toggle('active');
     if (cartDropdown.classList.contains('active')) {
         actualizarVistaCarrito();
     }
 });
 
-// Cargar el numerito (badge) apenas abra la página
+// Cargar estado inicial
 actualizarVistaCarrito();
