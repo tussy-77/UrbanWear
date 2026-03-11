@@ -824,6 +824,102 @@ button {
     font-weight: 800;
 }
 
+ /* --- TUS ESTILOS DE LÓGICA (INTACTOS) --- */
+        .header__actions { display: flex; align-items: center; gap: 20px; }
+        .user-profile { display: flex; align-items: center; gap: 12px; }
+        .profile-dropdown-wrapper { position: relative; }
+        .profile-dropdown {
+            display: none; position: absolute; top: 110%; right: 0;
+            background: #1a1a1a; border: 1px solid #333; border-radius: 8px;
+            min-width: 160px; z-index: 1000; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+        .profile-dropdown.active { display: block; }
+        .profile-dropdown a, .profile-dropdown button {
+            display: block; width: 100%; padding: 12px 16px; color: white;
+            text-decoration: none; text-align: left; font-size: 14px;
+            background: none; border: none; cursor: pointer;
+        }
+        .profile-dropdown a:hover, .profile-dropdown button:hover { background: #252525; }
+        .logout-link { color: #ff4d4d !important; border-top: 1px solid #333 !important; }
+        .welcome-text { color: #888; font-size: 14px; }
+        .welcome-text strong { color: #fff; }
+
+        /* --- MEJORAS VISUALES PREMIUM (AHORA EN MODO OSCURO) --- */
+        .section-padding { padding: 80px 0; }
+
+        /* Tarjetas de Producto Premium (Fondos Negros, Letras Blancas) */
+        .featured__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px; margin-top: 30px; }
+        .product-card { 
+            background: #111; /* Fondo negro */
+            border-radius: 16px; overflow: hidden; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); transition: all 0.3s ease;
+            border: 1px solid #333; /* Borde oscuro */
+            display: flex; flex-direction: column;
+        }
+        .product-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.8); border-color: #555; }
+        .product-card__image { 
+            background: #1a1a1a; /* Placeholder oscuro */
+            height: 260px; position: relative; 
+            display: flex; align-items: center; justify-content: center;
+        }
+        .product-card__badge { 
+            position: absolute; top: 15px; right: 15px; background: #fff; color: #000; 
+            padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; 
+        }
+        .product-card__badge--sale { background: #ff4d4d; color: #ffffff; }
+        .product-card__content { padding: 24px; display: flex; flex-direction: column; flex-grow: 1; }
+        .product-card__category { font-size: 12px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .product-card__title { font-size: 18px; font-weight: 600; margin: 0 0 10px; color: #fff; } /* Letra blanca */
+        .product-card__price { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 20px; } /* Letra blanca */
+        .product-card__content button { margin-top: auto; }
+
+        /* Categorías Grandes (Intactas) */
+        .categories-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+        .category-card { 
+            height: 450px; border-radius: 20px; display: flex; align-items: flex-end; 
+            padding: 40px; text-decoration: none; color: white; position: relative;
+            overflow: hidden; background-color: #1a1a1a; transition: transform 0.4s ease;
+        }
+        .category-card:hover { transform: translateY(-10px); }
+        .category-card span { font-size: 2rem; font-weight: 800; font-family: 'Poppins'; z-index: 2; text-transform: uppercase; letter-spacing: 1px; }
+        .category-card::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%); z-index: 1; }
+
+        /* Beneficios Emojis (Fondos Negros, Letras Blancas) */
+        .features-bar { background: #111; padding: 60px 0; border-radius: 24px; margin: 40px 0; border: 1px solid #333; } /* Fondo negro */
+        .features-wrapper { display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; text-align: center; }
+        .feature-item .icon { font-size: 2.8rem; margin-bottom: 15px; display: block; }
+        .feature-item h4 { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: #fff; } /* Letra blanca */
+        .feature-item p { font-size: 14px; color: #aaa; line-height: 1.5; } /* Texto gris claro */
+
+        /* Newsletter (Intacta) */
+        .newsletter-hero { 
+            background: #000; color: white; padding: 100px 0; text-align: center; 
+            border-radius: 24px; margin: 80px 0; 
+        }
+        .newsletter-content { max-width: 600px; margin: 0 auto; }
+        .newsletter-content h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 15px; font-family: 'Poppins'; }
+        .newsletter-content p { font-size: 1.1rem; margin-bottom: 35px; color: #aaa; }
+        .newsletter-form { display: flex; gap: 15px; justify-content: center; }
+        .newsletter-form input { 
+            flex: 1; padding: 16px 24px; border-radius: 8px; border: 1px solid #333; 
+            background: #111; color: white; font-size: 16px; outline: none; 
+        }
+        .newsletter-form input:focus { border-color: #555; }
+        .newsletter-form button { 
+            background: #fff; color: #000; padding: 16px 35px; border-radius: 8px; 
+            border: none; font-weight: 700; cursor: pointer; transition: 0.3s; 
+        }
+        .newsletter-form button:hover { background: #ddd; }
+
+        /* Footer (Intacto) */
+        .footer { background: #000; color: #fff; padding: 80px 0 40px; }
+        .footer__grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 50px; margin-bottom: 50px; }
+        .footer__column h4 { font-size: 16px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 25px; color: #fff; }
+        .footer__list { list-style: none; padding: 0; margin: 0; }
+        .footer__list li { margin-bottom: 15px; }
+        .footer__list a { color: #888; text-decoration: none; transition: 0.3s; font-size: 15px; }
+        .footer__list a:hover { color: #fff; }
+        .footer__bottom { padding-top: 30px; border-top: 1px solid #222; text-align: center; color: #666; font-size: 14px; }
 .cart-total-amount { color: var(--primary-color); }
 
 @keyframes fadeIn {
