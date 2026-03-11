@@ -7,39 +7,102 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* Ajustes visuales rápidos para el menú de usuario */
+        /* --- TUS ESTILOS DE LÓGICA (INTACTOS) --- */
         .header__actions { display: flex; align-items: center; gap: 20px; }
         .user-profile { display: flex; align-items: center; gap: 12px; }
         .profile-dropdown-wrapper { position: relative; }
         .profile-dropdown {
-            display: none;
-            position: absolute;
-            top: 110%;
-            right: 0;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 8px;
-            min-width: 160px;
-            z-index: 1000;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            display: none; position: absolute; top: 110%; right: 0;
+            background: #1a1a1a; border: 1px solid #333; border-radius: 8px;
+            min-width: 160px; z-index: 1000; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
         .profile-dropdown.active { display: block; }
         .profile-dropdown a, .profile-dropdown button {
-            display: block;
-            width: 100%;
-            padding: 12px 16px;
-            color: white;
-            text-decoration: none;
-            text-align: left;
-            font-size: 14px;
-            background: none;
-            border: none;
-            cursor: pointer;
+            display: block; width: 100%; padding: 12px 16px; color: white;
+            text-decoration: none; text-align: left; font-size: 14px;
+            background: none; border: none; cursor: pointer;
         }
         .profile-dropdown a:hover, .profile-dropdown button:hover { background: #252525; }
         .logout-link { color: #ff4d4d !important; border-top: 1px solid #333 !important; }
         .welcome-text { color: #888; font-size: 14px; }
         .welcome-text strong { color: #fff; }
+
+        /* --- MEJORAS VISUALES PREMIUM (AHORA EN MODO OSCURO) --- */
+        .section-padding { padding: 80px 0; }
+
+        /* Tarjetas de Producto Premium (Fondos Negros, Letras Blancas) */
+        .featured__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px; margin-top: 30px; }
+        .product-card { 
+            background: #111; /* Fondo negro */
+            border-radius: 16px; overflow: hidden; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); transition: all 0.3s ease;
+            border: 1px solid #333; /* Borde oscuro */
+            display: flex; flex-direction: column;
+        }
+        .product-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.8); border-color: #555; }
+        .product-card__image { 
+            background: #1a1a1a; /* Placeholder oscuro */
+            height: 260px; position: relative; 
+            display: flex; align-items: center; justify-content: center;
+        }
+        .product-card__badge { 
+            position: absolute; top: 15px; right: 15px; background: #fff; color: #000; 
+            padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; 
+        }
+        .product-card__badge--sale { background: #ff4d4d; color: #ffffff; }
+        .product-card__content { padding: 24px; display: flex; flex-direction: column; flex-grow: 1; }
+        .product-card__category { font-size: 12px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .product-card__title { font-size: 18px; font-weight: 600; margin: 0 0 10px; color: #fff; } /* Letra blanca */
+        .product-card__price { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 20px; } /* Letra blanca */
+        .product-card__content button { margin-top: auto; }
+
+        /* Categorías Grandes (Intactas) */
+        .categories-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+        .category-card { 
+            height: 450px; border-radius: 20px; display: flex; align-items: flex-end; 
+            padding: 40px; text-decoration: none; color: white; position: relative;
+            overflow: hidden; background-color: #1a1a1a; transition: transform 0.4s ease;
+        }
+        .category-card:hover { transform: translateY(-10px); }
+        .category-card span { font-size: 2rem; font-weight: 800; font-family: 'Poppins'; z-index: 2; text-transform: uppercase; letter-spacing: 1px; }
+        .category-card::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%); z-index: 1; }
+
+        /* Beneficios Emojis (Fondos Negros, Letras Blancas) */
+        .features-bar { background: #111; padding: 60px 0; border-radius: 24px; margin: 40px 0; border: 1px solid #333; } /* Fondo negro */
+        .features-wrapper { display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; text-align: center; }
+        .feature-item .icon { font-size: 2.8rem; margin-bottom: 15px; display: block; }
+        .feature-item h4 { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: #fff; } /* Letra blanca */
+        .feature-item p { font-size: 14px; color: #aaa; line-height: 1.5; } /* Texto gris claro */
+
+        /* Newsletter (Intacta) */
+        .newsletter-hero { 
+            background: #000; color: white; padding: 100px 0; text-align: center; 
+            border-radius: 24px; margin: 80px 0; 
+        }
+        .newsletter-content { max-width: 600px; margin: 0 auto; }
+        .newsletter-content h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 15px; font-family: 'Poppins'; }
+        .newsletter-content p { font-size: 1.1rem; margin-bottom: 35px; color: #aaa; }
+        .newsletter-form { display: flex; gap: 15px; justify-content: center; }
+        .newsletter-form input { 
+            flex: 1; padding: 16px 24px; border-radius: 8px; border: 1px solid #333; 
+            background: #111; color: white; font-size: 16px; outline: none; 
+        }
+        .newsletter-form input:focus { border-color: #555; }
+        .newsletter-form button { 
+            background: #fff; color: #000; padding: 16px 35px; border-radius: 8px; 
+            border: none; font-weight: 700; cursor: pointer; transition: 0.3s; 
+        }
+        .newsletter-form button:hover { background: #ddd; }
+
+        /* Footer (Intacto) */
+        .footer { background: #000; color: #fff; padding: 80px 0 40px; }
+        .footer__grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 50px; margin-bottom: 50px; }
+        .footer__column h4 { font-size: 16px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 25px; color: #fff; }
+        .footer__list { list-style: none; padding: 0; margin: 0; }
+        .footer__list li { margin-bottom: 15px; }
+        .footer__list a { color: #888; text-decoration: none; transition: 0.3s; font-size: 15px; }
+        .footer__list a:hover { color: #fff; }
+        .footer__bottom { padding-top: 30px; border-top: 1px solid #222; text-align: center; color: #666; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -86,7 +149,7 @@
                         </div>
 
                         <div id="user-profile-menu" style="display: none;" class="user-profile">
-                            <span class="welcome-text">Hola, <strong id="user-display-name">Usuario</strong></span>
+                            <span class="welcome-text">Hola, <strong id="user-display-name"></strong></span>
                             <div class="profile-dropdown-wrapper">
                                 <button class="btn btn--secondary btn--sm" onclick="toggleProfileMenu()">Mi Perfil 👤</button>
                                 <div id="profile-dropdown" class="profile-dropdown">
@@ -96,7 +159,8 @@
                             </div>
                         </div>
                     </div>
-                </div> </div>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -107,59 +171,151 @@
             <a href="#" class="btn btn--primary btn--lg">Explorar Colección</a>
         </div>
         <div class="hero__image">
-            <div class="hero__image-placeholder">
-                <span class="placeholder-text">Imagen Destacada</span>
+            <div class="hero__image-placeholder"><span class="placeholder-text">Imagen Destacada</span></div>
+        </div>
+    </section>
+
+    <section class="featured section-padding">
+        <div class="container">
+            <div class="featured__header">
+                <h2 class="section-title" style="color: #fff;">Colecciones Destacadas</h2>
+                <a href="#" class="link-see-all">Ver Todo →</a>
+            </div>
+            <div class="featured__grid">
+                <div class="product-card">
+                    <div class="product-card__image"><div class="product-card__image-placeholder"></div><span class="product-card__badge">Nuevo</span></div>
+                    <div class="product-card__content">
+                        <span class="product-card__category">Camisetas</span>
+                        <h3 class="product-card__title">Camiseta Essentials</h3>
+                        <p class="product-card__price">$24.99</p>
+                        <button class="btn btn--secondary btn--full" onclick="agregarAlCarrito(1)">Agregar al carrito</button>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-card__image"><div class="product-card__image-placeholder"></div></div>
+                    <div class="product-card__content">
+                        <span class="product-card__category">Pantalones</span>
+                        <h3 class="product-card__title">Jeans Urban</h3>
+                        <p class="product-card__price">$54.99</p>
+                        <button class="btn btn--secondary btn--full" onclick="agregarAlCarrito(2)">Agregar al carrito</button>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-card__image"><div class="product-card__image-placeholder"></div></div>
+                    <div class="product-card__content">
+                        <span class="product-card__category">Accesorios</span>
+                        <h3 class="product-card__title">Gorra Street</h3>
+                        <p class="product-card__price">$19.99</p>
+                        <button class="btn btn--secondary btn--full" onclick="agregarAlCarrito(3)">Agregar al carrito</button>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-card__image"><div class="product-card__image-placeholder"></div><span class="product-card__badge product-card__badge--sale">Oferta</span></div>
+                    <div class="product-card__content">
+                        <span class="product-card__category">Calzado</span>
+                        <h3 class="product-card__title">Sneakers Pro</h3>
+                        <p class="product-card__price">$89.99</p>
+                        <button class="btn btn--secondary btn--full" onclick="agregarAlCarrito(4)">Agregar al carrito</button>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
+    <div class="container">
+        <section class="section-padding" style="padding-top: 0;">
+            <div class="categories-grid">
+                <a href="#" class="category-card" style="background-color: #222;"><span>Hombres</span></a>
+                <a href="#" class="category-card" style="background-color: #333;"><span>Mujeres</span></a>
+                <a href="#" class="category-card" style="background-color: #111;"><span>Accesorios</span></a>
+            </div>
+        </section>
+
+        <section class="features-bar">
+            <div class="features-wrapper">
+                <div class="feature-item"><span class="icon">🚀</span><h4>Envío Rápido</h4><p>Envíos seguros a todo el país.</p></div>
+                <div class="feature-item"><span class="icon">🔒</span><h4>Pago Seguro</h4><p>Transacciones 100% protegidas.</p></div>
+                <div class="feature-item"><span class="icon">🔄</span><h4>Devoluciones</h4><p>30 días para cambios sin costo.</p></div>
+                <div class="feature-item"><span class="icon">🎧</span><h4>Soporte 24/7</h4><p>Atención continua para tus dudas.</p></div>
+            </div>
+        </section>
+
+        <section class="newsletter-hero">
+            <div class="newsletter-content">
+                <h2>No te pierdas de nada</h2>
+                <p>Suscríbete para recibir lanzamientos, ofertas exclusivas y publicidad directa en tu correo.</p>
+                <form class="newsletter-form">
+                    <input type="email" placeholder="Ingresa tu correo electrónico..." required>
+                    <button type="submit">SUSCRIBIRME</button>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__grid">
+                <div class="footer__column">
+                    <div class="logo logo--light">
+                        <span class="logo__icon">◆</span>
+                        <span class="logo__text">UrbanWear</span>
+                    </div>
+                    <p style="color: #666; line-height: 1.6; margin-top: 15px;">Definiendo el estilo de la calle desde 2024. Calidad, diseño y actitud en cada prenda.</p>
+                </div>
+                <div class="footer__column">
+                    <h4 class="footer__title">Tienda</h4>
+                    <ul class="footer__list">
+                        <li><a href="#">Catálogo Completo</a></li>
+                        <li><a href="#">Hombres</a></li>
+                        <li><a href="#">Mujeres</a></li>
+                        <li><a href="#">Accesorios</a></li>
+                    </ul>
+                </div>
+                <div class="footer__column">
+                    <h4 class="footer__title">Soporte</h4>
+                    <ul class="footer__list">
+                        <li><a href="#">Preguntas Frecuentes</a></li>
+                        <li><a href="#">Envíos y Entregas</a></li>
+                        <li><a href="#">Devoluciones</a></li>
+                        <li><a href="#">Contacto</a></li>
+                    </ul>
+                </div>
+                <div class="footer__column">
+                    <h4 class="footer__title">Síguenos</h4>
+                    <ul class="footer__list">
+                        <li><a href="#">Instagram</a></li>
+                        <li><a href="#">Facebook</a></li>
+                        <li><a href="#">TikTok</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer__bottom">
+                <p>&copy; 2024 UrbanWear. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
     <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
     <script>
-        // Función visual para el dropdown
-        function toggleProfileMenu() {
-            document.getElementById('profile-dropdown').classList.toggle('active');
-        }
-        // Cerrar al hacer clic fuera
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('urban_token');
+            const nombre = localStorage.getItem('client_name');
+            if (token && nombre) {
+                document.getElementById('guest-buttons').style.display = 'none';
+                document.getElementById('user-profile-menu').style.display = 'flex';
+                document.getElementById('user-display-name').innerText = nombre;
+            }
+        });
+
+        function toggleProfileMenu() { document.getElementById('profile-dropdown').classList.toggle('active'); }
+        function cerrarSesion() { localStorage.clear(); window.location.reload(); }
+
         window.onclick = function(event) {
             if (!event.target.matches('.btn--secondary')) {
-                var dropdowns = document.getElementsByClassName("profile-dropdown");
-                for (var i = 0; i < dropdowns.length; i++) {
-                    if (dropdowns[i].classList.contains('active')) {
-                        dropdowns[i].classList.remove('active');
-                    }
-                }
+                const dropdowns = document.getElementsByClassName("profile-dropdown");
+                for (let d of dropdowns) d.classList.remove('active');
             }
         }
     </script>
-    <script>
-    // 1. Verificar sesión al cargar la página
-    document.addEventListener('DOMContentLoaded', () => {
-        const token = localStorage.getItem('urban_token');
-        const nombre = localStorage.getItem('client_name');
-
-        const guestButtons = document.getElementById('guest-buttons');
-        const userProfileMenu = document.getElementById('user-profile-menu');
-        const displayName = document.getElementById('user-display-name');
-
-        if (token && nombre) {
-            // Si hay sesión, ocultamos botones de ingreso y mostramos perfil
-            guestButtons.style.display = 'none';
-            userProfileMenu.style.display = 'flex';
-            displayName.innerText = nombre;
-        } else {
-            // Si no hay sesión, aseguramos que se vean los botones de ingreso
-            guestButtons.style.display = 'flex';
-            userProfileMenu.style.display = 'none';
-        }
-    });
-
-    // 2. Función para Cerrar Sesión
-    function cerrarSesion() {
-        localStorage.removeItem('urban_token');
-        localStorage.removeItem('client_name');
-        alert("Sesión cerrada correctamente.");
-        window.location.reload(); // Recarga para volver al estado inicial
-    }
-</script>
 </body>
 </html>
