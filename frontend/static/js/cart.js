@@ -1,13 +1,15 @@
 // 1. CONFIGURACIÓN (Elementos del DOM)
 const cartToggle = document.getElementById('cart-toggle');
-const cartDropdown = document.getElementById('cart-dropdown');
+const cartSidebar = document.getElementById('cart-sidebar');
+const cartClose = document.getElementById('cart-close');
+const cartOverlay = document.getElementById('cart-overlay');
 
 // 2. FUNCIÓN PARA OBTENER EL TOKEN FRESCO
 function getAuthToken() {
     return localStorage.getItem('urban_token');
 }
 
-// 3. FUNCIÓN PARA LLENAR EL DESPLEGABLE
+// 3. FUNCIÓN PARA LLENAR EL PANEL LATERAL
 async function actualizarVistaCarrito() {
     const token = getAuthToken();
     if (!token) return;
@@ -18,28 +20,32 @@ async function actualizarVistaCarrito() {
         });
         const data = await res.json();
         
-        const container = document.getElementById('cart-items-container');
+        const container = document.getElementById('cart-sidebar-items');
         const badge = document.getElementById('cart-badge');
-        const totalText = document.getElementById('cart-total-value');
+        const totalText = document.getElementById('cart-total-sidebar');
 
         container.innerHTML = "";
         badge.innerText = data.items.length;
         totalText.innerText = data.total.toLocaleString();
 
         if (data.items.length === 0) {
-            container.innerHTML = '<p style="padding: 15px; text-align:center; color:#666;">Tu carrito está vacío</p>';
+            container.innerHTML = '<p class="cart-empty-msg">Tu carrito está vacío<br><small style="color: #ccc;">¡Agrega algunos productos!</small></p>';
         } else {
             data.items.forEach(item => {
                 container.innerHTML += `
-                    <div class="cart-item">
-                        <div class="cart-item__info">
-                            <b>${item.product_name}</b>
-                            <span>Cantidad: ${item.quantity}</span>
+                    <div class="cart-sidebar-item">
+                        <div class="cart-sidebar-item__image">
+                            <img src="https://via.placeholder.com/100?text=${item.product_name.substring(0, 2)}" alt="${item.product_name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
                         </div>
-                    <div class="cart-item__price">
-                        <strong>$${item.subtotal.toLocaleString()}</strong>
-                    </div>
-                </div>`;
+                        <div class="cart-sidebar-item__info">
+                            <p class="cart-sidebar-item__name">${item.product_name}</p>
+                            <p class="cart-sidebar-item__category">Categoría: ${item.category || 'General'}</p>
+                            <p class="cart-sidebar-item__qty">Cantidad: ${item.quantity}</p>
+                            <div class="cart-sidebar-item__price">
+                                <span class="cart-sidebar-item__subtotal">$${item.subtotal.toLocaleString()}</span>
+                            </div>
+                        </div>
+                    </div>`;
             });
         }
     } catch (e) {
@@ -47,7 +53,18 @@ async function actualizarVistaCarrito() {
     }
 }
 
-// 4. FUNCIÓN PARA AGREGAR PRODUCTOS
+// 4. FUNCIÓN PARA ABRIR EL PANEL LATERAL
+function abrirCarrito() {
+    cartSidebar.classList.add('active');
+    actualizarVistaCarrito();
+}
+
+// 5. FUNCIÓN PARA CERRAR EL PANEL LATERAL
+function cerrarCarrito() {
+    cartSidebar.classList.remove('active');
+}
+
+// 6. FUNCIÓN PARA AGREGAR PRODUCTOS
 async function agregarAlCarrito(productId) {
     const token = getAuthToken();
     
@@ -78,7 +95,7 @@ async function agregarAlCarrito(productId) {
     }
 }
 
-// 5. FUNCIÓN PARA PROCESAR EL PAGO (CHECKOUT)
+// 7. FUNCIÓN PARA PROCESAR EL PAGO (CHECKOUT)
 async function procesarPago() {
     const token = getAuthToken();
     
@@ -101,7 +118,7 @@ async function procesarPago() {
         if (response.ok) {
             alert(`¡Compra exitosa! Orden ID: ${data.order_id}`);
             actualizarVistaCarrito(); 
-            cartDropdown.classList.remove('active');
+            cerrarCarrito();
         } else {
             alert("Error: " + data.msg);
         }
@@ -141,14 +158,26 @@ function cerrarSesion() {
 // Ejecutar al cargar la página
 document.addEventListener('DOMContentLoaded', actualizarInterfazUsuario);
 
-// 6. EVENTOS
-cartToggle.addEventListener('click', (e) => {
-    e.preventDefault();
-    cartDropdown.classList.toggle('active');
-    if (cartDropdown.classList.contains('active')) {
-        actualizarVistaCarrito();
-    }
-});
+// 8. EVENTOS DEL CARRITO
+if (cartToggle) {
+    cartToggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        abrirCarrito();
+    });
+}
+
+if (cartClose) {
+    cartClose.addEventListener('click', (e) => {
+        e.preventDefault();
+        cerrarCarrito();
+    });
+}
+
+if (cartOverlay) {
+    cartOverlay.addEventListener('click', (e) => {
+        cerrarCarrito();
+    });
+}
 
 // Cargar estado inicial
 actualizarVistaCarrito();

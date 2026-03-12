@@ -954,3 +954,241 @@ button {
 .logout-link:hover {
     background: #f5f5f5;
 }
+
+/* ============================================
+   PANEL LATERAL DEL CARRITO
+   ============================================ */
+
+/* Contenedor principal del sidebar */
+.cart-sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2000;
+    pointer-events: none;
+}
+
+/* Overlay oscuro */
+.cart-sidebar__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0);
+    transition: background 0.3s ease;
+    pointer-events: none;
+}
+
+.cart-sidebar.active .cart-sidebar__overlay {
+    background: rgba(0, 0, 0, 0.5);
+    pointer-events: auto;
+}
+
+/* Panel deslizante */
+.cart-sidebar__panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 420px;
+    height: 100%;
+    background: #ffffff;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    pointer-events: auto;
+    z-index: 2001;
+}
+
+.cart-sidebar.active .cart-sidebar__panel {
+    transform: translateX(0);
+}
+
+/* Encabezado del panel */
+.cart-sidebar__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 24px;
+    border-bottom: 1px solid #e5e5e5;
+    background: #fafafa;
+}
+
+.cart-sidebar__header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #000;
+}
+
+.cart-sidebar__close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: #999;
+    transition: color 0.2s;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.cart-sidebar__close:hover {
+    color: #000;
+    background: #f0f0f0;
+}
+
+/* Contenido principal */
+.cart-sidebar__content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 0;
+}
+
+.cart-sidebar__content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.cart-sidebar__content::-webkit-scrollbar-track {
+    background: #f5f5f5;
+}
+
+.cart-sidebar__content::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 4px;
+}
+
+.cart-sidebar__content::-webkit-scrollbar-thumb:hover {
+    background: #bbb;
+}
+
+/* Elemento del carrito mejorado */
+.cart-sidebar-item {
+    display: flex;
+    gap: 16px;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.2s;
+}
+
+.cart-sidebar-item:hover {
+    background: #f9f9f9;
+}
+
+.cart-sidebar-item__image {
+    width: 100px;
+    height: 100px;
+    background: #e5e5e5;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 40px;
+    color: #999;
+}
+
+.cart-sidebar-item__info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cart-sidebar-item__name {
+    font-weight: 700;
+    font-size: 14px;
+    color: #000;
+    margin: 0;
+}
+
+.cart-sidebar-item__category {
+    font-size: 12px;
+    color: #888;
+    margin: 0;
+}
+
+.cart-sidebar-item__size {
+    font-size: 12px;
+    color: #666;
+    margin: 0;
+}
+
+.cart-sidebar-item__qty {
+    font-size: 12px;
+    color: #666;
+    margin: 0;
+}
+
+.cart-sidebar-item__price {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 8px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.cart-sidebar-item__subtotal {
+    font-weight: 700;
+    font-size: 14px;
+    color: #ff6b35;
+}
+
+.cart-sidebar-item__remove {
+    background: none;
+    border: none;
+    color: #a0a0a0;
+    cursor: pointer;
+    font-size: 18px;
+    transition: color 0.2s;
+}
+
+.cart-sidebar-item__remove:hover {
+    color: #ff4444;
+}
+
+/* Mensaje carrito vacío */
+.cart-empty-msg {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+    font-size: 14px;
+}
+
+/* Pie del panel */
+.cart-sidebar__footer {
+    padding: 20px 24px;
+    border-top: 1px solid #e5e5e5;
+    background: #fafafa;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.cart-sidebar__total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.cart-sidebar__total span:first-child {
+    color: #666;
+}
+
+.cart-total-amount {
+    color: #000;
+    font-size: 20px;
+}
+
+.cart-total-amount span {
+    color: #ff6b35;
+}
