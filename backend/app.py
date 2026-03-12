@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from sqlalchemy import text
 from backend.config import Config
 from backend.database import db
@@ -7,14 +7,13 @@ import os
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from backend.routes.auth import auth_bp
-from flask_migrate import Migrate
 from backend.routes.cart import cart_bp
+from flask_migrate import Migrate
 from flask_cors import CORS
+from werkzeug.utils import secure_filename
 
 def create_app():
-    
     # ---------Obtener la ruta base del proyecto-------------
-    
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     template_folder = os.path.join(base_dir, 'frontend', 'templates')
     static_folder = os.path.join(base_dir, 'frontend', 'static')
@@ -22,13 +21,15 @@ def create_app():
     app = Flask(__name__, template_folder=template_folder, static_folder=static_folder, static_url_path='/static')
     app.config.from_object(Config)
     CORS(app)
+    
+    # Configuración de subida (Asegúrate de que la ruta sea absoluta para evitar fallos)
+    UPLOAD_FOLDER = os.path.join(static_folder, 'uploads')
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
     # ---------Inicialización de extensiones-----------------
-    
     db.init_app(app)
     bcrypt = Bcrypt(app)
     jwt = JWTManager(app)
-    
     migrate = Migrate(app, db)
      
     app.register_blueprint(auth_bp)
@@ -36,7 +37,9 @@ def create_app():
     
     with app.app_context():
         db.create_all()
-        print("¡Tablas del carrito creadas en PostgreSQL!")
+        print("¡Tablas sincronizadas en PostgreSQL!")
+
+    # ---------Rutas de la API y Vistas-----------------
 
     @app.route("/api/products")
     def get_products():
@@ -51,16 +54,10 @@ def create_app():
 
     @app.route("/")
     def home():
-        return render_template('public/home.html')
+        # Traemos los productos de la DB para que se vean en el Home
+        productos_db = Product.query.all()
+        return render_template('public/home.html', productos=productos_db)
 
-    @app.route("/login")
-    def login_page():
-        return render_template('auth/login.html')
-
-    @app.route("/register")
-    def register_page():
-        return render_template('auth/register.html')
-    
     @app.route("/user_login")
     def cliente_login_view():
         return render_template('auth/user_login.html')
@@ -76,31 +73,27 @@ def create_app():
             return "Database connected successfully!"
         except Exception as e:
             return str(e)
+        
+    @app.route("/catalogo")
+    def catalogo():
+        todos_los_productos = Product.query.all()
+        return render_template('public/catalogo.html', productos=todos_los_productos)    
 
     @app.route('/api/orders/checkout', methods=['POST'])
     @jwt_required()
     def checkout():
-        user_id = get_jwt_identity() # Ahora todo lo de abajo tiene el mismo nivel de espacios
-    
-        # 1. Buscar el carrito del usuario
+        user_id = get_jwt_identity()
         cart = Cart.query.filter_by(user_id=user_id).first()
         
         if not cart or not cart.items:
             return jsonify({"msg": "El carrito está vacío"}), 400
 
         try:
-            # 2. Calcular el total y preparar la Orden
             total_pago = sum(item.product.price * item.quantity for item in cart.items)
-            
-            nueva_orden = Order(
-                user_id=user_id,
-                total_price=total_pago,
-                status='completado'
-            )
+            nueva_orden = Order(user_id=user_id, total_price=total_pago, status='completado')
             db.session.add(nueva_orden)
             db.session.flush() 
 
-            # 3. Mover items del Carrito a la Orden
             for item_carrito in cart.items:
                 detalle_orden = OrderItem(
                     order_id=nueva_orden.id,
@@ -109,21 +102,57 @@ def create_app():
                     price_at_purchase=item_carrito.product.price
                 )
                 db.session.add(detalle_orden)
-
-            # 4. VACIAR EL CARRITO
-            for item_a_borrar in cart.items:
-                db.session.delete(item_a_borrar)
+                db.session.delete(item_carrito) # Vaciar item
 
             db.session.commit()
-            return jsonify({
-                "msg": "Compra realizada con éxito", 
-                "order_id": nueva_orden.id,
-                "total": total_pago
-            }), 201
-
+            return jsonify({"msg": "Compra realizada", "order_id": nueva_orden.id}), 201
         except Exception as e:
             db.session.rollback()
-            return jsonify({"msg": "Error al procesar la compra", "error": str(e)}), 500
+            return jsonify({"msg": "Error", "error": str(e)}), 500
+
+    # ---------Rutas de Administración-------------
+
+    @app.route('/admin/productos')
+    def admin_productos():
+        return render_template('admin/products.html')
+
+    @app.route('/admin/agregar-producto', methods=['POST'])
+    def agregar_producto():
+        nombre = request.form.get('nombre')
+        precio = request.form.get('precio')
+        categoria = request.form.get('categoria')
+        file = request.files.get('imagen')
+        
+        descripcion = request.form.get('descripcion', 'Sin descripción')
+        stock = request.form.get('stock', 10)
+
+        if not file or not nombre or not precio:
+            flash("Todos los campos son obligatorios")
+            return redirect(url_for('admin_productos'))
+
+        filename = secure_filename(file.filename)
+        
+        if not os.path.exists(app.config['UPLOAD_FOLDER']):
+            os.makedirs(app.config['UPLOAD_FOLDER'])
+            
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+        nuevo_producto = Product(
+            name=nombre,
+            description=descripcion,
+            price=float(precio),
+            stock=int(stock),        
+            image_url=filename,
+            category_id=1
+        )
+
+        try:
+            db.session.add(nuevo_producto)
+            db.session.commit()
+            return redirect(url_for('home'))
+        except Exception as e:
+            db.session.rollback()
+            return f"Error: {e}", 500
 
     return app 
 

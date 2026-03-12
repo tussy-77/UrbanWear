@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Gestionar Productos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <style>
+        body { background-color: #050505; color: white; font-family: 'Inter', sans-serif; }
+        .admin-container { max-width: 600px; margin: 60px auto; padding: 40px; background: #111; border-radius: 20px; border: 1px solid #333; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #aaa; font-size: 14px; }
+        input, select, textarea { 
+            width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; 
+            border-radius: 8px; color: white; outline: none;
+        }
+        input:focus { border-color: #fff; }
+        .btn-upload { 
+            background: #fff; color: #000; width: 100%; padding: 15px; 
+            border: none; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 10px;
+        }
+        .btn-upload:hover { background: #ddd; }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <h2>📦 Cargar Nuevo Producto</h2>
+        <p style="color: #666; margin-bottom: 30px;">Completa los detalles para que aparezcan en la tienda.</p>
+        
+        <form action="/admin/agregar-producto" method="POST" enctype="multipart/form-data">
+
+    <div class="form-group">
+        <label>Nombre del Producto</label>
+        <input type="text" name="nombre" placeholder="Ej: Camiseta Oversize" required>
+    </div>
+    
+    <div class="form-group">
+        <label>Precio (USD)</label>
+        <input type="number" step="0.01" name="precio" placeholder="24.99" required>
+    </div>
+    
+    <div class="form-group">
+        <label>Categoría</label>
+        <select name="categoria">
+            <option value="Hombres">Hombres</option>
+            <option value="Mujeres">Mujeres</option>
+            <option value="Accesorios">Accesorios</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Imagen del Producto</label>
+        <input type="file" name="imagen" accept="image/*" required>
+    </div>
+
+    <div class="form-group">
+    <label>Descripción</label>
+    <textarea name="descripcion" placeholder="Breve descripción del producto..."></textarea>
+</div>
+
+<div class="form-group">
+    <label>Cantidad en Stock</label>
+    <input type="number" name="stock" value="1" min="1" required>
+</div>
+
+    <button type="submit" class="btn-upload">PUBLICAR PRODUCTO</button>
+
+</form>
+    </div>
+</body>
+</html>

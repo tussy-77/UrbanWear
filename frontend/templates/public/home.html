@@ -20,12 +20,12 @@
                 </div>
                 
                 <nav class="nav">
-                    <a href="#" class="nav__link">Catálogo</a>
+                    <a href="{{ url_for('catalogo') }}" class="nav__link">CATÁLOGO</a>
                     <a href="#" class="nav__link">Nuevo</a>
                     <a href="#" class="nav__link">Sobre</a>
                     <a href="#" class="nav__link">Contacto</a>
                 </nav>
-
+                
                 <div class="header__actions">
                     <div class="cart-wrapper">
                         <button class="cart-button" id="cart-toggle">
@@ -80,52 +80,65 @@
         </div>
     </section>
 
-    <section class="featured section-padding">
-        <div class="container">
-            <div class="featured__header">
-                <h2 class="section-title" style="color: #fff;">Colecciones Destacadas</h2>
-                <a href="#" class="link-see-all">Ver Todo →</a>
+   <section class="featured section-padding">
+    <div class="container">
+        <div class="featured__header">
+            <h2 class="section-title" style="color: #fff;">Colecciones Destacadas</h2>
+            <a href="{{ url_for('catalogo') }}" class="link-see-all">Ver Todo →</a>
+        </div>
+        <div class="featured__grid">
+            <div class="product-card">
+                <div class="product-card__image">
+                    <div class="product-card__image-placeholder"></div>
+                    <span class="product-card__badge">Nuevo</span>
+                </div>
+                <div class="product-card__content">
+                    <span class="product-card__category">Camisetas</span>
+                    <h3 class="product-card__title">Camiseta Essentials</h3>
+                    <p class="product-card__price">$24.99</p>
+                    <button class="btn btn--secondary btn--full" onclick="agregarAlCarrito(1)">Agregar al carrito</button>
+                </div>
             </div>
-            <div class="featured__grid">
-                <div class="product-card">
-                    <div class="product-card__image"><div class="product-card__image-placeholder"></div><span class="product-card__badge">Nuevo</span></div>
-                    <div class="product-card__content">
-                        <span class="product-card__category">Camisetas</span>
-                        <h3 class="product-card__title">Camiseta Essentials</h3>
-                        <p class="product-card__price">$24.99</p>
-                        <button class="btn btn--secondary btn--full" onclick="agregarAlCarrito(1)">Agregar al carrito</button>
-                    </div>
+
+            <div class="product-card">
+                <div class="product-card__image">
+                    <div class="product-card__image-placeholder"></div>
                 </div>
-                <div class="product-card">
-                    <div class="product-card__image"><div class="product-card__image-placeholder"></div></div>
-                    <div class="product-card__content">
-                        <span class="product-card__category">Pantalones</span>
-                        <h3 class="product-card__title">Jeans Urban</h3>
-                        <p class="product-card__price">$54.99</p>
-                        <button class="btn btn--secondary btn--full" onclick="agregarAlCarrito(2)">Agregar al carrito</button>
-                    </div>
+                <div class="product-card__content">
+                    <span class="product-card__category">Pantalones</span>
+                    <h3 class="product-card__title">Jeans Urban</h3>
+                    <p class="product-card__price">$54.99</p>
+                    <button class="btn btn--secondary btn--full" onclick="agregarAlCarrito(2)">Agregar al carrito</button>
                 </div>
-                <div class="product-card">
-                    <div class="product-card__image"><div class="product-card__image-placeholder"></div></div>
-                    <div class="product-card__content">
-                        <span class="product-card__category">Accesorios</span>
-                        <h3 class="product-card__title">Gorra Street</h3>
-                        <p class="product-card__price">$19.99</p>
-                        <button class="btn btn--secondary btn--full" onclick="agregarAlCarrito(3)">Agregar al carrito</button>
-                    </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-card__image">
+                    <div class="product-card__image-placeholder"></div>
                 </div>
-                <div class="product-card">
-                    <div class="product-card__image"><div class="product-card__image-placeholder"></div><span class="product-card__badge product-card__badge--sale">Oferta</span></div>
-                    <div class="product-card__content">
-                        <span class="product-card__category">Calzado</span>
-                        <h3 class="product-card__title">Sneakers Pro</h3>
-                        <p class="product-card__price">$89.99</p>
-                        <button class="btn btn--secondary btn--full" onclick="agregarAlCarrito(4)">Agregar al carrito</button>
-                    </div>
+                <div class="product-card__content">
+                    <span class="product-card__category">Accesorios</span>
+                    <h3 class="product-card__title">Gorra Street</h3>
+                    <p class="product-card__price">$19.99</p>
+                    <button class="btn btn--secondary btn--full" onclick="agregarAlCarrito(3)">Agregar al carrito</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-card__image">
+                    <div class="product-card__image-placeholder"></div>
+                    <span class="product-card__badge product-card__badge--sale">Oferta</span>
+                </div>
+                <div class="product-card__content">
+                    <span class="product-card__category">Calzado</span>
+                    <h3 class="product-card__title">Sneakers Pro</h3>
+                    <p class="product-card__price">$89.99</p>
+                    <button class="btn btn--secondary btn--full" onclick="agregarAlCarrito(4)">Agregar al carrito</button>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
     <div class="container">
         <section class="section-padding" style="padding-top: 0;">

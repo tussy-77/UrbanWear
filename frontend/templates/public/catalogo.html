@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo Completo | Store</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body style="background-color: #000; color: #fff;">
+    
+
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" style="color: #fff; text-decoration: none;">← Volver al Inicio</a>
+        </div>
+    </nav>
+
+    <main class="section-padding">
+        <div class="container">
+            <header class="featured__header" style="margin-bottom: 40px;">
+                <h1 class="section-title">Nuestro Catálogo</h1>
+                <p style="color: #888;">Explora todos nuestros productos disponibles</p>
+            </header>
+
+            <div class="featured__grid">
+                {% for producto in productos %}
+                <div class="product-card">
+                    <div class="product-card__image">
+                        {% if producto.image_url %}
+                            <img src="{{ url_for('static', filename='uploads/' + producto.image_url) }}" 
+                                 alt="{{ producto.name }}" 
+                                 style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                            <div class="product-card__image-placeholder"></div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="product-card__content">
+                        <span class="product-card__category">Colección Real</span>
+                        <h3 class="product-card__title">{{ producto.name }}</h3>
+                        <p class="product-card__price">${{ producto.price }}</p>
+                        
+                        <button class="btn btn--secondary btn--full" onclick="agregarAlCarrito('{{ producto.id }}')">
+                            Agregar al carrito
+                        </button>
+                    </div>
+                </div>
+                {% else %}
+                    <div style="grid-column: 1/-1; text-align: center; padding: 50px;">
+                        <p>Aún no hay productos en el catálogo. ¡Vuelve pronto!</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+    
+
+    <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
+</body>
+</html>
