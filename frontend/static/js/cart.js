@@ -1,15 +1,48 @@
-// 1. CONFIGURACIÓN (Elementos del DOM)
+// 1. CONFIGURACIÓN DE ELEMENTOS
 const cartToggle = document.getElementById('cart-toggle');
 const cartSidebar = document.getElementById('cart-sidebar');
 const cartClose = document.getElementById('cart-close');
 const cartOverlay = document.getElementById('cart-overlay');
 
-// 2. FUNCIÓN PARA OBTENER EL TOKEN FRESCO
+// 2. UTILIDADES
 function getAuthToken() {
     return localStorage.getItem('urban_token');
 }
 
-// 3. FUNCIÓN PARA LLENAR EL PANEL LATERAL
+// 3. INTERFAZ DE USUARIO (ICONOS Y MENÚ)
+function actualizarInterfazUsuario() {
+    const token = getAuthToken();
+    const userName = localStorage.getItem('client_name') || 'Cliente';
+    
+    const guestIcon = document.getElementById('guest-icon');
+    const userProfileIcon = document.getElementById('user-profile-icon');
+    const displayName = document.getElementById('user-display-name');
+
+    if (token) {
+        if (guestIcon) guestIcon.style.display = 'none';
+        if (userProfileIcon) userProfileIcon.style.display = 'flex';
+        if (displayName) displayName.innerText = userName;
+    } else {
+        if (guestIcon) guestIcon.style.display = 'flex';
+        if (userProfileIcon) userProfileIcon.style.display = 'none';
+    }
+}
+
+function toggleProfileMenu() {
+    const menu = document.getElementById('profile-dropdown');
+    if (menu) {
+        menu.style.display = (menu.style.display === 'none' || menu.style.display === '') ? 'block' : 'none';
+    }
+}
+
+function cerrarSesion() {
+    localStorage.removeItem('urban_token');
+    localStorage.removeItem('client_name');
+    alert("Sesión cerrada correctamente.");
+    window.location.href = "/";
+}
+
+// 4. LÓGICA DEL CARRITO
 async function actualizarVistaCarrito() {
     const token = getAuthToken();
     if (!token) return;
@@ -21,163 +54,90 @@ async function actualizarVistaCarrito() {
         const data = await res.json();
         
         const container = document.getElementById('cart-sidebar-items');
-        const badge = document.getElementById('cart-badge');
         const totalText = document.getElementById('cart-total-sidebar');
+        const badge = document.getElementById('cart-badge');
 
-        container.innerHTML = "";
-        badge.innerText = data.items.length;
-        totalText.innerText = data.total.toLocaleString();
-
-        if (data.items.length === 0) {
-            container.innerHTML = '<p class="cart-empty-msg">Tu carrito está vacío<br><small style="color: #ccc;">¡Agrega algunos productos!</small></p>';
-        } else {
-            data.items.forEach(item => {
-                container.innerHTML += `
-                    <div class="cart-sidebar-item">
-                        <div class="cart-sidebar-item__image">
-                            <img src="https://via.placeholder.com/100?text=${item.product_name.substring(0, 2)}" alt="${item.product_name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
-                        </div>
-                        <div class="cart-sidebar-item__info">
-                            <p class="cart-sidebar-item__name">${item.product_name}</p>
-                            <p class="cart-sidebar-item__category">Categoría: ${item.category || 'General'}</p>
-                            <p class="cart-sidebar-item__qty">Cantidad: ${item.quantity}</p>
-                            <div class="cart-sidebar-item__price">
-                                <span class="cart-sidebar-item__subtotal">$${item.subtotal.toLocaleString()}</span>
+        if (container) {
+            container.innerHTML = "";
+            if (!data.items || data.items.length === 0) {
+                container.innerHTML = '<p class="cart-empty-msg">Tu carrito está vacío</p>';
+            } else {
+                data.items.forEach(item => {
+                    container.innerHTML += `
+                        <div class="cart-sidebar-item" style="display: flex; gap: 10px; margin-bottom: 15px;">
+                            <img src="https://placehold.co/60x60?text=Item" style="width:60px; border-radius:5px;">
+                            <div>
+                                <p style="margin:0; font-weight:bold;">${item.product_name}</p>
+                                <p style="margin:0; font-size:0.8rem; color:#888;">Cant: ${item.quantity}</p>
+                                <p style="margin:0; color:#fff;">$${item.subtotal.toLocaleString()}</p>
                             </div>
-                        </div>
-                    </div>`;
-            });
+                        </div>`;
+                });
+            }
         }
-    } catch (e) {
-        console.error("Error al obtener el carrito:", e);
-    }
+        if (totalText) totalText.innerText = data.total.toLocaleString();
+        if (badge) {
+            const totalQty = data.items ? data.items.reduce((acc, item) => acc + item.quantity, 0) : 0;
+            badge.innerText = totalQty;
+            badge.style.opacity = totalQty > 0 ? "1" : "0";
+        }
+    } catch (e) { console.error("Error carrito:", e); }
 }
 
-// 4. FUNCIÓN PARA ABRIR EL PANEL LATERAL
 function abrirCarrito() {
-    cartSidebar.classList.add('active');
+    if (cartSidebar) cartSidebar.classList.add('active');
     actualizarVistaCarrito();
 }
 
-// 5. FUNCIÓN PARA CERRAR EL PANEL LATERAL
 function cerrarCarrito() {
-    cartSidebar.classList.remove('active');
+    if (cartSidebar) cartSidebar.classList.remove('active');
 }
 
-// 6. FUNCIÓN PARA AGREGAR PRODUCTOS
 async function agregarAlCarrito(productId) {
     const token = getAuthToken();
-    
-    if (!token) {
-        alert("Debes iniciar sesión para agregar productos.");
-        return;
-    }
+    if (!token) { alert("Inicia sesión primero"); return; }
 
     try {
         const res = await fetch('http://127.0.0.1:5000/api/cart/add', {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ product_id: productId, quantity: 1 })
         });
-
-        if (res.ok) {
-            actualizarVistaCarrito();
-            alert("Producto añadido con éxito");
-        } else {
-            const error = await res.json();
-            alert("No se pudo agregar: " + error.msg);
-        }
-    } catch (e) {
-        console.error("Error al añadir producto:", e);
-    }
+        if (res.ok) { actualizarVistaCarrito(); abrirCarrito(); }
+    } catch (e) { console.error(e); }
 }
 
-// 7. FUNCIÓN PARA PROCESAR EL PAGO (CHECKOUT)
 async function procesarPago() {
     const token = getAuthToken();
-    
-    if (!token) {
-        alert("Inicia sesión para completar la compra.");
-        return;
-    }
-
+    if (!token) return;
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/orders/checkout', {
+        const res = await fetch('http://127.0.0.1:5000/api/orders/checkout', {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
         });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            alert(`¡Compra exitosa! Orden ID: ${data.order_id}`);
-            actualizarVistaCarrito(); 
+        if (res.ok) {
+            const data = await res.json();
+            alert(`¡Compra exitosa! Orden: ${data.order_id}`);
+            actualizarVistaCarrito();
             cerrarCarrito();
-        } else {
-            alert("Error: " + data.msg);
         }
-    } catch (error) {
-        console.error("Error en el checkout:", error);
-    }
+    } catch (e) { console.error(e); }
 }
 
-function actualizarInterfazUsuario() {
-    const token = localStorage.getItem('urban_token');
-    const userName = localStorage.getItem('client_name') || 'Cliente';
-    
-    const guestButtons = document.getElementById('guest-buttons');
-    const userProfile = document.getElementById('user-profile-menu');
-    const displayName = document.getElementById('user-display-name');
+// 5. EVENTOS E INICIALIZACIÓN
+document.addEventListener('DOMContentLoaded', () => {
+    actualizarInterfazUsuario();
+    actualizarVistaCarrito();
 
-    if (token) {
-        // Hay sesión iniciada
-        guestButtons.style.display = 'none';
-        userProfile.style.display = 'flex';
-        displayName.innerText = userName;
-    } else {
-        // No hay sesión
-        guestButtons.style.display = 'flex';
-        userProfile.style.display = 'none';
-    }
-}
+    if (cartToggle) cartToggle.onclick = (e) => { e.preventDefault(); abrirCarrito(); };
+    if (cartClose) cartClose.onclick = (e) => { e.preventDefault(); cerrarCarrito(); };
+    if (cartOverlay) cartOverlay.onclick = cerrarCarrito;
 
-// Función para cerrar sesión
-function cerrarSesion() {
-    localStorage.removeItem('urban_token');
-    localStorage.removeItem('client_name');
-    alert("Sesión cerrada correctamente.");
-    window.location.href = "/";
-}
-
-// Ejecutar al cargar la página
-document.addEventListener('DOMContentLoaded', actualizarInterfazUsuario);
-
-// 8. EVENTOS DEL CARRITO
-if (cartToggle) {
-    cartToggle.addEventListener('click', (e) => {
-        e.preventDefault();
-        abrirCarrito();
-    });
-}
-
-if (cartClose) {
-    cartClose.addEventListener('click', (e) => {
-        e.preventDefault();
-        cerrarCarrito();
-    });
-}
-
-if (cartOverlay) {
-    cartOverlay.addEventListener('click', (e) => {
-        cerrarCarrito();
-    });
-}
-
-// Cargar estado inicial
-actualizarVistaCarrito();
+    // Cerrar menú de perfil al hacer clic fuera
+    window.onclick = (event) => {
+        if (!event.target.closest('.user-menu-wrapper')) {
+            const menu = document.getElementById('profile-dropdown');
+            if (menu) menu.style.display = 'none';
+        }
+    };
+});

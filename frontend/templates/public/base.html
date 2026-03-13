@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}UrbanWear{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body style="background-color: #000; color: #fff;">
+
+    <header class="header">
+        <div class="container">
+            <div class="header__wrapper" style="display: flex !important; justify-content: space-between !important; align-items: center !important; width: 100% !important;">
+                <div class="logo" style="cursor: pointer;" onclick="window.location.href='/'">
+                    <span class="logo__icon">◆</span>
+                    <span class="logo__text">UrbanWear</span>
+                </div>
+
+                <nav class="nav" style="display: flex; gap: 40px; flex: 1; justify-content: center;">
+                    <a href="{{ url_for('catalogo') }}" class="nav__link">CATÁLOGO</a>
+                    <a href="#" class="nav__link">Nuevo</a>
+                    <a href="#" class="nav__link">Sobre</a>
+                    <a href="#" class="nav__link">Contacto</a>
+                </nav>
+
+                <div class="header__actions" style="display: flex; align-items: center; gap: 20px;">
+    
+                    <button class="header-icon-btn" id="search-toggle" style="background: none; border: none; cursor: pointer; padding: 0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 256 256" style="fill: #888; transition: fill 0.3s;"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path></svg>
+                    </button>
+
+                    <div class="user-menu-wrapper" style="position: relative;">
+                        <a href="/user_login" id="guest-icon" class="header-icon-btn" style="display: flex;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 256 256" style="fill: #888; transition: fill 0.3s;"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM128,144a40,40,0,1,1,40-40A40,40,0,0,1,128,144Zm76.24,42.81a80,80,0,0,0-152.48,0,87.81,87.81,0,0,1,152.48,0Z"></path></svg>
+                        </a>
+
+                        <button id="user-profile-icon" class="header-icon-btn" onclick="toggleProfileMenu()" style="display: none; background: none; border: none; cursor: pointer; padding: 0;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 256 256" style="fill: #888; transition: fill 0.3s;"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM128,144a40,40,0,1,1,40-40A40,40,0,0,1,128,144Zm76.24,42.81a80,80,0,0,0-152.48,0,87.81,87.81,0,0,1,152.48,0Z"></path></svg>
+                        </button>
+
+                        <div id="profile-dropdown" class="profile-dropdown" style="display: none; position: absolute; top: 100%; right: 0; background-color: #111; border: 1px solid #333; border-radius: 8px; padding: 10px; width: 150px; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+                            <span style="color: #888; font-size: 0.8rem; padding: 5px 10px; display: block;">Hola, <strong id="user-display-name" style="color: #fff;"></strong></span>
+                            <a href="/mis-pedidos" style="color: #fff; text-decoration: none; padding: 8px 10px; display: block; font-size: 0.9rem;">Mis Pedidos</a>
+                            <button onclick="cerrarSesion()" style="background: none; border: none; color: #ff6b6b; padding: 8px 10px; text-align: left; width: 100%; cursor: pointer; font-size: 0.9rem; font-family: inherit;">Cerrar Sesión</button>
+                        </div>
+                    </div>
+
+                    <div class="cart-wrapper" style="position: relative;">
+                        <button class="cart-button header-icon-btn" id="cart-toggle" style="background: none; border: none; cursor: pointer; padding: 0; display: flex;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 256 256" style="fill: #888; transition: fill 0.3s;"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,160H40V56H216V200ZM176,88a48,48,0,0,1-96,0,8,8,0,0,1,16,0,32,32,0,0,0,64,0,8,8,0,0,1,16,0Z"></path></svg>
+                            
+                            <span class="cart-badge" id="cart-badge" style="position: absolute; top: -8px; right: -8px; background-color: #ff6b6b; color: #fff; font-size: 0.7rem; font-weight: 700; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s;">0</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-sidebar__overlay" id="cart-overlay"></div>
+        <div class="cart-sidebar__panel">
+            <div class="cart-sidebar__header">
+                <h2>Mi Carrito</h2>
+                <button class="cart-sidebar__close" id="cart-close">✕</button>
+            </div>
+            <div class="cart-sidebar__content" id="cart-sidebar-items">
+                <p class="cart-empty-msg">Tu carrito está vacío</p>
+            </div>
+            <div class="cart-sidebar__footer">
+                <div class="cart-sidebar__total">
+                    <span>Total:</span>
+                    <span class="cart-total-amount">$<span id="cart-total-sidebar">0</span></span>
+                </div>
+                <button class="btn btn--primary btn--full" onclick="procesarPago()">Finalizar Compra</button>
+            </div>
+        </div>
+    </div>
+
+    {% block content %}{% endblock %}
+
+    <footer class="footer" style="background-color: #050505; border-top: 1px solid #222; padding: 60px 0 30px 0; margin-top: 80px;">
+        <div class="container">
+            <div class="footer__grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px;">
+                <div class="footer__column">
+                    <div class="logo logo--light">
+                        <span class="logo__icon">◆</span>
+                        <span class="logo__text">UrbanWear</span>
+                    </div>
+                    <p style="color: #888; line-height: 1.6; margin-top: 15px; font-size: 0.9rem;">
+                        Definiendo el estilo de la calle desde 2024. Calidad, diseño y actitud en cada prenda.
+                    </p>
+                </div>
+                
+                <div class="footer__column">
+                    <h4 class="footer__title" style="color: #fff; margin-bottom: 20px; font-size: 1.1rem;">Tienda</h4>
+                    <ul class="footer__list" style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 10px;"><a href="{{ url_for('catalogo') }}" style="color: #888; text-decoration: none;">Catálogo Completo</a></li>
+                        <li style="margin-bottom: 10px;"><a href="#" style="color: #888; text-decoration: none;">Nuevos Ingresos</a></li>
+                        <li style="margin-bottom: 10px;"><a href="#" style="color: #888; text-decoration: none;">Ofertas</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer__column">
+                    <h4 class="footer__title" style="color: #fff; margin-bottom: 20px; font-size: 1.1rem;">Soporte</h4>
+                    <ul class="footer__list" style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 10px;"><a href="#" style="color: #888; text-decoration: none;">Envíos</a></li>
+                        <li style="margin-bottom: 10px;"><a href="#" style="color: #888; text-decoration: none;">Devoluciones</a></li>
+                        <li style="margin-bottom: 10px;"><a href="#" style="color: #888; text-decoration: none;">Contacto</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer__column">
+                    <h4 class="footer__title" style="color: #fff; margin-bottom: 20px; font-size: 1.1rem;">Síguenos</h4>
+                    <div class="social-links" style="display: flex; gap: 15px;">
+                        <a href="#" style="color: #fff; font-size: 1.2rem;">📸</a>
+                        <a href="#" style="color: #fff; font-size: 1.2rem;">📘</a>
+                        <a href="#" style="color: #fff; font-size: 1.2rem;">🎵</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer__bottom" style="margin-top: 50px; padding-top: 20px; border-top: 1px solid #222; text-align: center;">
+                <p style="color: #555; font-size: 0.8rem;">&copy; 2024 UrbanWear. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
+
+
+</body>
+</html>

@@ -89,26 +89,35 @@ def create_app():
             return jsonify({"msg": "El carrito está vacío"}), 400
 
         try:
-            total_pago = sum(item.product.price * item.quantity for item in cart.items)
+            total_pago = 0
+            # Calculamos el total y verificamos que los productos existan
+            for item in cart.items:
+                if item.product:
+                    total_pago += item.product.price * item.quantity
+            
             nueva_orden = Order(user_id=user_id, total_price=total_pago, status='completado')
             db.session.add(nueva_orden)
             db.session.flush() 
 
             for item_carrito in cart.items:
+                # Asegúrate de que los nombres de los campos coincidan con tu modelo OrderItem
                 detalle_orden = OrderItem(
                     order_id=nueva_orden.id,
                     product_id=item_carrito.product_id,
                     quantity=item_carrito.quantity,
-                    price_at_purchase=item_carrito.product.price
+                    price_at_purchase=item_carrito.product.price # <--- Verifica este nombre en tu modelo
                 )
                 db.session.add(detalle_orden)
-                db.session.delete(item_carrito) # Vaciar item
+                db.session.delete(item_carrito)
 
             db.session.commit()
             return jsonify({"msg": "Compra realizada", "order_id": nueva_orden.id}), 201
+
         except Exception as e:
             db.session.rollback()
-            return jsonify({"msg": "Error", "error": str(e)}), 500
+            # ESTO ES CLAVE: Imprime el error real en la terminal de VS Code
+            print("ERROR EN CHECKOUT:", str(e)) 
+            return jsonify({"msg": "Error interno", "error": str(e)}), 500
 
     # ---------Rutas de Administración-------------
 

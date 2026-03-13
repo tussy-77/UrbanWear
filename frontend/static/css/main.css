@@ -156,10 +156,10 @@ button {
 .header__wrapper {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-xl);
+    justify-content: space-between; 
     padding: var(--spacing-md) 0;
 }
+
 
 .logo {
     display: flex;
@@ -181,7 +181,8 @@ button {
 .nav {
     display: flex;
     gap: var(--spacing-2xl);
-    flex: 1;
+    flex: 0 1 auto; 
+    margin: 0 auto; 
 }
 
 .nav__link {
@@ -209,7 +210,20 @@ button {
 
 .header__actions {
     display: flex;
-    gap: var(--spacing-md);
+    align-items: center;
+    gap: 20px; 
+    flex-shrink: 0;
+    justify-content: flex-end;
+}
+
+.header-icon-btn svg {
+    vertical-align: middle;
+    transition: transform 0.2s ease, fill 0.2s ease;
+}
+
+.header-icon-btn:hover svg {
+    fill: #fff !important;
+    transform: scale(1.1);
 }
 
 /* ============================================
