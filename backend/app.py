@@ -11,6 +11,10 @@ from backend.routes.cart import cart_bp
 from flask_migrate import Migrate
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
+from itsdangerous import URLSafeTimedSerializer
+from backend.routes.auth import auth_bp, mail, oauth
+
+
 
 def create_app():
     # ---------Obtener la ruta base del proyecto-------------
@@ -31,6 +35,16 @@ def create_app():
     bcrypt = Bcrypt(app)
     jwt = JWTManager(app)
     migrate = Migrate(app, db)
+    
+    app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+    app.config['MAIL_PORT'] = 587
+    app.config['MAIL_USE_TLS'] = True
+    app.config['MAIL_USERNAME'] = 'tu@gmail.com'
+    app.config['MAIL_PASSWORD'] = 'tu_app_password'  # App Password, no tu contraseña normal
+    app.config['MAIL_DEFAULT_SENDER'] = 'tu@gmail.com'
+
+    mail.init_app(app)
+    oauth.init_app(app)
      
     app.register_blueprint(auth_bp)
     app.register_blueprint(cart_bp)

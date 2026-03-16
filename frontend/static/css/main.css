@@ -69,9 +69,14 @@ body {
    ============================================ */
 
 .container {
-    max-width: 1200px;
+    width: 100%;
+    max-width: 1200px; 
     margin: 0 auto;
-    padding: 0 var(--spacing-lg);
+    padding: 0 10px 
+}
+.header .container {
+    max-width: 100%;
+    padding: 0 24px;
 }
 
 a {
@@ -156,8 +161,9 @@ button {
 .header__wrapper {
     display: flex;
     align-items: center;
-    justify-content: space-between; 
+    justify-content: space-between;
     padding: var(--spacing-md) 0;
+    width: 100%;
 }
 
 
@@ -181,8 +187,8 @@ button {
 .nav {
     display: flex;
     gap: var(--spacing-2xl);
-    flex: 0 1 auto; 
-    margin: 0 auto; 
+    flex: 1;
+    justify-content: center; 
 }
 
 .nav__link {
@@ -211,10 +217,11 @@ button {
 .header__actions {
     display: flex;
     align-items: center;
-    gap: 20px; 
+    gap: 20px;
     flex-shrink: 0;
-    justify-content: flex-end;
+    margin-left: auto; 
 }
+
 
 .header-icon-btn svg {
     vertical-align: middle;
@@ -838,7 +845,7 @@ button {
     font-weight: 800;
 }
 
- /* --- TUS ESTILOS DE LÓGICA (INTACTOS) --- */
+ 
         .header__actions { display: flex; align-items: center; gap: 20px; }
         .user-profile { display: flex; align-items: center; gap: 12px; }
         .profile-dropdown-wrapper { position: relative; }
@@ -858,10 +865,10 @@ button {
         .welcome-text { color: #888; font-size: 14px; }
         .welcome-text strong { color: #fff; }
 
-        /* --- MEJORAS VISUALES PREMIUM (AHORA EN MODO OSCURO) --- */
+       
         .section-padding { padding: 80px 0; }
 
-        /* Tarjetas de Producto Premium (Fondos Negros, Letras Blancas) */
+        
         .featured__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px; margin-top: 30px; }
         .product-card { 
             background: #111; /* Fondo negro */
@@ -1205,4 +1212,27 @@ button {
 
 .cart-total-amount span {
     color: #ff6b35;
+}
+.login-option-btn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 14px 20px;
+    margin-bottom: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: #222;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    font-family: inherit;
+}
+
+.login-option-btn:hover {
+    background: #f5f5f5;
+    border-color: #bbb;
 }

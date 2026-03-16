@@ -42,6 +42,92 @@ function cerrarSesion() {
     window.location.href = "/";
 }
 
+let authMode = null;
+
+function abrirModal() {
+    const modal = document.getElementById('login-modal');
+    modal.style.display = 'flex';
+    document.getElementById('sub-form').style.display = 'none';
+    document.getElementById('auth-msg').style.display = 'none';
+    document.getElementById('input-email').value = '';
+    document.getElementById('input-password').value = '';
+}
+
+function cerrarModal() {
+    document.getElementById('login-modal').style.display = 'none';
+}
+
+function mostrarFormEmail(modo) {
+    authMode = modo;
+    const subForm = document.getElementById('sub-form');
+    const passInput = document.getElementById('input-password');
+    const btn = document.getElementById('sub-form-btn');
+
+    subForm.style.display = 'block';
+    passInput.style.display = modo === 'password' ? 'block' : 'none';
+    btn.textContent = modo === 'password' ? 'INICIAR SESIÓN' : 'ENVIAR CLAVE';
+}
+
+async function submitAuth() {
+    const email = document.getElementById('input-email').value.trim();
+    const password = document.getElementById('input-password').value;
+
+    if (!email) { mostrarAuthMsg('Ingresa tu email.', 'error'); return; }
+
+    if (authMode === 'password') {
+        if (!password) { mostrarAuthMsg('Ingresa tu contraseña.', 'error'); return; }
+
+        try {
+            const res = await fetch('http://127.0.0.1:5000/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+
+            if (res.ok && data.access_token) {
+                localStorage.setItem('urban_token', data.access_token);
+                localStorage.setItem('client_name', data.name || email);
+                cerrarModal();
+                actualizarInterfazUsuario();
+                actualizarVistaCarrito();
+            } else {
+                mostrarAuthMsg(data.msg || 'Credenciales incorrectas.', 'error');
+            }
+        } catch (e) {
+            mostrarAuthMsg('Error de conexión.', 'error');
+        }
+
+    } else if (authMode === 'magic') {
+        try {
+            const res = await fetch('http://127.0.0.1:5000/api/auth/magic-link', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                mostrarAuthMsg('✅ Revisa tu email, te enviamos una clave de acceso.', 'success');
+            } else {
+                mostrarAuthMsg(data.msg || 'Error al enviar el email.', 'error');
+            }
+        } catch (e) {
+            mostrarAuthMsg('Error de conexión.', 'error');
+        }
+    }
+}
+
+function loginGoogle() {
+    window.location.href = 'http://127.0.0.1:5000/api/auth/google';
+}
+
+function mostrarAuthMsg(texto, tipo) {
+    const msg = document.getElementById('auth-msg');
+    msg.style.color = tipo === 'error' ? '#e53e3e' : '#2f855a';
+    msg.textContent = texto;
+    msg.style.display = 'block';
+}
+
 // 4. LÓGICA DEL CARRITO
 async function actualizarVistaCarrito() {
     const token = getAuthToken();
@@ -126,14 +212,41 @@ async function procesarPago() {
 
 // 5. EVENTOS E INICIALIZACIÓN
 document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+    const tokenUrl = urlParams.get('token');
+    const nameUrl = urlParams.get('name');
+    if (tokenUrl) {
+        localStorage.setItem('urban_token', tokenUrl);
+        localStorage.setItem('client_name', nameUrl || 'Cliente');
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
     actualizarInterfazUsuario();
     actualizarVistaCarrito();
 
-    if (cartToggle) cartToggle.onclick = (e) => { e.preventDefault(); abrirCarrito(); };
+  if (cartToggle) cartToggle.onclick = (e) => { e.preventDefault(); abrirCarrito(); };
     if (cartClose) cartClose.onclick = (e) => { e.preventDefault(); cerrarCarrito(); };
     if (cartOverlay) cartOverlay.onclick = cerrarCarrito;
 
-    // Cerrar menú de perfil al hacer clic fuera
+    
+    const guestIcon = document.getElementById('guest-icon');
+    if (guestIcon) {
+        guestIcon.addEventListener('click', function(e) {
+            e.preventDefault();
+            abrirModal();
+        });
+    }
+    
+
+   
+    const loginModal = document.getElementById('login-modal');
+    if (loginModal) {
+        loginModal.addEventListener('click', function(e) {
+            if (e.target === this) cerrarModal();
+        });
+    }
+    
+
+    
     window.onclick = (event) => {
         if (!event.target.closest('.user-menu-wrapper')) {
             const menu = document.getElementById('profile-dropdown');

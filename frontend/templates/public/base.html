@@ -11,7 +11,7 @@
 
     <header class="header">
         <div class="container">
-            <div class="header__wrapper" style="display: flex !important; justify-content: space-between !important; align-items: center !important; width: 100% !important;">
+            <div class="header__wrapper" style="width: 100%;">
                 <div class="logo" style="cursor: pointer;" onclick="window.location.href='/'">
                     <span class="logo__icon">◆</span>
                     <span class="logo__text">UrbanWear</span>
@@ -129,6 +129,50 @@
 
     <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
 
+<!-- MODAL LOGIN -->
+<div id="login-modal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:12px; padding:48px 40px; width:100%; max-width:480px; position:relative; text-align:center;">
+        
+        <button onclick="cerrarModal()" style="position:absolute; top:16px; right:20px; background:none; border:none; font-size:1.4rem; cursor:pointer; color:#333;">✕</button>
 
+        <h2 style="font-size:1.1rem; font-weight:700; letter-spacing:2px; color:#111; margin-bottom:32px;">INICIA SESIÓN</h2>
+
+        <!-- Magic Link -->
+        <button onclick="mostrarFormEmail('magic')" class="login-option-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 256 256" fill="#555"><path d="M224,48H32a8,8,0,0,0-8,8V192a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A8,8,0,0,0,224,48ZM203.43,64,128,133.15,52.57,64ZM216,192H40V74.19l82.59,75.71a8,8,0,0,0,10.82,0L216,74.19V192Z"/></svg>
+            RECIBIR CLAVE DE ACCESO RÁPIDO POR EMAIL
+        </button>
+
+        <!-- Email + Contraseña -->
+        <button onclick="mostrarFormEmail('password')" class="login-option-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 256 256" fill="#555"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM128,144a40,40,0,1,1,40-40A40,40,0,0,1,128,144Zm76.24,42.81a80,80,0,0,0-152.48,0,87.81,87.81,0,0,1,152.48,0Z"/></svg>
+            INGRESAR CON EMAIL Y CONTRASEÑA
+        </button>
+
+        <!-- Google -->
+        <button onclick="loginGoogle()" class="login-option-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48">
+                <path fill="#EA4335" d="M24 9.5c3.14 0 5.95 1.08 8.17 2.84l6.1-6.1C34.46 3.19 29.5 1 24 1 14.82 1 7.07 6.48 3.65 14.26l7.1 5.52C12.45 13.35 17.77 9.5 24 9.5z"/>
+                <path fill="#4285F4" d="M46.5 24.5c0-1.6-.14-3.14-.4-4.63H24v8.76h12.67c-.55 2.95-2.2 5.45-4.67 7.13l7.18 5.57C43.27 37.7 46.5 31.57 46.5 24.5z"/>
+                <path fill="#FBBC05" d="M10.75 28.22A14.54 14.54 0 0 1 9.5 24c0-1.47.25-2.9.7-4.22l-7.1-5.52A23.93 23.93 0 0 0 0 24c0 3.87.93 7.53 2.58 10.76l8.17-6.54z"/>
+                <path fill="#34A853" d="M24 47c5.5 0 10.12-1.82 13.5-4.94l-7.18-5.57c-1.82 1.22-4.15 1.95-6.32 1.95-6.23 0-11.55-3.85-13.25-9.28l-8.17 6.54C7.07 41.52 14.82 47 24 47z"/>
+            </svg>
+            INGRESAR CON GOOGLE
+        </button>
+
+        <!-- Sub-formulario dinámico -->
+        <div id="sub-form" style="display:none; margin-top:24px; text-align:left;">
+            <input type="email" id="input-email" placeholder="Tu email" 
+                style="width:100%; padding:12px 16px; border:1px solid #ddd; border-radius:8px; font-size:0.95rem; margin-bottom:12px; box-sizing:border-box;">
+            <input type="password" id="input-password" placeholder="Contraseña" 
+                style="width:100%; padding:12px 16px; border:1px solid #ddd; border-radius:8px; font-size:0.95rem; margin-bottom:16px; box-sizing:border-box; display:none;">
+            <button id="sub-form-btn" onclick="submitAuth()" 
+                style="width:100%; padding:13px; background:#111; color:#fff; border:none; border-radius:8px; font-weight:700; font-size:0.9rem; letter-spacing:1px; cursor:pointer;">
+                CONTINUAR
+            </button>
+            <p id="auth-msg" style="margin-top:12px; font-size:0.85rem; display:none;"></p>
+        </div>
+    </div>
+</div>
 </body>
 </html>
