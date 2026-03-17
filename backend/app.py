@@ -26,6 +26,8 @@ def create_app():
     app = Flask(__name__, template_folder=template_folder, static_folder=static_folder, static_url_path='/static')
     
     app.config.from_object(Config)
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  
+    app.config['SESSION_COOKIE_SECURE'] = False 
     CORS(app)
     
     # Configuración de subida (Asegúrate de que la ruta sea absoluta para evitar fallos)
@@ -73,6 +75,9 @@ def create_app():
         # Traemos los productos de la DB para que se vean en el Home
         productos_db = Product.query.all()
         return render_template('public/home.html', productos=productos_db)
+    @app.route('/perfil')
+    def perfil():
+        return render_template('public/perfil.html')
 
     @app.route("/user_login")
     def cliente_login_view():

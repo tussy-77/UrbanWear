@@ -29,30 +29,30 @@
 
 ### Tienda Pública (Clientes)
 
-| Módulo                      | Descripción                                      |
-| --------------------------- | ------------------------------------------------ |
-| 📦 **Catálogo**             | Exploración de productos con imágenes y precios  |
-| 🔍 **Filtros**              | Búsqueda y filtrado por categoría                |
-| 🔎 **Detalle de producto**  | Vista completa con descripción, talla y stock    |
-| 🛒 **Carrito dinámico**     | Agregar, modificar y eliminar ítems sin recargar |
-| 💳 **Checkout simulado**    | Flujo de compra completo paso a paso             |
-| 🔐 **Autenticación**        | Registro e inicio de sesión de clientes          |
-| 📋 **Historial de pedidos** | Seguimiento de órdenes por usuario               |
+| Módulo                   | Descripción                                      |
+| ------------------------ | ------------------------------------------------ |
+| **Catálogo**             | Exploración de productos con imágenes y precios  |
+| **Filtros**              | Búsqueda y filtrado por categoría                |
+| **Detalle de producto**  | Vista completa con descripción, talla y stock    |
+| **Carrito dinámico**     | Agregar, modificar y eliminar ítems sin recargar |
+| **Checkout simulado**    | Flujo de compra completo paso a paso             |
+| **Autenticación**        | Registro e inicio de sesión de clientes          |
+| **Historial de pedidos** | Seguimiento de órdenes por usuario               |
 
-### 🔧 Panel Administrativo
+### Panel Administrativo
 
-| Módulo                  | Descripción                                        |
-| ----------------------- | -------------------------------------------------- |
-| 📊 **Dashboard**        | Métricas clave: ventas, stock, pedidos recientes   |
-| 🧾 **Productos (CRUD)** | Crear, editar, archivar y eliminar productos       |
-| 🗂️ **Categorías**       | Gestión completa de categorías                     |
-| 📬 **Pedidos**          | Visualización y actualización de estado de órdenes |
-| 👥 **Clientes**         | Consulta y administración de usuarios registrados  |
-| 📦 **Inventario**       | Control automático de stock al procesar pedidos    |
+| Módulo               | Descripción                                        |
+| -------------------- | -------------------------------------------------- |
+| **Dashboard**        | Métricas clave: ventas, stock, pedidos recientes   |
+| **Productos (CRUD)** | Crear, editar, archivar y eliminar productos       |
+| **Categorías**       | Gestión completa de categorías                     |
+| **Pedidos**          | Visualización y actualización de estado de órdenes |
+| **Clientes**         | Consulta y administración de usuarios registrados  |
+| **Inventario**       | Control automático de stock al procesar pedidos    |
 
 ---
 
-## 🏗️ Arquitectura
+## Arquitectura
 
 UrbanWear usa una **arquitectura híbrida** que combina renderizado por servidor con endpoints de API interna:
 
@@ -77,7 +77,7 @@ Frontend (Templates Jinja2 + JavaScript)
 
 ---
 
-## 🛠️ Stack Tecnológico
+## Stack Tecnológico
 
 | Capa                 | Tecnología                | Versión           |
 | -------------------- | ------------------------- | ----------------- |
@@ -95,7 +95,7 @@ Frontend (Templates Jinja2 + JavaScript)
 
 ---
 
-## 🗄️ Modelo de Base de Datos
+## Modelo de Base de Datos
 
 El esquema relacional está diseñado para escalabilidad y automatización futura:
 
@@ -121,7 +121,7 @@ carts
 
 ---
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 urbanwear/
@@ -153,7 +153,7 @@ urbanwear/
 
 ---
 
-## 🚀 Primeros Pasos
+## Primeros Pasos
 
 ### Prerrequisitos
 
@@ -231,7 +231,7 @@ ADMIN_EMAIL=admin@urbanwear.com
 ADMIN_PASSWORD=tu_password_seguro
 ```
 
-> ⚠️ Nunca versiones tu `.env`. Verifica que esté incluido en `.gitignore`.
+> Nunca versiones tu `.env`. Verifica que esté incluido en `.gitignore`.
 
 ---
 
@@ -252,7 +252,7 @@ ADMIN_PASSWORD=tu_password_seguro
 
 ---
 
-## 🎯 Objetivo Profesional
+## Objetivo Profesional
 
 Este proyecto está diseñado como **pieza principal de portafolio** para demostrar capacidad técnica en:
 

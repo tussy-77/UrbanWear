@@ -29,9 +29,16 @@ function actualizarInterfazUsuario() {
 }
 
 function toggleProfileMenu() {
-    const menu = document.getElementById('profile-dropdown');
-    if (menu) {
-        menu.style.display = (menu.style.display === 'none' || menu.style.display === '') ? 'block' : 'none';
+    const sidebar = document.getElementById('profile-sidebar');
+    const overlay = document.getElementById('profile-sidebar-overlay');
+    const isOpen = sidebar.style.right === '0px';
+
+    if (isOpen) {
+        sidebar.style.right = '-320px';
+        overlay.style.display = 'none';
+    } else {
+        sidebar.style.right = '0px';
+        overlay.style.display = 'block';
     }
 }
 
@@ -249,10 +256,4 @@ document.addEventListener('DOMContentLoaded', () => {
     
 
     
-    window.onclick = (event) => {
-        if (!event.target.closest('.user-menu-wrapper')) {
-            const menu = document.getElementById('profile-dropdown');
-            if (menu) menu.style.display = 'none';
-        }
-    };
 });

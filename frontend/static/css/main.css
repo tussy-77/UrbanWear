@@ -1236,3 +1236,34 @@ button {
     background: #f5f5f5;
     border-color: #bbb;
 }
+.profile-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 24px;
+    color: #222;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: background 0.2s;
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+}
+
+.profile-nav-item:hover {
+    background: #f5f5f5;
+}
+
+.profile-nav-item--danger {
+    color: #e53e3e;
+    margin-top: auto;
+}
+
+.profile-nav-item--danger:hover {
+    background: #fff5f5;
+}

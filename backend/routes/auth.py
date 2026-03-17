@@ -7,6 +7,8 @@ from flask_jwt_extended import create_access_token
 from itsdangerous import URLSafeTimedSerializer
 from flask_mail import Mail, Message
 from authlib.integrations.flask_client import OAuth
+from flask_jwt_extended import jwt_required, get_jwt_identity
+
 
 load_dotenv()
 
@@ -114,6 +116,37 @@ def magic_link():
     mail.send(msg)
     return jsonify({'msg': 'Email enviado'}), 200
 
+@auth_bp.route('/api/auth/perfil', methods=['GET'])
+@jwt_required()
+def get_perfil():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'msg': 'Usuario no encontrado'}), 404
+    return jsonify(user.to_dict()), 200
+
+@auth_bp.route('/api/auth/perfil', methods=['PUT'])
+@jwt_required()
+def update_perfil():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'msg': 'Usuario no encontrado'}), 404
+
+    data = request.get_json()
+    user.name      = data.get('name', user.name)
+    user.last_name = data.get('last_name', user.last_name)
+    user.phone     = data.get('phone', user.phone)
+    user.document  = data.get('document', user.document)
+    user.gender    = data.get('gender', user.gender)
+
+    birth = data.get('birth_date')
+    if birth:
+        from datetime import datetime
+        user.birth_date = datetime.strptime(birth, '%Y-%m-%d').date()
+
+    db.session.commit()
+    return jsonify({'msg': 'Perfil actualizado', 'user': user.to_dict()}), 200
 
 
 @auth_bp.route('/api/auth/magic-verify/<token>')
