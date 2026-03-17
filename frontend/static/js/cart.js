@@ -62,10 +62,12 @@ function mostrarFormEmail(modo) {
     const subForm = document.getElementById('sub-form');
     const passInput = document.getElementById('input-password');
     const btn = document.getElementById('sub-form-btn');
+    const linkRegistro = document.getElementById('link-registro');
 
     subForm.style.display = 'block';
     passInput.style.display = modo === 'password' ? 'block' : 'none';
     btn.textContent = modo === 'password' ? 'INICIAR SESIÓN' : 'ENVIAR CLAVE';
+    linkRegistro.style.display = modo === 'password' ? 'block' : 'none';
 }
 
 async function submitAuth() {
