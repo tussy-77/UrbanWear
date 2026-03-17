@@ -18,11 +18,13 @@ from backend.routes.auth import auth_bp, mail, oauth
 
 def create_app():
     # ---------Obtener la ruta base del proyecto-------------
+    
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     template_folder = os.path.join(base_dir, 'frontend', 'templates')
     static_folder = os.path.join(base_dir, 'frontend', 'static')
 
     app = Flask(__name__, template_folder=template_folder, static_folder=static_folder, static_url_path='/static')
+    
     app.config.from_object(Config)
     CORS(app)
     

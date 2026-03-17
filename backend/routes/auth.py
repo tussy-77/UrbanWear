@@ -1,10 +1,14 @@
 from flask import Blueprint, request, jsonify, redirect, url_for
+from dotenv import load_dotenv
+import os
 from backend.database import db
 from backend.models.user import User, UserRole
 from flask_jwt_extended import create_access_token
 from itsdangerous import URLSafeTimedSerializer
 from flask_mail import Mail, Message
 from authlib.integrations.flask_client import OAuth
+
+load_dotenv()
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -14,10 +18,12 @@ oauth = OAuth()
 s = URLSafeTimedSerializer('CAMBIA_ESTO_POR_TU_SECRET_KEY')
 
 
+s = URLSafeTimedSerializer(os.getenv('SECRET_KEY'))
+
 google = oauth.register(
     name='google',
-    client_id='TU_GOOGLE_CLIENT_ID',
-    client_secret='TU_GOOGLE_CLIENT_SECRET',
+    client_id=os.getenv('GOOGLE_CLIENT_ID'),
+    client_secret=os.getenv('GOOGLE_CLIENT_SECRET'),
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
     client_kwargs={'scope': 'openid email profile'}
 )
@@ -149,7 +155,10 @@ def google_callback():
             name=nombre,
             role=UserRole.customer
         )
-        user.set_password('')  
+        import secrets
+        user.set_password(secrets.token_hex(16))
+        
+        
         db.session.add(user)
         db.session.commit()
 
