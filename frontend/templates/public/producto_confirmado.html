@@ -1,0 +1,19 @@
+{% extends 'public/base.html' %}
+{% block content %}
+<div style="min-height:60vh; display:flex; align-items:center; justify-content:center; text-align:center; padding:60px 20px;">
+    <div>
+        <div style="font-size:4rem; margin-bottom:20px;">✅</div>
+        <h1 style="font-size:1.5rem; font-weight:800; color:#fff; margin-bottom:12px;">¡PEDIDO CONFIRMADO!</h1>
+        <p style="color:#888; margin-bottom:8px;">Tu orden ha sido procesada exitosamente.</p>
+        <p id="orden-id" style="color:#aaa; font-size:0.85rem; margin-bottom:32px;"></p>
+        <a href="/" style="padding:12px 32px; background:#fff; color:#111; border-radius:8px; font-weight:700; font-size:0.85rem; letter-spacing:1px; text-decoration:none;">
+            SEGUIR COMPRANDO
+        </a>
+    </div>
+</div>
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const orden = params.get('orden');
+    if (orden) document.getElementById('orden-id').textContent = `Orden #${orden}`;
+</script>
+{% endblock %}

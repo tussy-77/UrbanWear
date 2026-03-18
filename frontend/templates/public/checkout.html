@@ -1,0 +1,403 @@
+{% extends 'public/base.html' %}
+{% block content %}
+
+<div style="min-height: 100vh; background: #f0f0f0; padding: 40px 0;">
+    <div style="max-width: 1100px; margin: 0 auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 380px; gap: 24px; align-items: start;">
+
+        <!-- ── Columna izquierda: pasos ── -->
+        <div>
+
+            <!-- Paso 1: Identificación -->
+            <div class="checkout-step" id="step-1">
+                <div class="checkout-step__header" onclick="toggleStep(1)">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span class="step-check" id="check-1">✓</span>
+                        <span class="step-title">IDENTIFICACIÓN</span>
+                    </div>
+                    <span class="step-number">1 de 3</span>
+                </div>
+
+                <div class="checkout-step__body" id="body-1">
+                    <p style="color:#888; font-size:0.85rem; margin-bottom:4px;">Ingresa tu correo</p>
+                    <p id="checkout-email" style="font-size:0.9rem; color:#111; margin-bottom:20px; font-weight:500;"></p>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:16px;">
+                        <div>
+                            <label class="checkout-label">Nombre</label>
+                            <input class="checkout-input" id="c-name" type="text" placeholder="Nombres">
+                        </div>
+                        <div>
+                            <label class="checkout-label">Apellido</label>
+                            <input class="checkout-input" id="c-lastname" type="text" placeholder="Apellidos">
+                        </div>
+                        <div>
+                            <label class="checkout-label">Celular</label>
+                            <input class="checkout-input" id="c-phone" type="tel" placeholder="Celular">
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px;">
+                        <div>
+                            <label class="checkout-label">Tipo de documento</label>
+                            <select class="checkout-input" id="c-doc-type">
+                                <option value="">Elija un tipo de documento...</option>
+                                <option value="CC">Cédula de Ciudadanía</option>
+                                <option value="CE">Cédula de Extranjería</option>
+                                <option value="NIT">NIT</option>
+                                <option value="PP">Pasaporte</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="checkout-label">Número de documento</label>
+                            <input class="checkout-input" id="c-doc-num" type="text" placeholder="Nº de Documento">
+                        </div>
+                    </div>
+
+                    <button class="checkout-btn-next" onclick="irAStep(2)">IR A ENVÍO →</button>
+                </div>
+            </div>
+
+            <!-- Paso 2: Envío -->
+            <div class="checkout-step checkout-step--collapsed" id="step-2">
+                <div class="checkout-step__header" onclick="toggleStep(2)">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span class="step-check" id="check-2">✓</span>
+                        <span class="step-title">ENVÍO</span>
+                    </div>
+                    <span class="step-number">2 de 3 +</span>
+                </div>
+
+                <div class="checkout-step__body" id="body-2" style="display:none;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
+                        <div>
+                            <label class="checkout-label">Departamento</label>
+                            <input class="checkout-input" id="c-state" type="text" placeholder="Departamento">
+                        </div>
+                        <div>
+                            <label class="checkout-label">Ciudad</label>
+                            <input class="checkout-input" id="c-city" type="text" placeholder="Ciudad">
+                        </div>
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <label class="checkout-label">Dirección</label>
+                        <input class="checkout-input" id="c-address" type="text" placeholder="Calle, carrera, número...">
+                    </div>
+                    <div style="margin-bottom:24px;">
+                        <label class="checkout-label">Indicaciones adicionales (opcional)</label>
+                        <input class="checkout-input" id="c-address-extra" type="text" placeholder="Apto, torre, barrio...">
+                    </div>
+                    <button class="checkout-btn-next" onclick="irAStep(3)">IR A PAGO →</button>
+                </div>
+            </div>
+
+            <!-- Paso 3: Pago -->
+            <div class="checkout-step checkout-step--collapsed" id="step-3">
+                <div class="checkout-step__header" onclick="toggleStep(3)">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span class="step-check" id="check-3">✓</span>
+                        <span class="step-title">PAGO</span>
+                    </div>
+                    <span class="step-number">3 de 3 +</span>
+                </div>
+
+                <div class="checkout-step__body" id="body-3" style="display:none;">
+
+                    <!-- Métodos de pago -->
+                    <p class="checkout-label" style="margin-bottom:12px;">Selecciona un método de pago</p>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:24px;">
+
+                        <div class="metodo-pago" id="mp-tarjeta" onclick="seleccionarMetodo('tarjeta')">
+                            <span style="font-size:1.4rem;">💳</span>
+                            <span>Tarjeta crédito/débito</span>
+                        </div>
+                        <div class="metodo-pago" id="mp-contraentrega" onclick="seleccionarMetodo('contraentrega')">
+                            <span style="font-size:1.4rem;">📦</span>
+                            <span>Contraentrega</span>
+                        </div>
+                        <div class="metodo-pago" id="mp-pse" onclick="seleccionarMetodo('pse')">
+                            <span style="font-size:1.4rem;">🏦</span>
+                            <span>PSE</span>
+                        </div>
+                        <div class="metodo-pago" id="mp-nequi" onclick="seleccionarMetodo('nequi')">
+                            <span style="font-size:1.4rem;">📱</span>
+                            <span>Nequi</span>
+                        </div>
+                    </div>
+
+                    <!-- Campos tarjeta (solo visibles si elige tarjeta) -->
+                    <div id="form-tarjeta" style="display:none; margin-bottom:24px;">
+                        <div style="margin-bottom:12px;">
+                            <label class="checkout-label">Número de tarjeta</label>
+                            <input class="checkout-input" id="c-card-num" type="text" placeholder="0000 0000 0000 0000" maxlength="19">
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+                            <div style="grid-column:span 2;">
+                                <label class="checkout-label">Nombre en la tarjeta</label>
+                                <input class="checkout-input" id="c-card-name" type="text" placeholder="Como aparece en la tarjeta">
+                            </div>
+                            <div>
+                                <label class="checkout-label">Vencimiento</label>
+                                <input class="checkout-input" id="c-card-exp" type="text" placeholder="MM/AA" maxlength="5">
+                            </div>
+                        </div>
+                    </div>
+
+                    <p id="checkout-error" style="color:#e53e3e; font-size:0.85rem; display:none; margin-bottom:12px;"></p>
+                    <button class="checkout-btn-next" onclick="confirmarPedido()">CONFIRMAR PEDIDO</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ── Columna derecha: resumen ── -->
+        <div style="position:sticky; top:20px;">
+            <div style="background:#fff; border:1px solid #ddd; border-radius:8px; padding:24px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h3 style="font-size:0.95rem; font-weight:700; color:#111;">Resumen de compra</h3>
+                    <span id="resumen-cantidad" style="font-size:0.85rem; color:#888;"></span>
+                </div>
+
+                <!-- Items -->
+                <div id="resumen-items" style="margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:20px;"></div>
+
+                <!-- Código descuento -->
+                <div style="display:flex; gap:0; margin-bottom:20px;">
+                    <input type="text" id="codigo-descuento" placeholder="CÓDIGO" 
+                        style="flex:1; padding:10px 14px; border:1px solid #ddd; border-right:none; border-radius:6px 0 0 6px; font-size:0.85rem; outline:none;">
+                    <button onclick="aplicarCodigo()" 
+                        style="padding:10px 16px; background:#111; color:#fff; border:none; border-radius:0 6px 6px 0; cursor:pointer; font-weight:700;">›</button>
+                </div>
+
+                <!-- Totales -->
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span style="font-size:0.85rem; color:#555;">SUBTOTAL</span>
+                    <span id="resumen-subtotal" style="font-size:0.85rem; color:#111; font-weight:600;"></span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                    <span style="font-size:0.9rem; font-weight:700; color:#111;">TOTAL</span>
+                    <span id="resumen-total" style="font-size:0.9rem; font-weight:700; color:#111;"></span>
+                </div>
+
+                <button onclick="window.location.href='/'" 
+                    style="width:100%; padding:12px; background:#fff; border:1px solid #ddd; border-radius:6px; font-size:0.8rem; font-weight:600; letter-spacing:1px; cursor:pointer; color:#555;">
+                    ← VOLVER A LA BOLSA
+                </button>
+            </div>
+
+            <!-- Sellos de confianza -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px;">
+                <div class="sello-confianza">↩ DEVOLUCIONES GRATIS<span>Aplica para ropa sin descuento.</span></div>
+                <div class="sello-confianza">💳 MÉTODOS DE PAGO<span>Tarjeta, PSE, contraentrega y Nequi.</span></div>
+                <div class="sello-confianza">🚚 ENVÍOS GRATIS<span>Aplica para ropa sin descuento.</span></div>
+                <div class="sello-confianza">⏱ TE LLEGA EN 6 DÍAS<span>Hábiles para ciudades principales.</span></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+.checkout-step {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    overflow: hidden;
+}
+.checkout-step--collapsed { opacity: 0.7; }
+.checkout-step__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    cursor: pointer;
+    user-select: none;
+}
+.checkout-step__body { padding: 0 24px 24px; }
+.step-check {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #111;
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 700;
+}
+.step-title { font-size: 0.85rem; font-weight: 700; letter-spacing: 1.5px; color: #111; }
+.step-number { font-size: 0.8rem; color: #888; }
+.checkout-label { font-size: 0.78rem; font-weight: 600; color: #555; display: block; margin-bottom: 6px; }
+.checkout-input {
+    width: 100%; padding: 10px 14px;
+    border: 1px solid #ddd; border-radius: 6px;
+    font-size: 0.9rem; font-family: inherit;
+    outline: none; box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+.checkout-input:focus { border-color: #111; }
+.checkout-btn-next {
+    width: 100%; padding: 14px;
+    background: #111; color: #fff;
+    border: none; border-radius: 6px;
+    font-size: 0.85rem; font-weight: 700;
+    letter-spacing: 1.5px; cursor: pointer;
+    transition: background 0.2s;
+}
+.checkout-btn-next:hover { background: #333; }
+.metodo-pago {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 16px;
+    border: 1px solid #ddd; border-radius: 8px;
+    cursor: pointer; font-size: 0.85rem; font-weight: 600;
+    transition: border-color 0.2s, background 0.2s;
+}
+.metodo-pago:hover { border-color: #111; background: #f9f9f9; }
+.metodo-pago--selected { border-color: #111; border-width: 2px; background: #f5f5f5; }
+.sello-confianza {
+    background: #fff; border: 1px solid #ddd;
+    border-radius: 8px; padding: 12px;
+    font-size: 0.72rem; font-weight: 700;
+    color: #333; display: flex; flex-direction: column; gap: 4px;
+}
+.sello-confianza span { font-weight: 400; color: #888; }
+</style>
+
+<script>
+let metodoPago = null;
+
+// ── Carga datos del usuario y carrito al entrar ──
+async function iniciarCheckout() {
+    const token = localStorage.getItem('urban_token');
+    if (!token) { window.location.href = '/'; return; }
+
+    // Datos del usuario
+    const resUser = await fetch('http://127.0.0.1:5000/api/auth/perfil', {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const user = await resUser.json();
+    document.getElementById('checkout-email').textContent = user.email;
+    document.getElementById('c-name').value = user.name || '';
+    document.getElementById('c-lastname').value = user.last_name || '';
+    document.getElementById('c-phone').value = user.phone || '';
+    document.getElementById('c-doc-num').value = user.document || '';
+
+    // Datos del carrito
+    const resCart = await fetch('http://127.0.0.1:5000/api/cart', {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const cart = await resCart.json();
+    const items = cart.items || [];
+    const total = cart.total || 0;
+
+    document.getElementById('resumen-cantidad').textContent = `${items.length} producto${items.length !== 1 ? 's' : ''}`;
+    document.getElementById('resumen-subtotal').textContent = `$ ${total.toLocaleString()}`;
+    document.getElementById('resumen-total').textContent = `$ ${total.toLocaleString()}`;
+
+    const container = document.getElementById('resumen-items');
+    container.innerHTML = items.map(item => `
+        <div style="display:flex; gap:12px; margin-bottom:14px; align-items:center;">
+            <img src="/static/uploads/${item.image_url || ''}" 
+                onerror="this.src='https://placehold.co/60x60?text=Item'"
+                style="width:60px; height:60px; object-fit:cover; border-radius:6px; border:1px solid #eee;">
+            <div style="flex:1;">
+                <p style="margin:0; font-size:0.85rem; font-weight:600; color:#111;">${item.product_name}</p>
+                <p style="margin:4px 0 0; font-size:0.8rem; color:#888;">Cant: ${item.quantity}</p>
+            </div>
+            <span style="font-size:0.85rem; font-weight:600;">$ ${item.subtotal.toLocaleString()}</span>
+        </div>
+    `).join('');
+}
+
+function toggleStep(num) {
+    const body = document.getElementById(`body-${num}`);
+    const isOpen = body.style.display !== 'none';
+    body.style.display = isOpen ? 'none' : 'block';
+}
+
+function irAStep(num) {
+    // Valida el paso anterior
+    if (num === 2 && !validarStep1()) return;
+    if (num === 3 && !validarStep2()) return;
+
+    // Cierra todos y abre el solicitado
+    [1, 2, 3].forEach(n => {
+        document.getElementById(`body-${n}`).style.display = 'none';
+        document.getElementById(`step-${n}`).classList.add('checkout-step--collapsed');
+    });
+    document.getElementById(`body-${num}`).style.display = 'block';
+    document.getElementById(`step-${num}`).classList.remove('checkout-step--collapsed');
+}
+
+function validarStep1() {
+    const campos = ['c-name', 'c-lastname', 'c-phone', 'c-doc-type', 'c-doc-num'];
+    for (const id of campos) {
+        if (!document.getElementById(id).value.trim()) {
+            alert('Por favor completa todos los campos de identificación.');
+            return false;
+        }
+    }
+    return true;
+}
+
+function validarStep2() {
+    const campos = ['c-state', 'c-city', 'c-address'];
+    for (const id of campos) {
+        if (!document.getElementById(id).value.trim()) {
+            alert('Por favor completa todos los campos de envío.');
+            return false;
+        }
+    }
+    return true;
+}
+
+function seleccionarMetodo(metodo) {
+    metodoPago = metodo;
+    ['tarjeta', 'contraentrega', 'pse', 'nequi'].forEach(m => {
+        document.getElementById(`mp-${m}`).classList.remove('metodo-pago--selected');
+    });
+    document.getElementById(`mp-${metodo}`).classList.add('metodo-pago--selected');
+    document.getElementById('form-tarjeta').style.display = metodo === 'tarjeta' ? 'block' : 'none';
+}
+
+async function confirmarPedido() {
+    if (!metodoPago) {
+        document.getElementById('checkout-error').textContent = 'Selecciona un método de pago.';
+        document.getElementById('checkout-error').style.display = 'block';
+        return;
+    }
+
+    const token = localStorage.getItem('urban_token');
+
+    try {
+        const res = await fetch('http://127.0.0.1:5000/api/orders/checkout', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ metodo_pago: metodoPago })
+        });
+        const data = await res.json();
+        console.log("RESPUESTA:", data);  // ── NUEVO: para ver qué llega ──
+
+        if (res.ok) {
+            // ── CAMBIO: redirección correcta ──
+            window.location.href = `/pedido-confirmado?orden=${data.order_id}`;
+        } else {
+            document.getElementById('checkout-error').textContent = data.msg || 'Error al procesar el pedido.';
+            document.getElementById('checkout-error').style.display = 'block';
+        }
+    } catch(e) {
+        console.error("ERROR:", e);
+        document.getElementById('checkout-error').textContent = 'Error de conexión.';
+        document.getElementById('checkout-error').style.display = 'block';
+    }
+}
+
+function aplicarCodigo() {
+    alert('Función de códigos de descuento próximamente.');
+}
+
+function aplicarCodigo() {
+    alert('Función de códigos de descuento próximamente.');
+}
+
+document.addEventListener('DOMContentLoaded', iniciarCheckout);
+</script>
+
+{% endblock %}

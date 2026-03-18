@@ -98,47 +98,61 @@ def create_app():
     @app.route("/catalogo")
     def catalogo():
         todos_los_productos = Product.query.all()
-        return render_template('public/catalogo.html', productos=todos_los_productos)    
+        return render_template('public/catalogo.html', productos=todos_los_productos)
+    
+    @app.route('/checkout')
+    def checkout_view():
+        return render_template('public/checkout.html')    
 
     @app.route('/api/orders/checkout', methods=['POST'])
     @jwt_required()
     def checkout():
         user_id = get_jwt_identity()
         cart = Cart.query.filter_by(user_id=user_id).first()
-        
-        if not cart or not cart.items:
+
+        if not cart or len(cart.items) == 0:
             return jsonify({"msg": "El carrito está vacío"}), 400
 
         try:
             total_pago = 0
-            # Calculamos el total y verificamos que los productos existan
             for item in cart.items:
-                if item.product:
-                    total_pago += item.product.price * item.quantity
-            
-            nueva_orden = Order(user_id=user_id, total_price=total_pago, status='completado')
-            db.session.add(nueva_orden)
-            db.session.flush() 
+                producto = Product.query.get(item.product_id)
+                print("PRODUCTO:", producto, "PRECIO:", producto.price if producto else "None")
+                if producto:
+                    total_pago += producto.price * item.quantity
 
-            for item_carrito in cart.items:
-                # Asegúrate de que los nombres de los campos coincidan con tu modelo OrderItem
-                detalle_orden = OrderItem(
+            print("TOTAL CALCULADO:", total_pago)
+
+            nueva_orden = Order(
+                user_id=user_id,
+                total_price=total_pago,
+                status='pendiente',
+            )
+            db.session.add(nueva_orden)
+            db.session.flush()
+
+            for item in cart.items:
+                producto = Product.query.get(item.product_id)
+                detalle = OrderItem(
                     order_id=nueva_orden.id,
-                    product_id=item_carrito.product_id,
-                    quantity=item_carrito.quantity,
-                    price_at_purchase=item_carrito.product.price # <--- Verifica este nombre en tu modelo
+                    product_id=item.product_id,
+                    quantity=item.quantity,
+                    price_at_purchase=producto.price
                 )
-                db.session.add(detalle_orden)
-                db.session.delete(item_carrito)
+                db.session.add(detalle)
+                db.session.delete(item)
 
             db.session.commit()
             return jsonify({"msg": "Compra realizada", "order_id": nueva_orden.id}), 201
 
         except Exception as e:
             db.session.rollback()
-            # ESTO ES CLAVE: Imprime el error real en la terminal de VS Code
-            print("ERROR EN CHECKOUT:", str(e)) 
+            print("ERROR EN CHECKOUT:", str(e))
             return jsonify({"msg": "Error interno", "error": str(e)}), 500
+            
+    @app.route('/pedido-confirmado')
+    def pedido_confirmado():
+        return render_template('public/pedido_confirmado.html')
 
     # ---------Rutas de Administración-------------
 

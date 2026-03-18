@@ -205,6 +205,7 @@ async function agregarAlCarrito(productId) {
 async function procesarPago() {
     const token = getAuthToken();
     if (!token) return;
+    window.location.href = '/checkout';
     try {
         const res = await fetch('http://127.0.0.1:5000/api/orders/checkout', {
             method: 'POST',
@@ -217,6 +218,12 @@ async function procesarPago() {
             cerrarCarrito();
         }
     } catch (e) { console.error(e); }
+}
+
+function irAlCheckout() {
+    const token = getAuthToken();
+    if (!token) { abrirModal(); return; }
+    window.location.href = '/checkout';
 }
 
 // 5. EVENTOS E INICIALIZACIÓN
