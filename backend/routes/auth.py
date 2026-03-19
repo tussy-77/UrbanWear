@@ -8,6 +8,7 @@ from itsdangerous import URLSafeTimedSerializer
 from flask_mail import Mail, Message
 from authlib.integrations.flask_client import OAuth
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from backend.models.address import Address
 
 
 load_dotenv()
@@ -124,6 +125,44 @@ def get_perfil():
     if not user:
         return jsonify({'msg': 'Usuario no encontrado'}), 404
     return jsonify(user.to_dict()), 200
+
+@auth_bp.route('/api/auth/direcciones', methods=['GET'])
+@jwt_required()
+def get_direcciones():
+    user_id = get_jwt_identity()
+    dirs = Address.query.filter_by(user_id=user_id).all()
+    return jsonify([d.to_dict() for d in dirs]), 200
+
+@auth_bp.route('/api/auth/direcciones', methods=['POST'])
+@jwt_required()
+def add_direccion():
+    user_id = get_jwt_identity()
+    data = request.get_json()
+
+    nueva = Address(
+        user_id    = user_id,
+        department = data.get('department'),
+        city       = data.get('city'),
+        address    = data.get('address'),
+        extra      = data.get('extra', ''),
+        barrio     = data.get('barrio', ''),
+        receiver   = data.get('receiver', ''),
+        is_default = data.get('is_default', False)
+    )
+    db.session.add(nueva)
+    db.session.commit()
+    return jsonify({'msg': 'Dirección agregada', 'direccion': nueva.to_dict()}), 201
+
+@auth_bp.route('/api/auth/direcciones/<int:dir_id>', methods=['DELETE'])
+@jwt_required()
+def delete_direccion(dir_id):
+    user_id = get_jwt_identity()
+    direccion = Address.query.filter_by(id=dir_id, user_id=user_id).first()
+    if not direccion:
+        return jsonify({'msg': 'Dirección no encontrada'}), 404
+    db.session.delete(direccion)
+    db.session.commit()
+    return jsonify({'msg': 'Dirección eliminada'}), 200
 
 @auth_bp.route('/api/auth/perfil', methods=['PUT'])
 @jwt_required()

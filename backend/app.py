@@ -13,6 +13,7 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from itsdangerous import URLSafeTimedSerializer
 from backend.routes.auth import auth_bp, mail, oauth
+from backend.models import User, Category, Product, Order, OrderItem, Cart, CartItem, Address
 
 
 
@@ -86,6 +87,7 @@ def create_app():
     @app.route("/user_register")
     def cliente_register_view():
         return render_template('auth/user_register.html')
+    
 
     @app.route("/test-db")
     def test_db():
@@ -103,6 +105,10 @@ def create_app():
     @app.route('/checkout')
     def checkout_view():
         return render_template('public/checkout.html')    
+    
+    @app.route('/direcciones')
+    def direcciones_view():
+        return render_template('public/direcciones.html')
 
     @app.route('/api/orders/checkout', methods=['POST'])
     @jwt_required()
@@ -152,7 +158,43 @@ def create_app():
             
     @app.route('/pedido-confirmado')
     def pedido_confirmado():
-        return render_template('public/pedido_confirmado.html')
+        return render_template('public/producto_confirmado.html')
+    
+    @app.route('/api/orders/mis-pedidos', methods=['GET'])
+    @jwt_required()
+    def mis_pedidos():
+        user_id = get_jwt_identity()
+        ordenes = Order.query.filter_by(user_id=user_id).order_by(Order.created_at.desc()).all()
+
+        resultado = []
+        for orden in ordenes:
+            items = []
+            for item in orden.items:
+                producto = Product.query.get(item.product_id)
+                items.append({
+                    'product_name': producto.name if producto else 'Producto eliminado',
+                    'image_url':    producto.image_url if producto else '',
+                    'quantity':     item.quantity,
+                    'price':        float(item.price_at_purchase),
+                    'subtotal':     float(item.price_at_purchase * item.quantity),
+                })
+            resultado.append({
+                'id':         orden.id,
+                'fecha':      orden.created_at.strftime('%d/%m/%Y'),
+                'total':      float(orden.total_price),
+                'status':     orden.status,
+                'items':      items,
+            })
+
+        return jsonify(resultado), 200
+    
+    @app.route('/pedidos')
+    def pedidos_view():
+        return render_template('public/pedidos.html')
+    
+    @app.route('/informacion')
+    def informacion_view():
+        return render_template('public/informacion.html')
 
     # ---------Rutas de Administración-------------
 

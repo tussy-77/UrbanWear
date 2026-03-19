@@ -1,0 +1,214 @@
+{% extends 'public/base.html' %}
+{% block content %}
+
+<!-- Hero banner -->
+<div style="position:relative; height:420px; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+    <div style="position:absolute; inset:0; background:linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #111 100%);"></div>
+    <div style="position:absolute; inset:0; background:url('/static/img/info-banner.jpg') center/cover no-repeat; opacity:0.4;"></div>
+    <h1 style="position:relative; font-size:3rem; font-weight:900; color:#fff; letter-spacing:3px; text-align:center; text-transform:uppercase;">
+        PREGUNTAS FRECUENTES
+    </h1>
+</div>
+
+<!-- Tabs -->
+<div style="background:#f5f5f5; border-bottom:1px solid #e0e0e0; position:sticky; top:64px; z-index:100;">
+    <div class="container" style="max-width:900px; margin:0 auto; padding:0 20px;">
+        <div style="display:flex; gap:0;">
+            <button class="info-tab info-tab--active" onclick="cambiarTab('compras', this)">COMPRAS</button>
+            <button class="info-tab" onclick="cambiarTab('envios', this)">ENVÍOS</button>
+            <button class="info-tab" onclick="cambiarTab('pagos', this)">MÉTODOS DE PAGO</button>
+            <button class="info-tab" onclick="cambiarTab('generales', this)">GENERALES</button>
+        </div>
+    </div>
+</div>
+
+<!-- Contenido -->
+<div style="background:#f5f5f5; min-height:60vh; padding:48px 0;">
+    <div class="container" style="max-width:900px; margin:0 auto; padding:0 20px;">
+
+        <!-- Sección Compras -->
+        <div class="info-seccion" id="sec-compras">
+            <h2 class="info-seccion__titulo">COMPRAS</h2>
+            <div class="faq-lista">
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-pregunta">
+                        <span>¿CÓMO COMPRAR EN EL SITIO WEB?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-respuesta">
+                        Navega por nuestro catálogo, selecciona el producto que deseas y agrégalo al carrito. Cuando estés listo, haz clic en "IR A PAGAR", completa tu información de identificación, dirección de envío y método de pago, y confirma tu pedido.
+                    </div>
+                </div>
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-pregunta">
+                        <span>¿CUÁLES MÉTODOS DE PAGO PUEDO USAR?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-respuesta">
+                        Aceptamos tarjeta de crédito y débito, PSE (transferencia bancaria), Nequi y pago contraentrega para ciudades principales de Colombia.
+                    </div>
+                </div>
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-pregunta">
+                        <span>¿PUEDO MODIFICAR O CANCELAR MI PEDIDO?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-respuesta">
+                        Puedes cancelar o modificar tu pedido dentro de las primeras 2 horas después de realizarlo. Pasado ese tiempo, el pedido ya está en proceso de alistamiento y no es posible realizar cambios.
+                    </div>
+                </div>
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-pregunta">
+                        <span>¿MIS DATOS ESTÁN SEGUROS?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-respuesta">
+                        Sí. Toda tu información personal y de pago está protegida con encriptación SSL. No almacenamos datos de tarjetas de crédito en nuestros servidores.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección Envíos -->
+        <div class="info-seccion" id="sec-envios" style="display:none;">
+            <h2 class="info-seccion__titulo">ENVÍOS</h2>
+            <div class="faq-lista">
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-pregunta">
+                        <span>¿CUÁNTO DEMORA MI PEDIDO EN LLEGAR?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-respuesta">
+                        Los pedidos llegan entre 3 y 6 días hábiles para ciudades principales. Para municipios y zonas rurales puede tomar entre 5 y 10 días hábiles.
+                    </div>
+                </div>
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-pregunta">
+                        <span>¿LOS ENVÍOS SON GRATIS?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-respuesta">
+                        Los envíos son gratuitos para productos sin descuento. Para productos en oferta puede aplicar un costo de envío que se mostrará en el checkout antes de confirmar el pedido.
+                    </div>
+                </div>
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-pregunta">
+                        <span>¿CÓMO PUEDO RASTREAR MI PEDIDO?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-respuesta">
+                        Una vez despachado tu pedido recibirás un correo con el número de guía y la transportadora asignada. Puedes rastrear tu paquete directamente en el sitio web de la transportadora.
+                    </div>
+                </div>
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-pregunta">
+                        <span>¿ENVÍAN A TODO COLOMBIA?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-respuesta">
+                        Sí, hacemos envíos a todo el territorio colombiano incluyendo islas y zonas apartadas. Los tiempos de entrega pueden variar según la ubicación.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección Pagos -->
+        <div class="info-seccion" id="sec-pagos" style="display:none;">
+            <h2 class="info-seccion__titulo">MÉTODOS DE PAGO</h2>
+            <div class="faq-lista">
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-pregunta">
+                        <span>¿QUÉ TARJETAS ACEPTAN?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-respuesta">
+                        Aceptamos todas las tarjetas Visa, Mastercard, American Express y Diners Club, tanto débito como crédito.
+                    </div>
+                </div>
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-pregunta">
+                        <span>¿PUEDO PAGAR CON NEQUI O PSE?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-respuesta">
+                        Sí. Aceptamos pagos por Nequi y PSE. Al seleccionar alguno de estos métodos en el checkout, recibirás las instrucciones para completar el pago.
+                    </div>
+                </div>
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-pregunta">
+                        <span>¿ESTÁ DISPONIBLE EL PAGO CONTRAENTREGA?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-respuesta">
+                        Sí, el pago contraentrega está disponible para ciudades principales de Colombia. El pago se realiza en efectivo al momento de recibir el pedido.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección Generales -->
+        <div class="info-seccion" id="sec-generales" style="display:none;">
+            <h2 class="info-seccion__titulo">GENERALES</h2>
+            <div class="faq-lista">
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-pregunta">
+                        <span>¿CUÁL ES LA POLÍTICA DE DEVOLUCIONES?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-respuesta">
+                        Aceptamos devoluciones dentro de los 30 días siguientes a la entrega del pedido, siempre que el producto esté en perfectas condiciones, sin uso y con todas sus etiquetas originales. Las devoluciones son gratuitas para productos sin descuento.
+                    </div>
+                </div>
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-pregunta">
+                        <span>¿CÓMO CONTACTAR AL SERVICIO AL CLIENTE?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-respuesta">
+                        Puedes contactarnos por correo electrónico a soporte@urbanwear.co o a través de nuestras redes sociales. Atendemos de lunes a viernes de 8am a 6pm.
+                    </div>
+                </div>
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-pregunta">
+                        <span>¿LOS PRODUCTOS TIENEN GARANTÍA?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-respuesta">
+                        Todos nuestros productos tienen garantía de 3 meses contra defectos de fabricación. Si recibes un producto con algún defecto, contáctanos y lo resolvemos de inmediato.
+                    </div>
+                </div>
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-pregunta">
+                        <span>¿CÓMO CREO UNA CUENTA?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-respuesta">
+                        Haz clic en el ícono de usuario en la parte superior de la página y selecciona "Crear una aquí". También puedes registrarte con tu cuenta de Google para mayor comodidad.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<script>
+function cambiarTab(seccion, btn) {
+    document.querySelectorAll('.info-seccion').forEach(s => s.style.display = 'none');
+    document.querySelectorAll('.info-tab').forEach(t => t.classList.remove('info-tab--active'));
+    document.getElementById(`sec-${seccion}`).style.display = 'block';
+    btn.classList.add('info-tab--active');
+}
+
+function toggleFaq(item) {
+    const respuesta = item.querySelector('.faq-respuesta');
+    const icon = item.querySelector('.faq-icon');
+    const isOpen = respuesta.style.display === 'block';
+    respuesta.style.display = isOpen ? 'none' : 'block';
+    icon.textContent = isOpen ? '+' : '−';
+    icon.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(0deg)';
+}
+</script>
+
+{% endblock %}

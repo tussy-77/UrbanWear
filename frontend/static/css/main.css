@@ -1267,3 +1267,179 @@ button {
 .profile-nav-item--danger:hover {
     background: #fff5f5;
 }
+/* ============================================
+   PÁGINAS DE CUENTA (perfil, direcciones, etc)
+   ============================================ */
+
+.perfil-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: #555;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: background 0.2s, color 0.2s;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    width: 100%;
+}
+.perfil-nav-link:hover { background: #eee; color: #111; }
+.perfil-nav-link--active { color: #111; font-weight: 700; }
+.perfil-nav-link--danger { color: #e53e3e; margin-top: 8px; }
+.perfil-nav-link--danger:hover { background: #fff0f0; }
+
+.perfil-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px 40px;
+}
+.perfil-campo { display: flex; flex-direction: column; gap: 6px; }
+.perfil-label { font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; color: #333; }
+.perfil-valor { font-size: 0.95rem; color: #555; min-height: 24px; }
+.perfil-input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    color: #111;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+}
+.perfil-input:focus { border-color: #111; }
+
+.direccion-card {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+}
+.direccion-card:hover { border-color: #bbb; }
+.direccion-card__info p { margin: 0 0 4px; font-size: 0.9rem; color: #333; }
+.direccion-card__info span { font-size: 0.8rem; color: #888; }
+
+.pedido-card {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+}
+.pedido-card:hover { border-color: #ccc; }
+
+.pedido-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.pedido-card__header:hover { background: #fafafa; }
+
+.pedido-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.pedido-card__body {
+    border-top: 1px solid #f0f0f0;
+    padding: 20px 24px;
+    display: none;
+}
+
+.pedido-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f5f5f5;
+}
+.pedido-item:last-child { border-bottom: none; }
+
+.info-tab {
+    padding: 16px 28px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #888;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+    font-family: inherit;
+}
+.info-tab:hover { color: #111; }
+.info-tab--active { color: #111; border-bottom-color: #111; }
+
+.info-seccion__titulo {
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #111;
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.faq-lista { display: flex; flex-direction: column; gap: 0; }
+
+.faq-item {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-bottom: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.faq-item:first-child { border-radius: 8px 8px 0 0; }
+.faq-item:last-child { border-bottom: 1px solid #e5e5e5; border-radius: 0 0 8px 8px; }
+.faq-item:only-child { border-radius: 8px; border-bottom: 1px solid #e5e5e5; }
+.faq-item:hover { background: #fafafa; }
+
+.faq-pregunta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #111;
+}
+
+.faq-icon {
+    font-size: 1.2rem;
+    color: #555;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+}
+
+.faq-respuesta {
+    display: none;
+    padding: 0 24px 20px;
+    font-size: 0.88rem;
+    color: #555;
+    line-height: 1.7;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 16px;
+}

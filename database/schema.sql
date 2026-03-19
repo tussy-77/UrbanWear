@@ -98,3 +98,22 @@ CREATE TABLE order_items (
 
 CREATE INDEX idx_orders_user ON orders(user_id);
 CREATE INDEX idx_cart_user ON carts(user_id);
+
+-- ============================
+-- TABLA ADDRESSES
+-- ============================
+
+CREATE TABLE addresses (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    department VARCHAR(100) NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    extra VARCHAR(255),
+    barrio VARCHAR(100),
+    receiver VARCHAR(100),
+    is_default BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_addresses_user ON addresses(user_id);

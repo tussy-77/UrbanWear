@@ -1,0 +1,266 @@
+{% extends 'public/base.html' %}
+{% block content %}
+
+<div style="min-height: 80vh; background: #f5f5f5; padding: 60px 0;">
+    <div class="container" style="max-width: 900px; margin: 0 auto; padding: 0 20px;">
+
+        <h1 style="font-size: 1.4rem; font-weight: 800; color: #111; margin-bottom: 32px;">
+            ¡HOLA, <span id="greeting-name"></span>!
+        </h1>
+
+        <div style="display: flex; gap: 32px;">
+
+            <!-- Sidebar — idéntico al de perfil.html -->
+            <aside style="width: 200px; flex-shrink: 0;">
+                <nav style="display: flex; flex-direction: column; gap: 4px;">
+                    <a href="/perfil" class="perfil-nav-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM128,144a40,40,0,1,1,40-40A40,40,0,0,1,128,144Zm76.24,42.81a80,80,0,0,0-152.48,0,87.81,87.81,0,0,1,152.48,0Z"/></svg>
+                        PERFIL
+                    </a>
+                    <a href="/direcciones" class="perfil-nav-link perfil-nav-link--active">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 256 256" fill="currentColor"><path d="M128,16a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,16Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,192Zm40-104H136V72a8,8,0,0,0-16,0v24H104a8,8,0,0,0,0,16h16v72a8,8,0,0,0,16,0V112h32a8,8,0,0,0,0-16Z"/></svg>
+                        DIRECCIONES
+                    </a>
+                    <a href="/pedidos" class="perfil-nav-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 256 256" fill="currentColor"><path d="M223.15,68.72l-96-40a8,8,0,0,0-6.3,0l-96,40A8,8,0,0,0,20,76V180a8,8,0,0,0,4.85,7.28l96,40a8,8,0,0,0,6.3,0l96-40A8,8,0,0,0,236,180V76A8,8,0,0,0,223.15,68.72ZM128,45l76.81,32L128,109,51.19,77ZM36,90.54l84,35v95.67L36,186.12ZM136,221.21V125.54l84-35v95.58Z"/></svg>
+                        PEDIDOS
+                    </a>
+                    <a href="/informacion" class="perfil-nav-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a16,16,0,1,1,16,16A16,16,0,0,1,112,84Z"/></svg>
+                        INFORMACIÓN
+                    </a>
+                    <button onclick="cerrarSesion()" class="perfil-nav-link perfil-nav-link--danger">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 256 256" fill="currentColor"><path d="M120,216a8,8,0,0,1-8,8H48a16,16,0,0,1-16-16V48A16,16,0,0,1,48,32h64a8,8,0,0,1,0,16H48V208h64A8,8,0,0,1,120,216Zm109.66-93.66-40-40a8,8,0,0,0-11.32,11.32L204.69,120H112a8,8,0,0,0,0,16h92.69l-26.35,26.34a8,8,0,0,0,11.32,11.32l40-40A8,8,0,0,0,229.66,122.34Z"/></svg>
+                        CERRAR SESIÓN
+                    </button>
+                </nav>
+            </aside>
+
+            <!-- Panel principal -->
+            <div style="flex: 1;">
+
+                <!-- Vista lista -->
+                <div id="vista-lista">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                        <h2 style="font-size:0.95rem; font-weight:700; color:#111; margin:0; letter-spacing:1px;">MIS DIRECCIONES</h2>
+                        <button onclick="mostrarFormulario()"
+                            style="padding:9px 20px; background:#111; color:#fff; border:none; border-radius:6px; font-size:0.78rem; font-weight:700; letter-spacing:1px; cursor:pointer;">
+                            + AÑADIR
+                        </button>
+                    </div>
+                    <div id="lista-direcciones"></div>
+                </div>
+
+                <!-- Vista formulario -->
+                <div id="vista-formulario" style="display:none;">
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+                        <button onclick="mostrarLista()" style="background:none; border:none; cursor:pointer; color:#555; font-size:1.1rem; padding:0;">←</button>
+                        <h2 style="font-size:0.95rem; font-weight:700; color:#111; margin:0; letter-spacing:1px;">AÑADIR DIRECCIÓN</h2>
+                    </div>
+
+                    <div style="background:#fff; border-radius:8px; border:1px solid #e5e5e5; padding:32px;">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+                            <div>
+                                <label class="perfil-label">DEPARTAMENTO</label>
+                                <select class="perfil-input" id="d-department" onchange="cargarMunicipios()"></select>
+                            </div>
+                            <div>
+                                <label class="perfil-label">MUNICIPIO</label>
+                                <select class="perfil-input" id="d-city"></select>
+                            </div>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+                            <div>
+                                <label class="perfil-label">DIRECCIÓN</label>
+                                <input class="perfil-input" id="d-address" type="text" placeholder="Calle, carrera, número...">
+                            </div>
+                            <div>
+                                <label class="perfil-label">INFORMACIÓN ADICIONAL (EJ.: APTO. 201)</label>
+                                <input class="perfil-input" id="d-extra" type="text" placeholder="Apto, torre...">
+                            </div>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+                            <div>
+                                <label class="perfil-label">BARRIO</label>
+                                <input class="perfil-input" id="d-barrio" type="text" placeholder="Barrio">
+                            </div>
+                            <div>
+                                <label class="perfil-label">NOMBRE DE QUIEN RECIBE</label>
+                                <input class="perfil-input" id="d-receiver" type="text" placeholder="Nombre completo">
+                            </div>
+                        </div>
+                        <p id="dir-msg" style="font-size:0.85rem; display:none; margin-bottom:12px;"></p>
+                        <button onclick="guardarDireccion()"
+                            style="width:100%; padding:13px; background:#111; color:#fff; border:none; border-radius:8px; font-weight:700; font-size:0.85rem; letter-spacing:1px; cursor:pointer;">
+                            AÑADIR DIRECCIÓN
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JS igual que antes -->
+<script>
+const colombia = {
+    "Amazonas": ["Leticia", "Puerto Nariño"],
+    "Antioquia": ["Medellín", "Bello", "Itagüí", "Envigado", "Rionegro", "Apartadó"],
+    "Atlántico": ["Barranquilla", "Soledad", "Malambo"],
+    "Bogotá D.C.": ["Bogotá, D.C."],
+    "Bolívar": ["Cartagena", "Magangué", "El Carmen de Bolívar"],
+    "Boyacá": ["Tunja", "Duitama", "Sogamoso", "Chiquinquirá"],
+    "Caldas": ["Manizales", "La Dorada", "Chinchiná"],
+    "Caquetá": ["Florencia", "San Vicente del Caguán"],
+    "Casanare": ["Yopal", "Aguazul", "Villanueva"],
+    "Cauca": ["Popayán", "Santander de Quilichao", "Puerto Tejada"],
+    "Cesar": ["Valledupar", "Aguachica", "Bosconia"],
+    "Chocó": ["Quibdó", "Istmina", "Riosucio"],
+    "Córdoba": ["Montería", "Lorica", "Sahagún"],
+    "Cundinamarca": ["Soacha", "Fusagasugá", "Facatativá", "Zipaquirá", "Chía", "Mosquera"],
+    "Guainía": ["Inírida"],
+    "Guaviare": ["San José del Guaviare", "El Retorno"],
+    "Huila": ["Neiva", "Pitalito", "Garzón"],
+    "La Guajira": ["Riohacha", "Maicao", "Uribia"],
+    "Magdalena": ["Santa Marta", "Ciénaga", "Fundación"],
+    "Meta": ["Villavicencio", "Acacías", "Granada"],
+    "Nariño": ["Pasto", "Tumaco", "Ipiales"],
+    "Norte de Santander": ["Cúcuta", "Ocaña", "Pamplona"],
+    "Putumayo": ["Mocoa", "Puerto Asís", "Orito"],
+    "Quindío": ["Armenia", "Calarcá", "Montenegro"],
+    "Risaralda": ["Pereira", "Dosquebradas", "Santa Rosa de Cabal"],
+    "San Andrés": ["San Andrés", "Providencia"],
+    "Santander": ["Bucaramanga", "Floridablanca", "Girón", "Piedecuesta", "Barrancabermeja"],
+    "Sucre": ["Sincelejo", "Corozal", "San Marcos"],
+    "Tolima": ["Ibagué", "El Espinal", "Melgar"],
+    "Valle del Cauca": ["Cali", "Buenaventura", "Palmira", "Tuluá", "Buga"],
+    "Vaupés": ["Mitú"],
+    "Vichada": ["Puerto Carreño"]
+};
+
+function cargarDepartamentos() {
+    const sel = document.getElementById('d-department');
+    sel.innerHTML = '<option value="">Seleccionar...</option>';
+    Object.keys(colombia).sort().forEach(dep => {
+        const opt = document.createElement('option');
+        opt.value = dep; opt.textContent = dep;
+        sel.appendChild(opt);
+    });
+}
+
+function cargarMunicipios() {
+    const dep = document.getElementById('d-department').value;
+    const sel = document.getElementById('d-city');
+    sel.innerHTML = '<option value="">Seleccionar...</option>';
+    if (dep && colombia[dep]) {
+        colombia[dep].forEach(mun => {
+            const opt = document.createElement('option');
+            opt.value = mun; opt.textContent = mun;
+            sel.appendChild(opt);
+        });
+    }
+}
+
+function mostrarFormulario() {
+    document.getElementById('vista-lista').style.display = 'none';
+    document.getElementById('vista-formulario').style.display = 'block';
+}
+
+function mostrarLista() {
+    document.getElementById('vista-formulario').style.display = 'none';
+    document.getElementById('vista-lista').style.display = 'block';
+    cargarDirecciones();
+}
+
+async function cargarDirecciones() {
+    const token = localStorage.getItem('urban_token');
+    const res = await fetch('http://127.0.0.1:5000/api/auth/direcciones', {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const dirs = await res.json();
+    const container = document.getElementById('lista-direcciones');
+
+    if (dirs.length === 0) {
+        container.innerHTML = `
+            <div style="background:#fff; border:1px solid #e5e5e5; border-radius:8px; padding:40px; text-align:center;">
+                <p style="color:#888; margin:0 0 16px; font-size:0.9rem;">No tienes direcciones guardadas.</p>
+                <button onclick="mostrarFormulario()" style="padding:10px 24px; background:#111; color:#fff; border:none; border-radius:6px; font-size:0.8rem; font-weight:700; cursor:pointer;">
+                    + AÑADIR DIRECCIÓN
+                </button>
+            </div>`;
+        return;
+    }
+
+    container.innerHTML = dirs.map(d => `
+        <div class="direccion-card">
+            <div class="direccion-card__info">
+                <p><strong>${d.address}</strong>${d.extra ? `, ${d.extra}` : ''}</p>
+                <p>${d.barrio ? d.barrio + ' — ' : ''}${d.city}, ${d.department}</p>
+                ${d.receiver ? `<span>Recibe: ${d.receiver}</span>` : ''}
+            </div>
+            <button onclick="eliminarDireccion(${d.id})"
+                style="background:none; border:none; cursor:pointer; color:#e53e3e; font-size:0.78rem; font-weight:700; letter-spacing:0.5px;">
+                ELIMINAR
+            </button>
+        </div>
+    `).join('');
+}
+
+async function guardarDireccion() {
+    const token = localStorage.getItem('urban_token');
+    const payload = {
+        department: document.getElementById('d-department').value,
+        city:       document.getElementById('d-city').value,
+        address:    document.getElementById('d-address').value,
+        extra:      document.getElementById('d-extra').value,
+        barrio:     document.getElementById('d-barrio').value,
+        receiver:   document.getElementById('d-receiver').value,
+    };
+    if (!payload.department || !payload.city || !payload.address) {
+        mostrarDirMsg('Completa los campos obligatorios.', 'error'); return;
+    }
+    const res = await fetch('http://127.0.0.1:5000/api/auth/direcciones', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+        mostrarDirMsg('✅ Dirección guardada.', 'success');
+        setTimeout(() => mostrarLista(), 1000);
+    } else {
+        mostrarDirMsg('Error al guardar.', 'error');
+    }
+}
+
+async function eliminarDireccion(id) {
+    if (!confirm('¿Eliminar esta dirección?')) return;
+    const token = localStorage.getItem('urban_token');
+    await fetch(`http://127.0.0.1:5000/api/auth/direcciones/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    cargarDirecciones();
+}
+
+function mostrarDirMsg(texto, tipo) {
+    const msg = document.getElementById('dir-msg');
+    msg.style.color = tipo === 'error' ? '#e53e3e' : '#2f855a';
+    msg.textContent = texto;
+    msg.style.display = 'block';
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const token = localStorage.getItem('urban_token');
+    if (!token) { window.location.href = '/'; return; }
+    const res = await fetch('http://127.0.0.1:5000/api/auth/perfil', {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const user = await res.json();
+    document.getElementById('greeting-name').textContent = (user.name || '').toUpperCase();
+    cargarDepartamentos();
+    cargarDirecciones();
+});
+</script>
+
+{% endblock %}
