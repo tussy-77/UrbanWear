@@ -1,106 +1,212 @@
 {% extends "public/base.html" %}
-
 {% block title %}UrbanWear - Moda Urbana Moderna{% endblock %}
-
 {% block content %}
-    <section class="hero">
-        <div class="hero__content">
-            <h1 class="hero__title">Estilo Urbano<br>Hecho para Ti</h1>
-            <p class="hero__subtitle">Descubre la colección que define la moda moderna</p>
-            <a href="{{ url_for('catalogo') }}" class="btn btn--primary btn--lg">Explorar Colección</a>
-        </div>
-        <div class="hero__image">
-            <div class="hero__image-placeholder"><span class="placeholder-text">Imagen Destacada</span></div>
-        </div>
-    </section>
 
-    <section class="featured section-padding">
-        <div class="container">
-            <div class="featured__header">
-                <h2 class="section-title" style="color: #fff;">Colecciones Destacadas</h2>
-                <a href="{{ url_for('catalogo') }}" class="link-see-all">Ver Todo →</a>
-            </div>
-            <div class="featured__grid">
-                <div class="product-card">
-                    <div class="product-card__image">
-                        <div class="product-card__image-placeholder"></div>
-                        <span class="product-card__badge">Nuevo</span>
-                    </div>
-                    <div class="product-card__content">
-                        <span class="product-card__category">Camisetas</span>
-                        <h3 class="product-card__title">Camiseta Essentials</h3>
-                        <p class="product-card__price">$24.99</p>
-                        <button class="btn btn--secondary btn--full" onclick="agregarAlCarrito(1)">Agregar al carrito</button>
-                    </div>
-                </div>
+<!-- ── BARRA SUPERIOR DE BENEFICIO ── -->
+<div style="background: var(--color-accent); padding: 10px 0; text-align:center;">
+    <p style="font-size:0.78rem; font-weight:700; letter-spacing:2px; color:#000; margin:0;">
+        ENVÍO GRATIS EN ROPA SIN DESCUENTO — COLOMBIA
+    </p>
+</div>
 
-                <div class="product-card">
-                    <div class="product-card__image">
-                        <div class="product-card__image-placeholder"></div>
-                    </div>
-                    <div class="product-card__content">
-                        <span class="product-card__category">Pantalones</span>
-                        <h3 class="product-card__title">Jeans Urban</h3>
-                        <p class="product-card__price">$54.99</p>
-                        <button class="btn btn--secondary btn--full" onclick="agregarAlCarrito(2)">Agregar al carrito</button>
-                    </div>
-                </div>
+<!-- ── HERO BANNER ── -->
+<section style="position:relative; height:90vh; min-height:600px; overflow:hidden; display:flex; align-items:center;">
+    <!-- Fondo degradado como placeholder -->
+    <div style="position:absolute; inset:0; background:linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 40%, #0f0f0f 100%);"></div>
+    <!-- Patrón decorativo -->
+    <div style="position:absolute; inset:0; opacity:0.03; background-image: repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%); background-size:20px 20px;"></div>
+    <!-- Acento naranja lateral -->
+    <div style="position:absolute; right:0; top:0; bottom:0; width:45%; background:linear-gradient(135deg, transparent 0%, rgba(255,107,53,0.08) 100%);"></div>
 
-                <div class="product-card">
-                    <div class="product-card__image">
-                        <div class="product-card__image-placeholder"></div>
-                    </div>
-                    <div class="product-card__content">
-                        <span class="product-card__category">Accesorios</span>
-                        <h3 class="product-card__title">Gorra Street</h3>
-                        <p class="product-card__price">$19.99</p>
-                        <button class="btn btn--secondary btn--full" onclick="agregarAlCarrito(3)">Agregar al carrito</button>
-                    </div>
-                </div>
-
-                <div class="product-card">
-                    <div class="product-card__image">
-                        <div class="product-card__image-placeholder"></div>
-                        <span class="product-card__badge product-card__badge--sale">Oferta</span>
-                    </div>
-                    <div class="product-card__content">
-                        <span class="product-card__category">Calzado</span>
-                        <h3 class="product-card__title">Sneakers Pro</h3>
-                        <p class="product-card__price">$89.99</p>
-                        <button class="btn btn--secondary btn--full" onclick="agregarAlCarrito(4)">Agregar al carrito</button>
-                    </div>
-                </div>
+    <div class="container" style="position:relative; z-index:2;">
+        <div style="max-width:620px;">
+            <p style="font-size:0.75rem; font-weight:700; letter-spacing:4px; color:var(--color-accent); margin-bottom:20px; text-transform:uppercase;">
+                Nueva Colección 2025
+            </p>
+            <h1 style="font-family:var(--font-display); font-size:clamp(2.5rem, 6vw, 5rem); font-weight:900; line-height:1.0; letter-spacing:-2px; color:#fff; margin-bottom:24px;">
+                DEFINE TU<br>
+                <span style="color:var(--color-accent);">ESTILO</span><br>
+                URBANO
+            </h1>
+            <p style="font-size:1.05rem; color:#888; margin-bottom:40px; max-width:440px; line-height:1.7;">
+                Ropa diseñada para quienes no siguen tendencias — las crean.
+            </p>
+            <div style="display:flex; gap:16px; flex-wrap:wrap;">
+                <a href="{{ url_for('catalogo') }}" class="btn btn--primary btn--lg" style="letter-spacing:1px;">
+                    VER COLECCIÓN
+                </a>
+                <a href="#new-in" class="btn btn--secondary btn--lg" style="letter-spacing:1px; border-color:#444; color:#ccc;">
+                    NEW IN
+                </a>
             </div>
         </div>
-    </section>
-
-    <div class="container">
-        <section class="section-padding" style="padding-top: 0;">
-            <div class="categories-grid">
-                <a href="#" class="category-card" style="background-color: #222;"><span>Hombres</span></a>
-                <a href="#" class="category-card" style="background-color: #333;"><span>Mujeres</span></a>
-                <a href="#" class="category-card" style="background-color: #111;"><span>Accesorios</span></a>
-            </div>
-        </section>
-
-        <section class="features-bar">
-            <div class="features-wrapper">
-                <div class="feature-item"><span class="icon">🚀</span><h4>Envío Rápido</h4><p>Envíos seguros a todo el país.</p></div>
-                <div class="feature-item"><span class="icon">🔒</span><h4>Pago Seguro</h4><p>Transacciones 100% protegidas.</p></div>
-                <div class="feature-item"><span class="icon">🔄</span><h4>Devoluciones</h4><p>30 días para cambios sin costo.</p></div>
-                <div class="feature-item"><span class="icon">🎧</span><h4>Soporte 24/7</h4><p>Atención continua para tus dudas.</p></div>
-            </div>
-        </section>
-
-        <section class="newsletter-hero">
-            <div class="newsletter-content">
-                <h2>No te pierdas de nada</h2>
-                <p>Suscríbete para recibir lanzamientos y ofertas exclusivas.</p>
-                <form class="newsletter-form">
-                    <input type="email" placeholder="Ingresa tu correo electrónico..." required>
-                    <button type="submit">SUSCRIBIRME</button>
-                </form>
-            </div>
-        </section>
     </div>
+
+    <!-- Scroll indicator -->
+    <div style="position:absolute; bottom:32px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:8px;">
+        <div style="width:1px; height:48px; background:linear-gradient(to bottom, transparent, var(--color-accent));"></div>
+    </div>
+</section>
+
+<!-- ── BARRA DE BENEFICIOS ── -->
+<section style="background:#111; border-top:1px solid #222; border-bottom:1px solid #222; padding:28px 0;">
+    <div class="container">
+        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:20px;">
+            <div style="display:flex; align-items:center; gap:14px; justify-content:center;">
+                <span style="font-size:1.5rem;">🚚</span>
+                <div>
+                    <p style="font-size:0.78rem; font-weight:700; color:#fff; margin:0; letter-spacing:0.5px;">ENVÍO GRATIS</p>
+                    <p style="font-size:0.72rem; color:#666; margin:0;">En ropa sin descuento</p>
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:14px; justify-content:center;">
+                <span style="font-size:1.5rem;">🔒</span>
+                <div>
+                    <p style="font-size:0.78rem; font-weight:700; color:#fff; margin:0; letter-spacing:0.5px;">COMPRA SEGURA</p>
+                    <p style="font-size:0.72rem; color:#666; margin:0;">100% protegida</p>
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:14px; justify-content:center;">
+                <span style="font-size:1.5rem;">↩</span>
+                <div>
+                    <p style="font-size:0.78rem; font-weight:700; color:#fff; margin:0; letter-spacing:0.5px;">DEVOLUCIONES</p>
+                    <p style="font-size:0.72rem; color:#666; margin:0;">30 días sin costo</p>
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:14px; justify-content:center;">
+                <span style="font-size:1.5rem;">⏱</span>
+                <div>
+                    <p style="font-size:0.78rem; font-weight:700; color:#fff; margin:0; letter-spacing:0.5px;">LLEGA EN 6 DÍAS</p>
+                    <p style="font-size:0.72rem; color:#666; margin:0;">Ciudades principales</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── NEW IN ── -->
+<section id="new-in" style="padding:80px 0; background:#f0f0f0;">
+    <div style="max-width:100%; padding:0 40px;">
+        <div style="display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:48px;">
+            <div>
+                <p style="font-size:0.72rem; font-weight:700; letter-spacing:4px; color:#888; margin-bottom:8px;">LO MÁS RECIENTE</p>
+                <h2 style="font-family:var(--font-display); font-size:2.5rem; font-weight:900; color:#111; letter-spacing:-1px; margin:0;">NEW IN</h2>
+            </div>
+            <a href="{{ url_for('catalogo') }}" style="font-size:0.8rem; font-weight:700; letter-spacing:2px; color:#111; border-bottom:1px solid #111; padding-bottom:2px;">
+                VER TODO →
+            </a>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:0px;">
+            {% if productos %}
+                {% for producto in productos[:4] %}
+                <a href="/producto/{{producto.id}}" class="home-product-card">
+                    <div class="home-product-card__img">
+                        {% if producto.image_url %}
+                        <img src="/static/uploads/{{ producto.image_url }}" alt="{{ producto.name }}">
+                        {% else %}
+                        <div style="width:100%; height:100%; background:#e8e8e8;"></div>
+                        {% endif %}
+                        <span class="home-product-card__badge">NEW IN</span>
+                    </div>
+                    <div style="padding:12px 0 0;">
+                        <p style="font-size:0.78rem; font-weight:700; color:#111; margin:0 0 4px; text-transform:uppercase; letter-spacing:0.5px;">
+                            {{ producto.name.split()[0] }}
+                        </p>
+                        <p style="font-size:0.85rem; color:#555; margin:0;">
+                            ${{ "{:,.0f}".format(producto.price) }}
+                        </p>
+                    </div>
+                </a>
+                {% endfor %}
+            {% else %}
+                {% for i in range(4) %}
+                <div class="home-product-card">
+                    <div class="home-product-card__img" style="background:#e8e8e8;"></div>
+                    <div style="padding:14px 0;">
+                        <p style="font-size:0.72rem; font-weight:700; letter-spacing:2px; color:#888; margin:0 0 4px;">URBANWEAR</p>
+                        <p style="font-size:0.9rem; font-weight:600; color:#333; margin:0;">Próximamente</p>
+                    </div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- ── CATEGORÍAS DESTACADAS ── -->
+<section style="padding:0 0 80px;">
+    <div class="container">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+
+            <!-- Hombre -->
+            <a href="{{ url_for('catalogo') }}" class="home-cat-card" style="height:500px;">
+                <div style="position:absolute; inset:0; background:linear-gradient(135deg, #111 0%, #1a1a1a 100%);"></div>
+                <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 60%);"></div>
+                <div style="position:absolute; top:24px; left:24px;">
+                    <span style="font-size:0.68rem; font-weight:700; letter-spacing:3px; color:var(--color-accent); background:rgba(255,107,53,0.1); border:1px solid rgba(255,107,53,0.3); padding:6px 12px; border-radius:20px;">
+                        NUEVA COLECCIÓN
+                    </span>
+                </div>
+                <div style="position:absolute; bottom:36px; left:36px;">
+                    <h3 style="font-family:var(--font-display); font-size:2.5rem; font-weight:900; color:#fff; margin:0 0 12px; letter-spacing:-1px;">HOMBRE</h3>
+                    <span style="font-size:0.78rem; font-weight:700; letter-spacing:2px; color:var(--color-accent);">VER COLECCIÓN →</span>
+                </div>
+            </a>
+
+            <!-- Mujer -->
+            <a href="{{ url_for('catalogo') }}" class="home-cat-card" style="height:500px;">
+                <div style="position:absolute; inset:0; background:linear-gradient(135deg, #1a1a1a 0%, #111 100%);"></div>
+                <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 60%);"></div>
+                <div style="position:absolute; top:24px; left:24px;">
+                    <span style="font-size:0.68rem; font-weight:700; letter-spacing:3px; color:var(--color-accent); background:rgba(255,107,53,0.1); border:1px solid rgba(255,107,53,0.3); padding:6px 12px; border-radius:20px;">
+                        NUEVA COLECCIÓN
+                    </span>
+                </div>
+                <div style="position:absolute; bottom:36px; left:36px;">
+                    <h3 style="font-family:var(--font-display); font-size:2.5rem; font-weight:900; color:#fff; margin:0 0 12px; letter-spacing:-1px;">MUJER</h3>
+                    <span style="font-size:0.78rem; font-weight:700; letter-spacing:2px; color:var(--color-accent);">VER COLECCIÓN →</span>
+                </div>
+            </a>
+
+        </div>
+    </div>
+</section>
+
+<!-- ── BANNER FRASE DE MARCA ── -->
+<section style="background:#fff; padding:100px 0; text-align:center; position:relative; overflow:hidden;">
+    <div style="position:absolute; inset:0; background:repeating-linear-gradient(90deg, rgba(255,107,53,0.03) 0, rgba(255,107,53,0.03) 1px, transparent 0, transparent 60px);"></div>
+    <div class="container" style="position:relative;">
+        <p style="font-size:0.72rem; font-weight:700; letter-spacing:5px; color:var(--color-accent); margin-bottom:20px;">NUESTRA FILOSOFÍA</p>
+        <h2 style="font-family:var(--font-display); font-size:clamp(2rem, 5vw, 3.5rem); font-weight:900; color:#000; letter-spacing:-1px; line-height:1.1; max-width:800px; margin:0 auto 32px;">
+            "Ropa hecha para quienes viven la ciudad con actitud"
+        </h2>
+        <a href="{{ url_for('catalogo') }}" style="display:inline-block; padding:14px 40px; background:#000; color:#fff; font-size:0.78rem; font-weight:700; letter-spacing:3px; border-radius:6px; text-decoration:none; transition:background 0.2s;">
+            DESCUBRIR MÁS
+        </a>
+    </div>
+</section>
+
+<!-- ── NEWSLETTER ── -->
+<section style="background:var(--color-bg-primary); padding:100px 0; border-top:1px solid #1a1a1a;">
+    <div class="container">
+        <div style="max-width:560px; margin:0 auto; text-align:center;">
+            <p style="font-size:0.72rem; font-weight:700; letter-spacing:4px; color:var(--color-accent); margin-bottom:16px;">MANTENTE AL DÍA</p>
+            <h2 style="font-family:var(--font-display); font-size:2.2rem; font-weight:900; color:#fff; margin-bottom:12px; letter-spacing:-0.5px;">
+                No te pierdas nada
+            </h2>
+            <p style="color:#666; margin-bottom:36px; font-size:0.95rem;">
+                Suscríbete para recibir lanzamientos y ofertas exclusivas.
+            </p>
+            <div style="display:flex; gap:0; max-width:440px; margin:0 auto;">
+                <input type="email" placeholder="Tu correo electrónico"
+                    style="flex:1; padding:14px 20px; background:#111; border:1px solid #333; border-right:none; border-radius:6px 0 0 6px; color:#fff; font-size:0.9rem; outline:none; font-family:inherit;">
+                <button style="padding:14px 24px; background:var(--color-accent); color:#000; border:none; border-radius:0 6px 6px 0; font-size:0.78rem; font-weight:800; letter-spacing:1px; cursor:pointer; white-space:nowrap; font-family:inherit;">
+                    SUSCRIBIRME
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
 {% endblock %}

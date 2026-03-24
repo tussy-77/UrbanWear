@@ -1,0 +1,39 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Usuarios — Admin{% endblock %}
+{% block topbar_title %}Gestión de Usuarios{% endblock %}
+
+<div style="margin-bottom:24px;">
+    <h2 style="font-size:1.1rem; font-weight:800; margin:0;">Usuarios</h2>
+    <p style="font-size:0.82rem; color:#888; margin:4px 0 0;">{{ usuarios|length }} usuarios registrados</p>
+</div>
+
+<div class="admin-card" style="padding:0; overflow:hidden;">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>NOMBRE</th>
+                <th>EMAIL</th>
+                <th>ROL</th>
+                <th>REGISTRO</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in usuarios %}
+            <tr>
+                <td style="color:#888;">#{{ u.id }}</td>
+                <td><strong>{{ u.name }}</strong></td>
+                <td>{{ u.email }}</td>
+                <td>
+                    <span class="status-badge {% if u.role.value == 'admin' %}status-badge--pending{% else %}status-badge--default{% endif %}">
+                        {{ u.role.value | upper }}
+                    </span>>
+                </td>
+                <td style="color:#888;">{{ u.created_at.strftime('%d/%m/%Y') if u.created_at else '—' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

@@ -10,7 +10,6 @@
 <body style="background-color: #000; color: #fff;">
 
     <header class="header">
-        <header class="header">
     <div class="container">
         <div class="header__wrapper" style="width: 100%;">
             <div class="logo" style="cursor: pointer;" onclick="window.location.href='/'">
@@ -26,36 +25,26 @@
             </nav>
 
             <div class="header__actions" style="display: flex; align-items: center; gap: 20px;">
-
-                <!-- Icono búsqueda -->
                 <button class="header-icon-btn" id="search-toggle" style="background: none; border: none; cursor: pointer; padding: 0;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 256 256" style="fill: #888; transition: fill 0.3s;"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path></svg>
                 </button>
 
-                <!-- Icono usuario -->
                 <div class="user-menu-wrapper" style="position: relative;">
-
-                    <!-- Ícono guest (no logueado) -->
                     <a href="#" id="guest-icon" class="header-icon-btn" style="display: flex;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 256 256" style="fill: #888; transition: fill 0.3s;"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM128,144a40,40,0,1,1,40-40A40,40,0,0,1,128,144Zm76.24,42.81a80,80,0,0,0-152.48,0,87.81,87.81,0,0,1,152.48,0Z"></path></svg>
                     </a>
-
-                    <!-- Ícono perfil (logueado) -->
                     <button id="user-profile-icon" class="header-icon-btn" onclick="toggleProfileMenu()"
                         style="display: none; background: none; border: none; cursor: pointer; padding: 0;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 256 256" style="fill: #888; transition: fill 0.3s;"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM128,144a40,40,0,1,1,40-40A40,40,0,0,1,128,144Zm76.24,42.81a80,80,0,0,0-152.48,0,87.81,87.81,0,0,1,152.48,0Z"></path></svg>
                     </button>
-
                 </div>
 
-                <!-- Icono carrito -->
                 <div class="cart-wrapper" style="position: relative;">
                     <button class="cart-button header-icon-btn" id="cart-toggle" style="background: none; border: none; cursor: pointer; padding: 0; display: flex;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 256 256" style="fill: #888; transition: fill 0.3s;"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,160H40V56H216V200ZM176,88a48,48,0,0,1-96,0,8,8,0,0,1,16,0,32,32,0,0,0,64,0,8,8,0,0,1,16,0Z"></path></svg>
                         <span class="cart-badge" id="cart-badge" style="position: absolute; top: -8px; right: -8px; background-color: #ff6b6b; color: #fff; font-size: 0.7rem; font-weight: 700; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s;">0</span>
                     </button>
                 </div>
-
             </div>
         </div>
     </div>
@@ -65,18 +54,8 @@
 <div id="profile-sidebar-overlay" onclick="toggleProfileMenu()"
     style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:2000;"></div>
 
-<div id="profile-sidebar" style="
-    position: fixed;
-    top: 0; right: -320px;
-    width: 300px; height: 100vh;
-    background: #fff;
-    z-index: 2001;
-    transition: right 0.3s ease;
-    display: flex; flex-direction: column;
-    box-shadow: -4px 0 20px rgba(0,0,0,0.15);">
-
-    <!-- Header del panel -->
-    <div style="padding: 24px 20px 20px; border-bottom: 1px solid #eee; display:flex; align-items:center; justify-content:space-between;">
+<div id="profile-sidebar" style="position:fixed; top:0; right:-320px; width:300px; height:100vh; background:#fff; z-index:2001; transition:right 0.3s ease; display:flex; flex-direction:column; box-shadow:-4px 0 20px rgba(0,0,0,0.15);">
+    <div style="padding:24px 20px 20px; border-bottom:1px solid #eee; display:flex; align-items:center; justify-content:space-between;">
         <div style="display:flex; align-items:center; gap:12px;">
             <div style="width:40px; height:40px; border-radius:50%; background:#f0f0f0; display:flex; align-items:center; justify-content:center;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 256 256" fill="#555"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM128,144a40,40,0,1,1,40-40A40,40,0,0,1,128,144Zm76.24,42.81a80,80,0,0,0-152.48,0,87.81,87.81,0,0,1,152.48,0Z"/></svg>
@@ -88,9 +67,7 @@
         </div>
         <button onclick="toggleProfileMenu()" style="background:none; border:none; cursor:pointer; font-size:1.2rem; color:#888;">✕</button>
     </div>
-
-    <!-- Opciones -->
-    <nav style="flex:1; padding: 12px 0;">
+    <nav style="flex:1; padding:12px 0;">
         <a href="/perfil" class="profile-nav-item">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 256 256" fill="#555"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM128,144a40,40,0,1,1,40-40A40,40,0,0,1,128,144Zm76.24,42.81a80,80,0,0,0-152.48,0,87.81,87.81,0,0,1,152.48,0Z"/></svg>
             <span>Perfil</span>

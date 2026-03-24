@@ -10,6 +10,10 @@ class Product(db.Model):
     price = db.Column(db.Numeric(10, 2), nullable=False)
     stock = db.Column(db.Integer, nullable=False)
     image_url = db.Column(db.Text)
+    sizes      = db.Column(db.String(100), nullable=True)  # ej: "S,M,L,XL"
+    item_number = db.Column(db.String(50), nullable=True)
+    destacado = db.Column(db.Boolean, default=False)
+    
 
     category_id = db.Column(
         db.Integer,

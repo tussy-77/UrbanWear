@@ -1,0 +1,43 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Pedidos — Admin{% endblock %}
+{% block topbar_title %}Gestión de Pedidos{% endblock %}
+{% block content %}
+
+<div style="margin-bottom:24px;">
+    <h2 style="font-size:1.1rem; font-weight:800; margin:0;">Pedidos</h2>
+    <p style="font-size:0.82rem; color:#888; margin:4px 0 0;">{{ pedidos|length }} pedidos en total</p>
+</div>
+
+<div class="admin-card" style="padding:0; overflow:hidden;">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>ORDEN</th>
+                <th>USUARIO</th>
+                <th>TOTAL</th>
+                <th>ESTADO</th>
+                <th>FECHA</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in pedidos %}
+            <tr>
+                <td><strong>#{{ p.id }}</strong></td>
+                <td>{{ p.user_id }}</td>
+                <td>${{ "{:,.0f}".format(p.total_price) }}</td>
+                <td>
+                    <span class="status-badge 
+                        {% if p.status == 'completado' %}status-badge--ok
+                        {% elif p.status == 'pendiente' %}status-badge--pending
+                        {% else %}status-badge--default{% endif %}">
+                        {{ p.status | upper }}
+                    </span>
+                </td>
+                <td style="color:#888;">{{ p.created_at.strftime('%d/%m/%Y') if p.created_at else '—' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

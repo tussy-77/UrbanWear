@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin — UrbanWear{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter', sans-serif; background:#f5f5f5; color:#111; display:flex; min-height:100vh; }
+
+        /* Sidebar */
+        .admin-sidebar {
+            width: 240px; flex-shrink:0;
+            background:#111; min-height:100vh;
+            position: sticky; top:0; height:100vh;
+            display:flex; flex-direction:column;
+        }
+        .admin-sidebar__logo {
+            padding:28px 24px;
+            border-bottom:1px solid #222;
+            font-size:1.1rem; font-weight:800; color:#fff;
+            letter-spacing:-0.5px;
+        }
+        .admin-sidebar__logo span { color:#ff6b35; }
+        .admin-nav { padding:16px 0; flex:1; }
+        .admin-nav__item {
+            display:flex; align-items:center; gap:12px;
+            padding:12px 24px;
+            color:#888; text-decoration:none;
+            font-size:0.82rem; font-weight:600;
+            letter-spacing:0.5px;
+            transition:background 0.2s, color 0.2s;
+            border:none; background:none; cursor:pointer;
+            width:100%; font-family:inherit; text-align:left;
+        }
+        .admin-nav__item:hover { background:#1a1a1a; color:#fff; }
+        .admin-nav__item--active { background:#1a1a1a; color:#fff; }
+        .admin-nav__item--active::before {
+            content:''; position:absolute; left:0;
+            width:3px; height:100%; background:#ff6b35;
+        }
+        .admin-nav__item { position:relative; }
+        .admin-sidebar__footer {
+            padding:20px 24px;
+            border-top:1px solid #222;
+        }
+        .admin-sidebar__footer a {
+            font-size:0.78rem; color:#666; text-decoration:none;
+        }
+        .admin-sidebar__footer a:hover { color:#fff; }
+
+        /* Main */
+        .admin-main { flex:1; display:flex; flex-direction:column; min-width:0; }
+        .admin-topbar {
+            background:#fff; border-bottom:1px solid #e5e5e5;
+            padding:16px 32px;
+            display:flex; justify-content:space-between; align-items:center;
+            position:sticky; top:0; z-index:100;
+        }
+        .admin-topbar__title { font-size:1rem; font-weight:700; color:#111; }
+        .admin-content { padding:32px; flex:1; }
+
+        /* Cards */
+        .admin-card {
+            background:#fff; border:1px solid #e5e5e5;
+            border-radius:8px; padding:24px;
+        }
+        .admin-card + .admin-card { margin-top:20px; }
+
+        /* Tabla */
+        .admin-table { width:100%; border-collapse:collapse; }
+        .admin-table th {
+            text-align:left; padding:10px 16px;
+            font-size:0.72rem; font-weight:700;
+            letter-spacing:1px; color:#888;
+            border-bottom:1px solid #e5e5e5;
+            background:#fafafa;
+        }
+        .admin-table td {
+            padding:14px 16px; font-size:0.85rem;
+            border-bottom:1px solid #f0f0f0; color:#333;
+            vertical-align:middle;
+        }
+        .admin-table tr:hover td { background:#fafafa; }
+
+        /* Inputs */
+        .admin-input {
+            width:100%; padding:10px 14px;
+            border:1px solid #ddd; border-radius:6px;
+            font-size:0.88rem; font-family:inherit;
+            outline:none; transition:border-color 0.2s;
+            background:#fff; color:#111;
+        }
+        .admin-input:focus { border-color:#111; }
+        .admin-label {
+            font-size:0.72rem; font-weight:700;
+            letter-spacing:1px; color:#555;
+            display:block; margin-bottom:6px;
+            text-transform:uppercase;
+        }
+        .admin-campo { margin-bottom:16px; }
+
+        /* Botones */
+        .btn-admin {
+            padding:9px 20px; border:none; border-radius:6px;
+            font-size:0.78rem; font-weight:700;
+            letter-spacing:0.5px; cursor:pointer;
+            font-family:inherit; transition:background 0.2s;
+        }
+        .btn-admin--primary { background:#111; color:#fff; }
+        .btn-admin--primary:hover { background:#333; }
+        .btn-admin--danger { background:#fff0f0; color:#e53e3e; border:1px solid #fcc; }
+        .btn-admin--danger:hover { background:#ffe0e0; }
+        .btn-admin--secondary { background:#f5f5f5; color:#555; border:1px solid #ddd; }
+        .btn-admin--secondary:hover { background:#eee; }
+
+        /* Badge estado */
+        .status-badge {
+            display:inline-block; padding:3px 10px;
+            border-radius:20px; font-size:0.7rem; font-weight:700;
+        }
+
+        /* Modal */
+        .admin-modal {
+            display:none; position:fixed; inset:0;
+            background:rgba(0,0,0,0.5); z-index:1000;
+            align-items:center; justify-content:center;
+        }
+        .admin-modal.active { display:flex; }
+        .admin-modal__panel {
+            background:#fff; border-radius:10px;
+            width:100%; max-width:560px;
+            max-height:90vh; overflow-y:auto;
+            padding:32px;
+        }
+        .admin-modal__title {
+            font-size:1rem; font-weight:800;
+            margin-bottom:24px; color:#111;
+        }
+        .stock-badge { padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:700; }
+        .stock-badge--ok    { background:#f0fff4; color:#276749; }
+        .stock-badge--low   { background:#fff8e1; color:#b7791f; }
+        .stock-badge--empty { background:#fff5f5; color:#c53030; }
+
+        .status-badge { padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:700; }
+        .status-badge--ok      { background:#f0fff4; color:#276749; }
+        .status-badge--pending { background:#fff8e1; color:#b7791f; }
+        .status-badge--default { background:#f0f0f0; color:#555; }
+
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="admin-sidebar">
+    <div class="admin-sidebar__logo">◆ Urban<span>Wear</span></div>
+    <nav class="admin-nav">
+        <a href="/admin" class="admin-nav__item {% if request.path == '/admin' %}admin-nav__item--active{% endif %}">
+            📊 DASHBOARD
+        </a>
+        <a href="/admin/productos" class="admin-nav__item {% if '/admin/productos' in request.path %}admin-nav__item--active{% endif %}">
+            👕 PRODUCTOS
+        </a>
+        <a href="/admin/pedidos" class="admin-nav__item {% if '/admin/pedidos' in request.path %}admin-nav__item--active{% endif %}">
+            📦 PEDIDOS
+        </a>
+        <a href="/admin/usuarios" class="admin-nav__item {% if '/admin/usuarios' in request.path %}admin-nav__item--active{% endif %}">
+            👥 USUARIOS
+        </a>
+    </nav>
+    <div class="admin-sidebar__footer">
+        <a href="/">← Ver tienda</a>
+    </div>
+</aside>
+
+<!-- Contenido -->
+<main class="admin-main">
+    <div class="admin-topbar">
+        <span class="admin-topbar__title">{% block topbar_title %}Panel Admin{% endblock %}</span>
+        <span style="font-size:0.8rem; color:#888;">UrbanWear Admin</span>
+    </div>
+    <div class="admin-content">
+        {% block content %}{% endblock %}
+    </div>
+</main>
+
+</body>
+</html>

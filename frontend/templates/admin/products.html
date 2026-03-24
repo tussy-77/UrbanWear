@@ -1,70 +1,212 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Admin - Gestionar Productos</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <style>
-        body { background-color: #050505; color: white; font-family: 'Inter', sans-serif; }
-        .admin-container { max-width: 600px; margin: 60px auto; padding: 40px; background: #111; border-radius: 20px; border: 1px solid #333; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; color: #aaa; font-size: 14px; }
-        input, select, textarea { 
-            width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; 
-            border-radius: 8px; color: white; outline: none;
-        }
-        input:focus { border-color: #fff; }
-        .btn-upload { 
-            background: #fff; color: #000; width: 100%; padding: 15px; 
-            border: none; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 10px;
-        }
-        .btn-upload:hover { background: #ddd; }
-    </style>
-</head>
-<body>
-    <div class="admin-container">
-        <h2>📦 Cargar Nuevo Producto</h2>
-        <p style="color: #666; margin-bottom: 30px;">Completa los detalles para que aparezcan en la tienda.</p>
-        
-        <form action="/admin/agregar-producto" method="POST" enctype="multipart/form-data">
+{% extends 'admin/base_admin.html' %}
+{% block title %}Productos — Admin{% endblock %}
+{% block topbar_title %}Gestión de Productos{% endblock %}
+{% block content %}
 
-    <div class="form-group">
-        <label>Nombre del Producto</label>
-        <input type="text" name="nombre" placeholder="Ej: Camiseta Oversize" required>
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+    <div>
+        <h2 style="font-size:1.1rem; font-weight:800; margin:0;">Productos</h2>
+        <p style="font-size:0.82rem; color:#888; margin:4px 0 0;">{{ productos|length }} productos en total</p>
     </div>
-    
-    <div class="form-group">
-        <label>Precio (USD)</label>
-        <input type="number" step="0.01" name="precio" placeholder="24.99" required>
-    </div>
-    
-    <div class="form-group">
-        <label>Categoría</label>
-        <select name="categoria">
-            <option value="Hombres">Hombres</option>
-            <option value="Mujeres">Mujeres</option>
-            <option value="Accesorios">Accesorios</option>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label>Imagen del Producto</label>
-        <input type="file" name="imagen" accept="image/*" required>
-    </div>
-
-    <div class="form-group">
-    <label>Descripción</label>
-    <textarea name="descripcion" placeholder="Breve descripción del producto..."></textarea>
+    <button onclick="abrirModalAgregar()" class="btn-admin btn-admin--primary">+ AGREGAR PRODUCTO</button>
 </div>
 
-<div class="form-group">
-    <label>Cantidad en Stock</label>
-    <input type="number" name="stock" value="1" min="1" required>
+<!-- Tabla de productos -->
+<div class="admin-card" style="padding:0; overflow:hidden;">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>IMAGEN</th>
+                <th>NOMBRE</th>
+                <th>PRECIO</th>
+                <th>STOCK</th>
+                <th>TALLAS</th>
+                <th>HOME</th>
+                <th>ACCIONES</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in productos %}
+            <tr>
+                <td>
+                    {% if p.image_url %}
+                        {% if p.image_url.startswith('http') %}
+                        <img src="{{ p.image_url }}" style="width:48px; height:48px; object-fit:cover; border-radius:4px; border:1px solid #eee;">
+                        {% else %}
+                        <img src="/static/uploads/{{ p.image_url }}" style="width:48px; height:48px; object-fit:cover; border-radius:4px; border:1px solid #eee;">
+                        {% endif %}
+                    {% else %}
+                    <div style="width:48px; height:48px; background:#f0f0f0; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:1.2rem;">◆</div>
+                    {% endif %}
+                </td>
+                <td><form method="POST" action="/admin/productos/destacar/{{ p.id }}">
+                    <button type="submit" class="btn-admin {% if p.destacado %}btn-admin--primary{% else %}btn-admin--secondary{% endif %}"
+                        style="padding:6px 14px;">
+                        {% if p.destacado %}★{% else %}☆{% endif %}
+                    </button>
+                </form></td>
+                <td><strong>{{ p.name }}</strong></td>
+                <td>${{ "{:,.0f}".format(p.price) }}</td>
+                <td>
+                    <span class="stock-badge {% if p.stock > 5 %}stock-badge--ok{% elif p.stock > 0 %}stock-badge--low{% else %}stock-badge--empty{% endif %}">
+                        {{ p.stock }}
+                    </span>
+                </td>
+                <td style="color:#888; font-size:0.8rem;">{{ p.sizes or '—' }}</td>
+                <td>
+                    <div style="display:flex; gap:8px;">
+                        <button 
+                            data-id="{{ p.id }}"
+                            data-nombre="{{ p.name | e }}"
+                            data-precio="{{ p.price }}"
+                            data-descripcion="{{ p.description | e if p.description else '' }}"
+                            data-stock="{{ p.stock }}"
+                            data-tallas="{{ p.sizes | e if p.sizes else '' }}"
+                            data-imagen="{{ p.image_url | e if p.image_url else '' }}"
+                            onclick="abrirModalEditarBtn(this)"
+                            class="btn-admin btn-admin--secondary" style="padding:6px 14px;">
+                            EDITAR
+                        </button>
+                        <form method="POST" action="/admin/productos/eliminar/{{ p.id }}"
+                            onsubmit="return confirm('¿Eliminar {{ p.name }}?')">
+                            <button type="submit" class="btn-admin btn-admin--danger" style="padding:6px 14px;">
+                                ELIMINAR
+                            </button>
+                        </form>
+                        <form method="POST" action="/admin/productos/destacar/{{ p.id }}">
+                            <button type="submit" class="btn-admin {% if p.destacado %}btn-admin--primary{% else %}btn-admin--secondary{% endif %}" 
+                                style="padding:6px 14px;">
+                                {% if p.destacado %}★ DESTACADO{% else %}☆ DESTACAR{% endif %}
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 
-    <button type="submit" class="btn-upload">PUBLICAR PRODUCTO</button>
-
-</form>
+<!-- Modal Agregar -->
+<div class="admin-modal" id="modal-agregar">
+    <div class="admin-modal__panel">
+        <h3 class="admin-modal__title">Agregar Producto</h3>
+        <form method="POST" action="/admin/productos/agregar" enctype="multipart/form-data">
+            <div class="admin-campo">
+                <label class="admin-label">Nombre</label>
+                <input class="admin-input" name="nombre" required placeholder="Ej: Camiseta Oversize Negra">
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                <div class="admin-campo">
+                    <label class="admin-label">Precio</label>
+                    <input class="admin-input" name="precio" type="number" required placeholder="95000">
+                </div>
+                <div class="admin-campo">
+                    <label class="admin-label">Stock</label>
+                    <input class="admin-input" name="stock" type="number" value="10" placeholder="10">
+                </div>
+            </div>
+            <div class="admin-campo">
+                <label class="admin-label">Tallas (separadas por coma)</label>
+                <input class="admin-input" name="tallas" placeholder="S,M,L,XL">
+            </div>
+            <div class="admin-campo">
+                <label class="admin-label">Descripción</label>
+                <textarea class="admin-input" name="descripcion" rows="3" placeholder="Descripción del producto..."></textarea>
+            </div>
+            <div class="admin-campo">
+                <label class="admin-label">URL de imagen externa</label>
+                <input class="admin-input" name="imagen_url" type="url" placeholder="https://...">
+            </div>
+            <div class="admin-campo">
+                <label class="admin-label">O subir imagen desde PC</label>
+                <input class="admin-input" name="imagen" type="file" accept="image/*">
+            </div>
+            <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:8px;">
+                <button type="button" onclick="cerrarModal('modal-agregar')" class="btn-admin btn-admin--secondary">CANCELAR</button>
+                <button type="submit" class="btn-admin btn-admin--primary">GUARDAR PRODUCTO</button>
+            </div>
+        </form>
     </div>
-</body>
-</html>
+</div>
+
+<!-- Modal Editar -->
+<div class="admin-modal" id="modal-editar">
+    <div class="admin-modal__panel">
+        <h3 class="admin-modal__title">Editar Producto</h3>
+        <form method="POST" id="form-editar" enctype="multipart/form-data">
+            <div class="admin-campo">
+                <label class="admin-label">Nombre</label>
+                <input class="admin-input" name="nombre" id="edit-nombre" required>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                <div class="admin-campo">
+                    <label class="admin-label">Precio</label>
+                    <input class="admin-input" name="precio" id="edit-precio" type="number">
+                </div>
+                <div class="admin-campo">
+                    <label class="admin-label">Stock</label>
+                    <input class="admin-input" name="stock" id="edit-stock" type="number">
+                </div>
+            </div>
+            <div class="admin-campo">
+                <label class="admin-label">Tallas</label>
+                <input class="admin-input" name="tallas" id="edit-tallas" placeholder="S,M,L,XL">
+            </div>
+            <div class="admin-campo">
+                <label class="admin-label">Descripción</label>
+                <textarea class="admin-input" name="descripcion" id="edit-descripcion" rows="3"></textarea>
+            </div>
+            <div class="admin-campo">
+                <label class="admin-label">URL de imagen externa</label>
+                <input class="admin-input" name="imagen_url" id="edit-imagen-url" type="url">
+            </div>
+            <div class="admin-campo">
+                <label class="admin-label">O subir nueva imagen</label>
+                <input class="admin-input" name="imagen" type="file" accept="image/*">
+            </div>
+            <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:8px;">
+                <button type="button" onclick="cerrarModal('modal-editar')" class="btn-admin btn-admin--secondary">CANCELAR</button>
+                <button type="submit" class="btn-admin btn-admin--primary">GUARDAR CAMBIOS</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function abrirModalAgregar() {
+    document.getElementById('modal-agregar').classList.add('active');
+}
+
+function abrirModalEditarBtn(btn) {
+    const id          = btn.dataset.id;
+    const nombre      = btn.dataset.nombre;
+    const precio      = btn.dataset.precio;
+    const descripcion = btn.dataset.descripcion;
+    const stock       = btn.dataset.stock;
+    const tallas      = btn.dataset.tallas;
+    const imagen      = btn.dataset.imagen;
+
+    document.getElementById('form-editar').action = `/admin/productos/editar/${id}`;
+    document.getElementById('edit-nombre').value      = nombre;
+    document.getElementById('edit-precio').value      = precio;
+    document.getElementById('edit-descripcion').value = descripcion;
+    document.getElementById('edit-stock').value       = stock;
+    document.getElementById('edit-tallas').value      = tallas;
+    document.getElementById('edit-imagen-url').value  = imagen.startsWith('http') ? imagen : '';
+    document.getElementById('modal-editar').classList.add('active');
+}
+
+function cerrarModal(id) {
+    document.getElementById(id).classList.remove('active');
+}
+
+// Cerrar al click fuera
+document.querySelectorAll('.admin-modal').forEach(modal => {
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) cerrarModal(this.id);
+    });
+});
+</script>
+
+{% endblock %}

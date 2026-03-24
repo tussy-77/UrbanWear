@@ -1,0 +1,175 @@
+{% extends "public/base.html" %}
+{% block title %}UrbanWear — Producto{% endblock %}
+{% block content %}
+
+<div style="background:#f0f0f0; min-height:100vh; padding:40px 0;">
+    <div class="container" style="max-width:1100px;">
+
+        <!-- Breadcrumb -->
+        <p style="font-size:0.75rem; color:#888; margin-bottom:32px; letter-spacing:0.5px;">
+            <a href="/" style="color:#888;">Inicio</a> /
+            <a href="/catalogo" style="color:#888;">Catálogo</a> /
+            <span style="color:#111;">{{ producto.name }}</span>
+        </p>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr 420px; gap:16px; align-items:start;">
+
+            <!-- Imagen secundaria (miniatura) -->
+            <div style="position:sticky; top:100px;">
+                <div style="aspect-ratio:3/4; background:#e0e0e0; overflow:hidden;">
+                    {% if producto.image_url %}
+                    <img src="/static/uploads/{{ producto.image_url }}"
+                        style="width:100%; height:100%; object-fit:cover;">
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Imagen principal (grande) -->
+            <div style="position:sticky; top:100px;">
+                <div style="aspect-ratio:3/4; background:#e0e0e0; overflow:hidden;">
+                    {% if producto.image_url %}
+                    <img src="/static/uploads/{{ producto.image_url }}"
+                        style="width:100%; height:100%; object-fit:cover; object-position:center top;">
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Info del producto -->
+            <div style="padding:8px 0 0 24px; position:sticky; top:100px;">
+
+                {% if producto.item_number %}
+                <p style="font-size:0.75rem; color:#888; margin-bottom:8px; letter-spacing:0.5px;">
+                    Item: {{ producto.item_number }}
+                </p>
+                {% endif %}
+
+                <h1 style="font-size:1.05rem; font-weight:800; color:#111; letter-spacing:1px; text-transform:uppercase; margin-bottom:12px; line-height:1.3;">
+                    {{ producto.name }}
+                </h1>
+
+                <p style="font-size:1.1rem; font-weight:600; color:#111; margin-bottom:24px;">
+                    ${{ "{:,.0f}".format(producto.price) }}
+                </p>
+
+                <!-- Tallas -->
+                {% if producto.sizes %}
+                <div style="margin-bottom:24px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <p style="font-size:0.75rem; color:#888; margin:0;">El modelo mide 1.86m y tiene una talla L</p>
+                    </div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;" id="tallas-container">
+                        {% for talla in producto.sizes.split(',') %}
+                        <button onclick="seleccionarTalla(this, '{{ talla.strip() }}')"
+                            class="talla-btn">
+                            {{ talla.strip() }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Botones -->
+               <div style="margin-bottom:28px;">
+                    <button data-id="{{producto.id}}" 
+                        onclick="agregarAlCarrito(parseInt(this.dataset.id))"
+                        style="width:100%; padding:16px; background:#111; color:#fff; border:none; font-size:0.78rem; font-weight:800; letter-spacing:2px; cursor:pointer; font-family:inherit; margin-bottom:10px;">
+                        AGREGAR AL CARRITO
+                    </button>
+                </div>
+
+                <!-- Beneficios -->
+                <div style="border-top:1px solid #ddd; padding-top:20px; display:flex; flex-direction:column; gap:14px;">
+                    <div style="display:flex; align-items:flex-start; gap:12px;">
+                        <span style="font-size:1.1rem; margin-top:1px;">📦</span>
+                        <div>
+                            <p style="font-size:0.8rem; font-weight:700; color:#111; margin:0 0 2px;">ENVÍOS GRATIS</p>
+                            <p style="font-size:0.75rem; color:#888; margin:0;">Aplica para ropa sin descuento.</p>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:12px;">
+                        <span style="font-size:1.1rem; margin-top:1px;">⏱</span>
+                        <div>
+                            <p style="font-size:0.8rem; font-weight:700; color:#111; margin:0 0 2px;">TE LLEGA EN 6 DÍAS</p>
+                            <p style="font-size:0.75rem; color:#888; margin:0;">Solo 6 días hábiles para ciudades principales.</p>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:12px;">
+                        <span style="font-size:1.1rem; margin-top:1px;">↩</span>
+                        <div>
+                            <p style="font-size:0.8rem; font-weight:700; color:#111; margin:0 0 2px;">DEVOLUCIONES GRATIS</p>
+                            <p style="font-size:0.75rem; color:#888; margin:0;">Aplica para ropa sin descuento.</p>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:12px;">
+                        <span style="font-size:1.1rem; margin-top:1px;">💳</span>
+                        <div>
+                            <p style="font-size:0.8rem; font-weight:700; color:#111; margin:0 0 2px;">MÉTODOS DE PAGO</p>
+                            <p style="font-size:0.75rem; color:#888; margin:0;">Tarjeta de crédito, débito, contraentrega y Nequi.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Descripción -->
+                {% if producto.description %}
+                <div style="border-top:1px solid #ddd; margin-top:24px; padding-top:20px;">
+                    <button onclick="toggleDescripcion()" 
+                        style="display:flex; justify-content:space-between; align-items:center; width:100%; background:none; border:none; cursor:pointer; padding:0; font-family:inherit;">
+                        <span style="font-size:0.82rem; font-weight:800; color:#111; letter-spacing:1px;">SOBRE EL PRODUCTO</span>
+                        <span id="desc-icon" style="font-size:1.2rem; color:#555;">—</span>
+                    </button>
+                    <div id="desc-body" style="margin-top:16px;">
+                        <p style="font-size:0.85rem; color:#555; line-height:1.7; margin:0;">
+                            {{ producto.description }}
+                        </p>
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.talla-btn {
+    width: 52px;
+    height: 52px;
+    border: 1px solid #ccc;
+    background: #fff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #111;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+}
+.talla-btn:hover { border-color: #111; }
+.talla-btn--selected { background: #111; color: #fff; border-color: #111; }
+.talla-btn--agotado { color: #ccc; border-color: #eee; cursor: not-allowed; text-decoration: line-through; }
+</style>
+
+<script>
+let tallaSeleccionada = null;
+
+function seleccionarTalla(btn, talla) {
+    document.querySelectorAll('.talla-btn').forEach(b => b.classList.remove('talla-btn--selected'));
+    btn.classList.add('talla-btn--selected');
+    tallaSeleccionada = talla;
+}
+
+function toggleDescripcion() {
+    const body = document.getElementById('desc-body');
+    const icon = document.getElementById('desc-icon');
+    const isOpen = body.style.display !== 'none';
+    body.style.display = isOpen ? 'none' : 'block';
+    icon.textContent = isOpen ? '+' : '—';
+}
+
+function agregarDesdeDetalle(productId) {
+    const token = localStorage.getItem('urban_token');
+    if (!token) { abrirModal(); return; }
+    agregarAlCarrito(productId);
+}
+</script>
+
+{% endblock %}

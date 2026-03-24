@@ -73,6 +73,13 @@ def create_app():
 
     @app.route("/")
     def home():
+        destacados = Product.query.filter_by(destacado=True).limit(4).all()
+        if len(destacados) < 4:
+            productos_db = Product.query.order_by(Product.id.desc()).limit(4).all()
+        else:
+            productos_db = destacados
+            return render_template('public/home.html', productos=productos_db)
+        
         # Traemos los productos de la DB para que se vean en el Home
         productos_db = Product.query.all()
         return render_template('public/home.html', productos=productos_db)
@@ -195,50 +202,120 @@ def create_app():
     @app.route('/informacion')
     def informacion_view():
         return render_template('public/informacion.html')
+    
+    @app.route('/producto/<int:product_id>')
+    def producto_detalle(product_id):
+        producto = Product.query.get_or_404(product_id)
+        return render_template('public/producto.html', producto=producto)
 
-    # ---------Rutas de Administración-------------
+   # ---------Rutas de Administración-------------
+
+    @app.route('/admin')
+    def admin_dashboard():
+        from sqlalchemy import func
+        total_productos  = Product.query.count()
+        total_pedidos    = Order.query.count()
+        total_usuarios   = User.query.count()
+        total_ingresos   = db.session.query(func.sum(Order.total_price)).scalar() or 0
+        ultimos_pedidos  = Order.query.order_by(Order.created_at.desc()).limit(5).all()
+        ultimos_usuarios = User.query.order_by(User.created_at.desc()).limit(5).all()
+        return render_template('admin/dashboard.html',
+            total_productos  = total_productos,
+            total_pedidos    = total_pedidos,
+            total_usuarios   = total_usuarios,
+            total_ingresos   = total_ingresos,
+            ultimos_pedidos  = ultimos_pedidos,
+            ultimos_usuarios = ultimos_usuarios
+        )
 
     @app.route('/admin/productos')
     def admin_productos():
-        return render_template('admin/products.html')
+        productos = Product.query.order_by(Product.id.desc()).all()
+        return render_template('admin/products.html', productos=productos)
 
-    @app.route('/admin/agregar-producto', methods=['POST'])
-    def agregar_producto():
-        nombre = request.form.get('nombre')
-        precio = request.form.get('precio')
-        categoria = request.form.get('categoria')
-        file = request.files.get('imagen')
-        
-        descripcion = request.form.get('descripcion', 'Sin descripción')
-        stock = request.form.get('stock', 10)
+    @app.route('/admin/productos/agregar', methods=['POST'])
+    def admin_agregar_producto():
+        nombre      = request.form.get('nombre')
+        precio      = request.form.get('precio')
+        descripcion = request.form.get('descripcion', '')
+        stock       = request.form.get('stock', 10)
+        tallas      = request.form.get('tallas', '')
+        imagen_url  = request.form.get('imagen_url', '')
+        file        = request.files.get('imagen')
 
-        if not file or not nombre or not precio:
-            flash("Todos los campos son obligatorios")
-            return redirect(url_for('admin_productos'))
+        if file and file.filename:
+            filename = secure_filename(file.filename)
+            if not os.path.exists(app.config['UPLOAD_FOLDER']):
+                os.makedirs(app.config['UPLOAD_FOLDER'])
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            image_final = filename
+        elif imagen_url:
+            image_final = imagen_url
+        else:
+            image_final = ''
 
-        filename = secure_filename(file.filename)
-        
-        if not os.path.exists(app.config['UPLOAD_FOLDER']):
-            os.makedirs(app.config['UPLOAD_FOLDER'])
-            
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-
-        nuevo_producto = Product(
-            name=nombre,
-            description=descripcion,
-            price=float(precio),
-            stock=int(stock),        
-            image_url=filename,
-            category_id=1
+        nuevo = Product(
+            name        = nombre,
+            description = descripcion,
+            price       = float(precio),
+            stock       = int(stock),
+            image_url   = image_final,
+            sizes       = tallas,
+            category_id = 1
         )
+        db.session.add(nuevo)
+        db.session.commit()
+        return redirect(url_for('admin_productos'))
 
-        try:
-            db.session.add(nuevo_producto)
-            db.session.commit()
-            return redirect(url_for('home'))
-        except Exception as e:
-            db.session.rollback()
-            return f"Error: {e}", 500
+    @app.route('/admin/productos/editar/<int:product_id>', methods=['POST'])
+    def admin_editar_producto(product_id):
+        producto             = Product.query.get_or_404(product_id)
+        producto.name        = request.form.get('nombre')
+        producto.price       = float(request.form.get('precio'))
+        producto.description = request.form.get('descripcion', '')
+        producto.stock       = int(request.form.get('stock', 10))
+        producto.sizes       = request.form.get('tallas', '')
+
+        imagen_url = request.form.get('imagen_url', '')
+        file       = request.files.get('imagen')
+
+        if file and file.filename:
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            producto.image_url = filename
+        elif imagen_url:
+            producto.image_url = imagen_url
+
+        db.session.commit()
+        return redirect(url_for('admin_productos'))
+
+    @app.route('/admin/productos/eliminar/<int:product_id>', methods=['POST'])
+    def admin_eliminar_producto(product_id):
+        producto = Product.query.get_or_404(product_id)
+        
+        OrderItem.query.filter_by(product_id=product_id).delete()
+        CartItem.query.filter_by(product_id=product_id).delete()
+        
+        
+        db.session.delete(producto)
+        db.session.commit()
+        return redirect(url_for('admin_productos'))
+
+    @app.route('/admin/pedidos')
+    def admin_pedidos():
+        pedidos = Order.query.order_by(Order.created_at.desc()).all()
+        return render_template('admin/orders.html', pedidos=pedidos)
+
+    @app.route('/admin/usuarios')
+    def admin_usuarios():
+        usuarios = User.query.order_by(User.created_at.desc()).all()
+        return render_template('admin/customers.html', usuarios=usuarios)
+    @app.route('/admin/productos/destacar/<int:product_id>', methods=['POST'])
+    def admin_destacar_producto(product_id):
+        producto = Product.query.get_or_404(product_id)
+        producto.destacado = not producto.destacado
+        db.session.commit()
+        return redirect(url_for('admin_productos'))
 
     return app 
 
