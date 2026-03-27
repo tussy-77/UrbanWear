@@ -5,40 +5,143 @@
 {% block content %}
 <main class="section-padding">
     <div class="container">
-        <header class="featured__header" style="margin-bottom: 40px;">
-            <h1 class="section-title">Nuestro Catálogo</h1>
-            <p style="color: #888;">Explora todos nuestros productos disponibles</p>
+
+        <!-- Header -->
+        <header class="featured__header" style="margin-bottom:32px;">
+            <h1 class="section-title">Catálogo</h1>
+            <p style="color:#888;">Explora toda la colección UrbanWear</p>
         </header>
 
-        <div class="featured__grid">
+        <!-- Tabs HOMBRE / MUJER -->
+        <div style="display:flex; gap:0; border-bottom:2px solid #e5e7eb; margin-bottom:36px;">
+            <button id="tab-hombre" onclick="setTab('hombre')"
+                style="padding:12px 32px; font-size:0.85rem; font-weight:800; letter-spacing:0.08em;
+                       border:none; background:none; cursor:pointer; border-bottom:3px solid transparent;
+                       margin-bottom:-2px; transition:all .2s;">
+                HOMBRE
+            </button>
+            <button id="tab-mujer" onclick="setTab('mujer')"
+                style="padding:12px 32px; font-size:0.85rem; font-weight:800; letter-spacing:0.08em;
+                       border:none; background:none; cursor:pointer; border-bottom:3px solid transparent;
+                       margin-bottom:-2px; transition:all .2s;">
+                MUJER
+            </button>
+            <button id="tab-todos" onclick="setTab('todos')"
+                style="padding:12px 32px; font-size:0.85rem; font-weight:800; letter-spacing:0.08em;
+                       border:none; background:none; cursor:pointer; border-bottom:3px solid transparent;
+                       margin-bottom:-2px; transition:all .2s;">
+                TODOS
+            </button>
+        </div>
+
+        <!-- Contador -->
+        <p id="catalogo-count" style="color:#888; font-size:0.82rem; margin-bottom:24px;"></p>
+
+        <!-- Grid de productos -->
+        <div class="featured__grid" id="catalogo-grid">
             {% for producto in productos %}
-            <div class="product-card">
-                <div class="product-card__image">
-                    {% if producto.image_url %}
-                        <img src="{{ url_for('static', filename='uploads/' + producto.image_url) }}" 
-                             alt="{{ producto.name }}" 
-                             style="width: 100%; height: 100%; object-fit: cover;">
-                    {% else %}
-                        <div class="product-card__image-placeholder"></div>
-                    {% endif %}
-                </div>
-                
+            <div class="product-card" data-gender="{{ producto.gender or 'unisex' }}">
+                <a href="/producto/{{ producto.id }}" style="text-decoration:none; color:inherit;">
+                    <div class="product-card__image">
+                        {% if producto.image_src %}
+                            <img src="{{ producto.image_src }}"
+                                 alt="{{ producto.name }}"
+                                 style="width:100%; height:100%; object-fit:cover;">
+                        {% else %}
+                            <div class="product-card__image-placeholder"></div>
+                        {% endif %}
+                    </div>
+                </a>
                 <div class="product-card__content">
-                    <span class="product-card__category">Colección Real</span>
-                    <h3 class="product-card__title">{{ producto.name }}</h3>
-                    <p class="product-card__price">${{ producto.price }}</p>
-                    
-                    <button class="btn btn--secondary btn--full" onclick="agregarAlCarrito('{{ producto.id }}')">
-                        Agregar al carrito
-                    </button>
+                    <span class="product-card__category">
+                        {{ (producto.gender or 'unisex')|capitalize }}
+                    </span>
+                    <h3 class="product-card__title">
+                        <a href="/producto/{{ producto.id }}" style="text-decoration:none; color:inherit;">
+                            {{ producto.name }}
+                        </a>
+                    </h3>
+                    <p class="product-card__price">${{ "{:,.0f}".format(producto.price) }}</p>
+                    <a href="/producto/{{ producto.id }}" class="btn btn--secondary btn--full"
+                       style="text-align:center; display:block;">
+                        Ver producto
+                    </a>
                 </div>
             </div>
             {% else %}
-                <div style="grid-column: 1/-1; text-align: center; padding: 50px;">
-                    <p>Aún no hay productos en el catálogo. ¡Vuelve pronto!</p>
-                </div>
+            <div id="empty-state" style="grid-column:1/-1; text-align:center; padding:60px 0;">
+                <p style="color:#888;">Aún no hay productos en el catálogo.</p>
+            </div>
             {% endfor %}
         </div>
+
+        <!-- Sin resultados para el tab activo -->
+        <div id="no-results" style="display:none; text-align:center; padding:60px 0;">
+            <p style="color:#888; font-size:0.9rem;">No hay productos en esta categoría por el momento.</p>
+        </div>
+
     </div>
 </main>
+
+<script type="application/json" id="catalogo-config">{{ genero_inicial | default('hombre') | tojson }}</script>
+
+<script>
+(function () {
+    var generoInicial = JSON.parse(document.getElementById('catalogo-config').textContent);
+    var tabActivo = generoInicial || 'hombre';
+
+    var ACTIVE_COLOR = '#FF6B00';
+
+    function setTab(genero) {
+        tabActivo = genero;
+
+        ['hombre', 'mujer', 'todos'].forEach(function (g) {
+            var btn = document.getElementById('tab-' + g);
+            if (!btn) return;
+            if (g === genero) {
+                btn.style.borderBottomColor = ACTIVE_COLOR;
+                btn.style.color = ACTIVE_COLOR;
+            } else {
+                btn.style.borderBottomColor = 'transparent';
+                btn.style.color = '#333';
+            }
+        });
+
+        var cards = document.querySelectorAll('#catalogo-grid .product-card');
+        var visible = 0;
+
+        cards.forEach(function (card) {
+            var gender = card.getAttribute('data-gender') || 'unisex';
+            var show = false;
+
+            if (genero === 'todos') {
+                show = true;
+            } else if (genero === 'hombre') {
+                show = (gender === 'hombre' || gender === 'unisex');
+            } else if (genero === 'mujer') {
+                show = (gender === 'mujer' || gender === 'unisex');
+            }
+
+            card.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+
+        var countEl = document.getElementById('catalogo-count');
+        if (countEl) {
+            var label = genero === 'todos' ? 'Todos los productos' :
+                        genero === 'hombre' ? 'Hombre' : 'Mujer';
+            countEl.textContent = visible + ' producto' + (visible !== 1 ? 's' : '') + ' — ' + label;
+        }
+
+        var noResults = document.getElementById('no-results');
+        if (noResults) noResults.style.display = visible === 0 ? 'block' : 'none';
+    }
+
+    // Exponer para los botones onclick
+    window.setTab = setTab;
+
+    // Activar tab inicial al cargar
+    setTab(tabActivo);
+})();
+</script>
 {% endblock %}

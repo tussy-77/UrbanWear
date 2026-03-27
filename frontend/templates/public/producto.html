@@ -17,8 +17,8 @@
             <!-- Imagen secundaria (miniatura) -->
             <div style="position:sticky; top:100px;">
                 <div style="aspect-ratio:3/4; background:#e0e0e0; overflow:hidden;">
-                    {% if producto.image_url %}
-                    <img src="/static/uploads/{{ producto.image_url }}"
+                    {% if producto.image_src %}
+                    <img src="{{ producto.image_src }}"
                         style="width:100%; height:100%; object-fit:cover;">
                     {% endif %}
                 </div>
@@ -27,8 +27,8 @@
             <!-- Imagen principal (grande) -->
             <div style="position:sticky; top:100px;">
                 <div style="aspect-ratio:3/4; background:#e0e0e0; overflow:hidden;">
-                    {% if producto.image_url %}
-                    <img src="/static/uploads/{{ producto.image_url }}"
+                    {% if producto.image_src %}
+                    <img src="{{ producto.image_src }}"
                         style="width:100%; height:100%; object-fit:cover; object-position:center top;">
                     {% endif %}
                 </div>

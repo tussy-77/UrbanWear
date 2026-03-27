@@ -1,52 +1,91 @@
 {% extends 'admin/base_admin.html' %}
 {% block title %}Dashboard — Admin{% endblock %}
 {% block topbar_title %}Dashboard{% endblock %}
+
 {% block content %}
 
-<div style="display:grid; grid-template-columns:repeat(4,1fr); gap:20px; margin-bottom:32px;">
-    <div class="admin-card" style="text-align:center;">
-        <p style="font-size:0.72rem; font-weight:700; color:#888; letter-spacing:1px; margin-bottom:8px;">PRODUCTOS</p>
-        <p style="font-size:2rem; font-weight:800; color:#111;">{{ total_productos }}</p>
+<!-- Tarjetas de métricas -->
+<div style="display:grid; grid-template-columns:repeat(6,1fr); gap:16px; margin-bottom:28px;">
+    <div class="admin-card" style="text-align:center; padding:20px 12px;">
+        <p style="font-size:0.68rem; font-weight:700; color:#888; letter-spacing:1px; margin-bottom:8px;">PRODUCTOS</p>
+        <p style="font-size:1.9rem; font-weight:800; color:#111;">{{ total_productos }}</p>
     </div>
-    <div class="admin-card" style="text-align:center;">
-        <p style="font-size:0.72rem; font-weight:700; color:#888; letter-spacing:1px; margin-bottom:8px;">PEDIDOS</p>
-        <p style="font-size:2rem; font-weight:800; color:#111;">{{ total_pedidos }}</p>
+    <div class="admin-card" style="text-align:center; padding:20px 12px;">
+        <p style="font-size:0.68rem; font-weight:700; color:#888; letter-spacing:1px; margin-bottom:8px;">PEDIDOS</p>
+        <p style="font-size:1.9rem; font-weight:800; color:#111;">{{ total_pedidos }}</p>
     </div>
-    <div class="admin-card" style="text-align:center;">
-        <p style="font-size:0.72rem; font-weight:700; color:#888; letter-spacing:1px; margin-bottom:8px;">USUARIOS</p>
-        <p style="font-size:2rem; font-weight:800; color:#111;">{{ total_usuarios }}</p>
+    <div class="admin-card" style="text-align:center; padding:20px 12px;">
+        <p style="font-size:0.68rem; font-weight:700; color:#888; letter-spacing:1px; margin-bottom:8px;">USUARIOS</p>
+        <p style="font-size:1.9rem; font-weight:800; color:#111;">{{ total_usuarios }}</p>
     </div>
-    <div class="admin-card" style="text-align:center;">
-        <p style="font-size:0.72rem; font-weight:700; color:#888; letter-spacing:1px; margin-bottom:8px;">INGRESOS</p>
-        <p style="font-size:2rem; font-weight:800; color:#111;">${{ "{:,.0f}".format(total_ingresos) }}</p>
+    <div class="admin-card" style="text-align:center; padding:20px 12px;">
+        <p style="font-size:0.68rem; font-weight:700; color:#888; letter-spacing:1px; margin-bottom:8px;">INGRESOS</p>
+        <p style="font-size:1.5rem; font-weight:800; color:#111;">${{ "{:,.0f}".format(total_ingresos) }}</p>
+    </div>
+    <div class="admin-card" style="text-align:center; padding:20px 12px;">
+        <p style="font-size:0.68rem; font-weight:700; color:#e53e3e; letter-spacing:1px; margin-bottom:8px;">PENDIENTES</p>
+        <p style="font-size:1.9rem; font-weight:800; color:#e53e3e;">{{ pedidos_pendientes }}</p>
+    </div>
+    <div class="admin-card" style="text-align:center; padding:20px 12px;">
+        <p style="font-size:0.68rem; font-weight:700; color:#888; letter-spacing:1px; margin-bottom:8px;">TICKET PROM.</p>
+        <p style="font-size:1.5rem; font-weight:800; color:#111;">${{ "{:,.0f}".format(ticket_promedio) }}</p>
     </div>
 </div>
 
+<!-- Gráficas -->
+<div style="display:grid; grid-template-columns:2fr 1fr; gap:20px; margin-bottom:24px;">
+    <div class="admin-card">
+        <h3 style="font-size:0.78rem; font-weight:700; color:#888; letter-spacing:1px; margin-bottom:20px;">VENTAS ÚLTIMOS 6 MESES</h3>
+        <canvas id="chartVentas" height="110"></canvas>
+    </div>
+    <div class="admin-card">
+        <h3 style="font-size:0.78rem; font-weight:700; color:#888; letter-spacing:1px; margin-bottom:20px;">PEDIDOS POR ESTADO</h3>
+        <canvas id="chartEstados" height="110"></canvas>
+        <div id="estadosLeyenda" style="margin-top:16px; display:flex; flex-wrap:wrap; gap:8px; justify-content:center;"></div>
+    </div>
+</div>
+
+<!-- Tablas inferiores -->
 <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
     <div class="admin-card">
-        <h3 style="font-size:0.85rem; font-weight:700; margin-bottom:16px;">ÚLTIMOS PEDIDOS</h3>
+        <h3 style="font-size:0.78rem; font-weight:700; color:#888; letter-spacing:1px; margin-bottom:16px;">TOP 5 PRODUCTOS MÁS VENDIDOS</h3>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>PRODUCTO</th>
+                    <th>UNIDADES</th>
+                    <th>INGRESOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in top_productos %}{% set i = loop.index %}
+                <tr>
+                    <td style="color:#bbb; font-weight:700;">{{ i }}</td>
+                    <td style="font-weight:600;">{{ p.name }}</td>
+                    <td>{{ p.total_vendido }}</td>
+                    <td>${{ "{:,.0f}".format(p.ingresos) }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" style="text-align:center; color:#bbb; padding:24px;">Sin ventas aún</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="admin-card">
+        <h3 style="font-size:0.78rem; font-weight:700; color:#888; letter-spacing:1px; margin-bottom:16px;">ÚLTIMOS PEDIDOS</h3>
         <table class="admin-table">
             <thead><tr><th>ORDEN</th><th>TOTAL</th><th>ESTADO</th></tr></thead>
             <tbody>
                 {% for p in ultimos_pedidos %}
                 <tr>
-                    <td>#{{ p.id }}</td>
+                    <td style="font-weight:600;">#{{ p.id }}</td>
                     <td>${{ "{:,.0f}".format(p.total_price) }}</td>
-                    <td><span style="font-size:0.72rem; font-weight:700; color:#888;">{{ p.status | upper }}</span></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <div class="admin-card">
-        <h3 style="font-size:0.85rem; font-weight:700; margin-bottom:16px;">ÚLTIMOS USUARIOS</h3>
-        <table class="admin-table">
-            <thead><tr><th>NOMBRE</th><th>EMAIL</th></tr></thead>
-            <tbody>
-                {% for u in ultimos_usuarios %}
-                <tr>
-                    <td>{{ u.name }}</td>
-                    <td style="color:#888; font-size:0.8rem;">{{ u.email }}</td>
+                    <td>
+                        <span class="status-badge {% if p.status == 'completado' %}status-badge--ok{% elif p.status == 'pendiente' %}status-badge--pending{% else %}status-badge--default{% endif %}">
+                            {{ p.status | upper }}
+                        </span>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -54,4 +93,88 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+<script type="application/json" id="dashboard-data">{
+    "mesesLabels":   {{ meses_labels | safe }},
+    "mesesTotales":  {{ meses_totales | safe }},
+    "estadosLabels": {{ estados_labels | safe }},
+    "estadosValores":{{ estados_valores | safe }}
+}</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    const _d = JSON.parse(document.getElementById('dashboard-data').textContent);
+    const mesesLabels    = _d.mesesLabels;
+    const mesesTotales   = _d.mesesTotales;
+    const estadosLabels  = _d.estadosLabels;
+    const estadosValores = _d.estadosValores;
+
+    // Gráfica de barras — ventas mensuales
+    new Chart(document.getElementById('chartVentas'), {
+        type: 'bar',
+        data: {
+            labels: mesesLabels,
+            datasets: [{
+                label: 'Ingresos ($)',
+                data: mesesTotales,
+                backgroundColor: 'rgba(255, 107, 53, 0.15)',
+                borderColor: '#ff6b35',
+                borderWidth: 2,
+                borderRadius: 6,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ' $' + ctx.parsed.y.toLocaleString('es-CO')
+                    }
+                }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { font: { size: 11, weight: '600' } } },
+                y: {
+                    grid: { color: '#f0f0f0' },
+                    ticks: {
+                        font: { size: 10 },
+                        callback: v => '$' + (v >= 1000 ? (v/1000).toFixed(0) + 'k' : v)
+                    }
+                }
+            }
+        }
+    });
+
+    // Gráfica de dona — pedidos por estado
+    const coloresDona = ['#ff6b35','#111','#888','#e5e5e5','#e53e3e'];
+    new Chart(document.getElementById('chartEstados'), {
+        type: 'doughnut',
+        data: {
+            labels: estadosLabels,
+            datasets: [{
+                data: estadosValores,
+                backgroundColor: coloresDona.slice(0, estadosLabels.length),
+                borderWidth: 0,
+                hoverOffset: 6,
+            }]
+        },
+        options: {
+            responsive: true,
+            cutout: '68%',
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // Leyenda manual de la dona
+    const leyenda = document.getElementById('estadosLeyenda');
+    estadosLabels.forEach((label, i) => {
+        const el = document.createElement('div');
+        el.style.cssText = 'display:flex;align-items:center;gap:5px;font-size:0.72rem;font-weight:600;';
+        el.innerHTML = `<span style="width:10px;height:10px;border-radius:50%;background:${coloresDona[i]};display:inline-block;"></span>${label} (${estadosValores[i]})`;
+        leyenda.appendChild(el);
+    });
+</script>
 {% endblock %}

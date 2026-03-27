@@ -168,6 +168,9 @@
         <a href="/admin/usuarios" class="admin-nav__item {% if '/admin/usuarios' in request.path %}admin-nav__item--active{% endif %}">
             👥 USUARIOS
         </a>
+        <a href="/admin/editorial" class="admin-nav__item {% if '/admin/editorial' in request.path %}admin-nav__item--active{% endif %}">
+            🎨 EDITORIAL
+        </a>
     </nav>
     <div class="admin-sidebar__footer">
         <a href="/">← Ver tienda</a>
@@ -185,5 +188,6 @@
     </div>
 </main>
 
+{% block scripts %}{% endblock %}
 </body>
 </html>

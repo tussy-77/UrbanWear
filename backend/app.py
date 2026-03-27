@@ -12,8 +12,9 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from itsdangerous import URLSafeTimedSerializer
+from datetime import datetime
 from backend.routes.auth import auth_bp, mail, oauth
-from backend.models import User, Category, Product, Order, OrderItem, Cart, CartItem, Address
+from backend.models import User, Category, Product, Order, OrderItem, Cart, CartItem, Address, Banner
 
 
 
@@ -74,15 +75,24 @@ def create_app():
     @app.route("/")
     def home():
         destacados = Product.query.filter_by(destacado=True).limit(4).all()
-        if len(destacados) < 4:
-            productos_db = Product.query.order_by(Product.id.desc()).limit(4).all()
-        else:
+        if len(destacados) >= 4:
             productos_db = destacados
-            return render_template('public/home.html', productos=productos_db)
-        
-        # Traemos los productos de la DB para que se vean en el Home
-        productos_db = Product.query.all()
-        return render_template('public/home.html', productos=productos_db)
+        elif destacados:
+            ids_destacados = [p.id for p in destacados]
+            relleno = Product.query.filter(
+                ~Product.id.in_(ids_destacados)
+            ).order_by(Product.id.desc()).limit(4 - len(destacados)).all()
+            productos_db = destacados + relleno
+        else:
+            productos_db = Product.query.order_by(Product.id.desc()).limit(4).all()
+        hero_banner    = Banner.query.filter_by(active=True, position='hero').first()
+        editorial      = Banner.query.filter_by(active=True, position='editorial').first()
+        banner_hombre  = Banner.query.filter_by(active=True, position='categoria_hombre').first()
+        banner_mujer   = Banner.query.filter_by(active=True, position='categoria_mujer').first()
+        return render_template('public/home.html', productos=productos_db,
+                               hero_banner=hero_banner, banner=editorial,
+                               banner_hombre=banner_hombre, banner_mujer=banner_mujer)
+
     @app.route('/perfil')
     def perfil():
         return render_template('public/perfil.html')
@@ -107,7 +117,10 @@ def create_app():
     @app.route("/catalogo")
     def catalogo():
         todos_los_productos = Product.query.all()
-        return render_template('public/catalogo.html', productos=todos_los_productos)
+        genero_inicial = request.args.get('genero', 'hombre')
+        return render_template('public/catalogo.html',
+                               productos=todos_los_productos,
+                               genero_inicial=genero_inicial)
     
     @app.route('/checkout')
     def checkout_view():
@@ -212,20 +225,66 @@ def create_app():
 
     @app.route('/admin')
     def admin_dashboard():
-        from sqlalchemy import func
-        total_productos  = Product.query.count()
-        total_pedidos    = Order.query.count()
-        total_usuarios   = User.query.count()
-        total_ingresos   = db.session.query(func.sum(Order.total_price)).scalar() or 0
+        from sqlalchemy import func, extract
+        import json
+
+        hoy = datetime.utcnow()
+
+        # Métricas básicas
+        total_productos    = Product.query.count()
+        total_pedidos      = Order.query.count()
+        total_usuarios     = User.query.count()
+        total_ingresos     = db.session.query(func.sum(Order.total_price)).scalar() or 0
+        pedidos_pendientes = Order.query.filter_by(status='pendiente').count()
+        ticket_promedio    = db.session.query(func.avg(Order.total_price)).scalar() or 0
+
+        # Últimas filas
         ultimos_pedidos  = Order.query.order_by(Order.created_at.desc()).limit(5).all()
         ultimos_usuarios = User.query.order_by(User.created_at.desc()).limit(5).all()
+
+        # Ventas por mes (últimos 6 meses)
+        nombres_meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
+        meses_labels  = []
+        meses_totales = []
+        for i in range(5, -1, -1):
+            mes  = ((hoy.month - 1 - i) % 12) + 1
+            anio = hoy.year + ((hoy.month - 1 - i) // 12)
+            total_mes = db.session.query(func.sum(Order.total_price)).filter(
+                extract('month', Order.created_at) == mes,
+                extract('year',  Order.created_at) == anio
+            ).scalar() or 0
+            meses_labels.append(nombres_meses[mes - 1])
+            meses_totales.append(float(total_mes))
+
+        # Pedidos por estado
+        estados_raw    = db.session.query(Order.status, func.count(Order.id)).group_by(Order.status).all()
+        estados_labels = [e[0].capitalize() for e in estados_raw]
+        estados_valores = [e[1] for e in estados_raw]
+
+        # Top 5 productos más vendidos
+        top_productos = db.session.query(
+            Product.name,
+            func.sum(OrderItem.quantity).label('total_vendido'),
+            func.sum(OrderItem.price_at_purchase * OrderItem.quantity).label('ingresos')
+        ).join(OrderItem, OrderItem.product_id == Product.id
+        ).group_by(Product.name
+        ).order_by(func.sum(OrderItem.quantity).desc()
+        ).limit(5).all()
+
         return render_template('admin/dashboard.html',
-            total_productos  = total_productos,
-            total_pedidos    = total_pedidos,
-            total_usuarios   = total_usuarios,
-            total_ingresos   = total_ingresos,
-            ultimos_pedidos  = ultimos_pedidos,
-            ultimos_usuarios = ultimos_usuarios
+            total_productos    = total_productos,
+            total_pedidos      = total_pedidos,
+            total_usuarios     = total_usuarios,
+            total_ingresos     = total_ingresos,
+            pedidos_pendientes = pedidos_pendientes,
+            ticket_promedio    = ticket_promedio,
+            ultimos_pedidos    = ultimos_pedidos,
+            ultimos_usuarios   = ultimos_usuarios,
+            meses_labels       = json.dumps(meses_labels),
+            meses_totales      = json.dumps(meses_totales),
+            estados_labels     = json.dumps(estados_labels),
+            estados_valores    = json.dumps(estados_valores),
+            top_productos      = top_productos,
         )
 
     @app.route('/admin/productos')
@@ -261,6 +320,7 @@ def create_app():
             stock       = int(stock),
             image_url   = image_final,
             sizes       = tallas,
+            gender      = request.form.get('genero', 'unisex'),
             category_id = 1
         )
         db.session.add(nuevo)
@@ -275,6 +335,7 @@ def create_app():
         producto.description = request.form.get('descripcion', '')
         producto.stock       = int(request.form.get('stock', 10))
         producto.sizes       = request.form.get('tallas', '')
+        producto.gender      = request.form.get('genero', 'unisex')
 
         imagen_url = request.form.get('imagen_url', '')
         file       = request.files.get('imagen')
@@ -317,7 +378,99 @@ def create_app():
         db.session.commit()
         return redirect(url_for('admin_productos'))
 
-    return app 
+    # ── Rutas Editorial (Banners) ──────────────────────────────────
+
+    @app.route('/admin/editorial')
+    def admin_editorial():
+        hero           = Banner.query.filter_by(position='hero').first()
+        editorial      = Banner.query.filter_by(position='editorial').first()
+        cat_hombre     = Banner.query.filter_by(position='categoria_hombre').first()
+        cat_mujer      = Banner.query.filter_by(position='categoria_mujer').first()
+        if not hero:
+            hero = Banner(
+                name='Banner Hero (Portada)',
+                position='hero',
+                tag='Nueva Colección 2025',
+                title='DEFINE TU ESTILO URBANO',
+                accent_word='ESTILO',
+                subtitle='Ropa diseñada para quienes no siguen tendencias — las crean.',
+                btn_text='VER COLECCIÓN',
+                btn2_text='NEW IN',
+                description='', badge1='', badge2='',
+            )
+            db.session.add(hero)
+        if not editorial:
+            editorial = Banner(name='Banner Editorial', position='editorial')
+            db.session.add(editorial)
+        if not cat_hombre:
+            cat_hombre = Banner(
+                name='Categoría Hombre',
+                position='categoria_hombre',
+                tag='NUEVA COLECCIÓN',
+                title='HOMBRE',
+                subtitle='', description='', badge1='', badge2='',
+                btn_text='VER COLECCIÓN →',
+            )
+            db.session.add(cat_hombre)
+        if not cat_mujer:
+            cat_mujer = Banner(
+                name='Categoría Mujer',
+                position='categoria_mujer',
+                tag='NUEVA COLECCIÓN',
+                title='MUJER',
+                subtitle='', description='', badge1='', badge2='',
+                btn_text='VER COLECCIÓN →',
+            )
+            db.session.add(cat_mujer)
+        db.session.commit()
+        return render_template('admin/editorial.html',
+                               hero=hero, editorial=editorial,
+                               cat_hombre=cat_hombre, cat_mujer=cat_mujer)
+
+    @app.route('/admin/editorial/guardar/<int:banner_id>', methods=['POST'])
+    def admin_guardar_banner(banner_id):
+        banner = Banner.query.get_or_404(banner_id)
+        banner.name        = request.form.get('name',        banner.name)
+        banner.tag         = request.form.get('tag',         banner.tag)
+        banner.title       = request.form.get('title',       banner.title)
+        banner.accent_word = request.form.get('accent_word', banner.accent_word)
+        banner.subtitle    = request.form.get('subtitle',    banner.subtitle)
+        banner.description = request.form.get('description', banner.description)
+        banner.badge1      = request.form.get('badge1',      banner.badge1)
+        banner.badge2      = request.form.get('badge2',      banner.badge2)
+        banner.btn_text    = request.form.get('btn_text',    banner.btn_text)
+        banner.btn2_text   = request.form.get('btn2_text',   banner.btn2_text)
+        banner.active      = request.form.get('active') == 'on'
+
+        imagen_url = request.form.get('imagen_url', '').strip()
+        file       = request.files.get('imagen')
+        if file and file.filename:
+            filename = secure_filename(file.filename)
+            if not os.path.exists(app.config['UPLOAD_FOLDER']):
+                os.makedirs(app.config['UPLOAD_FOLDER'])
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            banner.image_url = filename
+        elif imagen_url:
+            banner.image_url = imagen_url
+
+        db.session.commit()
+        return redirect(url_for('admin_editorial'))
+
+    @app.route('/admin/editorial/nuevo', methods=['POST'])
+    def admin_nuevo_banner():
+        banner = Banner(name=request.form.get('name', 'Nuevo banner'))
+        db.session.add(banner)
+        db.session.commit()
+        return redirect(url_for('admin_editorial'))
+
+    @app.route('/admin/editorial/eliminar/<int:banner_id>', methods=['POST'])
+    def admin_eliminar_banner(banner_id):
+        banner = Banner.query.get_or_404(banner_id)
+        db.session.delete(banner)
+        db.session.commit()
+        return redirect(url_for('admin_editorial'))
+
+    return app
 
 app = create_app()
 

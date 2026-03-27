@@ -11,78 +11,86 @@
 
 <!-- ── HERO BANNER ── -->
 <section style="position:relative; height:90vh; min-height:600px; overflow:hidden; display:flex; align-items:center;">
-    <!-- Fondo degradado como placeholder -->
-    <div style="position:absolute; inset:0; background:linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 40%, #0f0f0f 100%);"></div>
-    <!-- Patrón decorativo -->
-    <div style="position:absolute; inset:0; opacity:0.03; background-image: repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%); background-size:20px 20px;"></div>
+
+    <!-- Fondo: imagen o degradado fallback -->
+    <div id="hero-bg"
+         data-bg="{{ hero_banner.image_src if hero_banner and hero_banner.image_src else '' }}"
+         style="position:absolute; inset:0;
+             background:linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 40%, #0f0f0f 100%);
+             background-size:cover; background-position:center;">
+    </div>
+    <script>
+        (function(){
+            var el = document.getElementById('hero-bg');
+            var bg = el.getAttribute('data-bg');
+            if (bg) el.style.backgroundImage = "url('" + bg + "')";
+        })();
+    </script>
+
+    <!-- Overlay oscuro (más fuerte cuando hay foto) -->
+    <div id="hero-overlay" style="position:absolute; inset:0;
+        background:rgba(0,0,0,0);
+        transition:background 0.3s;">
+    </div>
+    <script>
+        (function(){
+            var hasBg = document.getElementById('hero-bg').getAttribute('data-bg');
+            if (hasBg) document.getElementById('hero-overlay').style.background = 'rgba(0,0,0,0.5)';
+        })();
+    </script>
+
+    <!-- Patrón decorativo (solo sin foto) -->
+    <div id="hero-pattern" style="position:absolute; inset:0; opacity:0.03;
+        background-image:repeating-linear-gradient(45deg,#fff 0,#fff 1px,transparent 0,transparent 50%);
+        background-size:20px 20px;">
+    </div>
+    <script>
+        (function(){
+            var hasBg = document.getElementById('hero-bg').getAttribute('data-bg');
+            if (hasBg) document.getElementById('hero-pattern').style.display = 'none';
+        })();
+    </script>
+
     <!-- Acento naranja lateral -->
-    <div style="position:absolute; right:0; top:0; bottom:0; width:45%; background:linear-gradient(135deg, transparent 0%, rgba(255,107,53,0.08) 100%);"></div>
+    <div style="position:absolute; right:0; top:0; bottom:0; width:45%;
+        background:linear-gradient(135deg, transparent 0%, rgba(255,107,53,0.08) 100%);"></div>
 
     <div class="container" style="position:relative; z-index:2;">
         <div style="max-width:620px;">
             <p style="font-size:0.75rem; font-weight:700; letter-spacing:4px; color:var(--color-accent); margin-bottom:20px; text-transform:uppercase;">
-                Nueva Colección 2025
+                {% if hero_banner %}{{ hero_banner.tag }}{% else %}Nueva Colección 2025{% endif %}
             </p>
             <h1 style="font-family:var(--font-display); font-size:clamp(2.5rem, 6vw, 5rem); font-weight:900; line-height:1.0; letter-spacing:-2px; color:#fff; margin-bottom:24px;">
-                DEFINE TU<br>
-                <span style="color:var(--color-accent);">ESTILO</span><br>
-                URBANO
+                {% if hero_banner and hero_banner.accent_word and hero_banner.accent_word in hero_banner.title %}
+                    {% set parts = hero_banner.title.split(hero_banner.accent_word) %}
+                    {{ parts[0] }}<span style="color:var(--color-accent);">{{ hero_banner.accent_word }}</span>{{ parts[1] if parts|length > 1 else '' }}
+                {% elif hero_banner %}
+                    {{ hero_banner.title }}
+                {% else %}
+                    DEFINE TU<br><span style="color:var(--color-accent);">ESTILO</span><br>URBANO
+                {% endif %}
             </h1>
             <p style="font-size:1.05rem; color:#888; margin-bottom:40px; max-width:440px; line-height:1.7;">
-                Ropa diseñada para quienes no siguen tendencias — las crean.
+                {% if hero_banner %}{{ hero_banner.subtitle }}{% else %}Ropa diseñada para quienes no siguen tendencias — las crean.{% endif %}
             </p>
             <div style="display:flex; gap:16px; flex-wrap:wrap;">
                 <a href="{{ url_for('catalogo') }}" class="btn btn--primary btn--lg" style="letter-spacing:1px;">
-                    VER COLECCIÓN
+                    {% if hero_banner %}{{ hero_banner.btn_text }}{% else %}VER COLECCIÓN{% endif %}
                 </a>
                 <a href="#new-in" class="btn btn--secondary btn--lg" style="letter-spacing:1px; border-color:#444; color:#ccc;">
-                    NEW IN
+                    {% if hero_banner %}{{ hero_banner.btn2_text }}{% else %}NEW IN{% endif %}
                 </a>
             </div>
         </div>
     </div>
 
     <!-- Scroll indicator -->
-    <div style="position:absolute; bottom:32px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:8px;">
+    <div style="position:absolute; bottom:32px; left:50%; transform:translateX(-50%);">
         <div style="width:1px; height:48px; background:linear-gradient(to bottom, transparent, var(--color-accent));"></div>
     </div>
 </section>
 
-<!-- ── BARRA DE BENEFICIOS ── -->
-<section style="background:#111; border-top:1px solid #222; border-bottom:1px solid #222; padding:28px 0;">
-    <div class="container">
-        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:20px;">
-            <div style="display:flex; align-items:center; gap:14px; justify-content:center;">
-                <span style="font-size:1.5rem;">🚚</span>
-                <div>
-                    <p style="font-size:0.78rem; font-weight:700; color:#fff; margin:0; letter-spacing:0.5px;">ENVÍO GRATIS</p>
-                    <p style="font-size:0.72rem; color:#666; margin:0;">En ropa sin descuento</p>
-                </div>
-            </div>
-            <div style="display:flex; align-items:center; gap:14px; justify-content:center;">
-                <span style="font-size:1.5rem;">🔒</span>
-                <div>
-                    <p style="font-size:0.78rem; font-weight:700; color:#fff; margin:0; letter-spacing:0.5px;">COMPRA SEGURA</p>
-                    <p style="font-size:0.72rem; color:#666; margin:0;">100% protegida</p>
-                </div>
-            </div>
-            <div style="display:flex; align-items:center; gap:14px; justify-content:center;">
-                <span style="font-size:1.5rem;">↩</span>
-                <div>
-                    <p style="font-size:0.78rem; font-weight:700; color:#fff; margin:0; letter-spacing:0.5px;">DEVOLUCIONES</p>
-                    <p style="font-size:0.72rem; color:#666; margin:0;">30 días sin costo</p>
-                </div>
-            </div>
-            <div style="display:flex; align-items:center; gap:14px; justify-content:center;">
-                <span style="font-size:1.5rem;">⏱</span>
-                <div>
-                    <p style="font-size:0.78rem; font-weight:700; color:#fff; margin:0; letter-spacing:0.5px;">LLEGA EN 6 DÍAS</p>
-                    <p style="font-size:0.72rem; color:#666; margin:0;">Ciudades principales</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+
 
 <!-- ── NEW IN ── -->
 <section id="new-in" style="padding:80px 0; background:#f0f0f0;">
@@ -102,8 +110,8 @@
                 {% for producto in productos[:4] %}
                 <a href="/producto/{{producto.id}}" class="home-product-card">
                     <div class="home-product-card__img">
-                        {% if producto.image_url %}
-                        <img src="/static/uploads/{{ producto.image_url }}" alt="{{ producto.name }}">
+                        {% if producto.image_src %}
+                        <img src="{{ producto.image_src }}" alt="{{ producto.name }}">
                         {% else %}
                         <div style="width:100%; height:100%; background:#e8e8e8;"></div>
                         {% endif %}
@@ -134,42 +142,140 @@
     </div>
 </section>
 
+<!-- ── BANNER EDITORIAL / LOOKBOOK ── -->
+{% if banner %}
+<section style="position:relative; height:580px; overflow:hidden; display:flex; align-items:center;">
+
+    <!-- Fondo -->
+    <div id="editorial-bg"
+         data-bg="{{ banner.image_src or '' }}"
+         style="position:absolute; inset:0;
+             background:linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 40%, #1a1a1a 100%);
+             background-size:cover; background-position:center;">
+    </div>
+    <script>
+        (function(){
+            var el = document.getElementById('editorial-bg');
+            var bg = el.getAttribute('data-bg');
+            if (bg) el.style.backgroundImage = "url('" + bg + "')";
+        })();
+    </script>
+
+    <!-- Overlay -->
+    <div style="position:absolute; inset:0; background:rgba(0,0,0,0.45);"></div>
+
+    <!-- Línea decorativa izquierda -->
+    <div style="position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--color-accent);"></div>
+
+    <!-- Contenido -->
+    <div style="position:relative; z-index:2; width:100%; padding:0 80px;
+        display:flex; justify-content:space-between; align-items:center;">
+
+        <!-- Izquierda: marca -->
+        <div>
+            <p style="font-size:0.68rem; font-weight:700; letter-spacing:5px;
+                color:var(--color-accent); margin-bottom:16px; text-transform:uppercase;">
+                {{ banner.tag }}
+            </p>
+            <h2 style="font-family:var(--font-display); font-size:clamp(2.8rem, 5vw, 4.5rem);
+                font-weight:900; color:#fff; letter-spacing:-2px; line-height:1;
+                margin:0 0 20px; text-transform:uppercase;">
+                {{ banner.title }} ®
+            </h2>
+            <p style="font-size:0.78rem; color:#aaa; letter-spacing:2px; margin:0;">
+                {{ banner.subtitle }}
+            </p>
+        </div>
+
+        <!-- Separador -->
+        <div style="width:1px; height:160px; background:rgba(255,255,255,0.15);"></div>
+
+        <!-- Derecha: colección -->
+        <div style="max-width:360px; text-align:right;">
+            <p style="font-size:1.35rem; font-weight:300; color:#fff;
+                line-height:1.5; margin-bottom:20px; letter-spacing:0.5px;">
+                {{ banner.description }}
+            </p>
+            <p style="font-size:0.82rem; color:#bbb; letter-spacing:1px; margin-bottom:8px;">
+                {{ banner.badge1 }}
+            </p>
+            <p style="font-size:0.82rem; color:#bbb; letter-spacing:1px; margin-bottom:32px;">
+                {{ banner.badge2 }}
+            </p>
+            <a href="{{ url_for('catalogo') }}"
+                style="display:inline-block; padding:13px 32px;
+                background:transparent; color:#fff;
+                border:1px solid rgba(255,255,255,0.5);
+                font-size:0.72rem; font-weight:700; letter-spacing:3px;
+                text-decoration:none; text-transform:uppercase; transition:all 0.2s;"
+                onmouseover="this.style.background='var(--color-accent)';this.style.borderColor='var(--color-accent)';this.style.color='#000';"
+                onmouseout="this.style.background='transparent';this.style.borderColor='rgba(255,255,255,0.5)';this.style.color='#fff';">
+                {{ banner.btn_text }}
+            </a>
+        </div>
+    </div>
+
+    <!-- Texto decorativo rotado -->
+    <div style="position:absolute; right:40px; top:50%; transform:translateY(-50%) rotate(90deg);
+        font-size:0.65rem; font-weight:700; letter-spacing:6px; color:rgba(255,255,255,0.15);
+        text-transform:uppercase; white-space:nowrap;">
+        URBANWEAR — STREET CULTURE — 2025
+    </div>
+</section>
+{% endif %}
+
 <!-- ── CATEGORÍAS DESTACADAS ── -->
 <section style="padding:0 0 80px;">
-    <div class="container">
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0;">
 
             <!-- Hombre -->
-            <a href="{{ url_for('catalogo') }}" class="home-cat-card" style="height:500px;">
-                <div style="position:absolute; inset:0; background:linear-gradient(135deg, #111 0%, #1a1a1a 100%);"></div>
-                <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 60%);"></div>
-                <div style="position:absolute; top:24px; left:24px;">
+            <a href="{{ url_for('catalogo') }}?genero=hombre" class="home-cat-card" style="height:500px;">
+                <div id="cat-hombre-bg" data-bg="{{ banner_hombre.image_src if banner_hombre and banner_hombre.image_src else '' }}"
+                    style="position:absolute; inset:0; background:linear-gradient(135deg, #111 0%, #1a1a1a 100%); background-size:cover; background-position:center;"></div>
+                <script>(function(){ var e=document.getElementById('cat-hombre-bg'),b=e.getAttribute('data-bg'); if(b) e.style.backgroundImage="url('"+b+"')"; })();</script>
+                <!-- Fade superior -->
+                <div style="position:absolute; inset:0; background:linear-gradient(to bottom, #000 0%, transparent 35%); z-index:1;"></div>
+                <!-- Fade inferior -->
+                <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 60%); z-index:1;"></div>
+                <div style="position:absolute; top:24px; left:24px; z-index:2;">
                     <span style="font-size:0.68rem; font-weight:700; letter-spacing:3px; color:var(--color-accent); background:rgba(255,107,53,0.1); border:1px solid rgba(255,107,53,0.3); padding:6px 12px; border-radius:20px;">
-                        NUEVA COLECCIÓN
+                        {% if banner_hombre %}{{ banner_hombre.tag }}{% else %}NUEVA COLECCIÓN{% endif %}
                     </span>
                 </div>
-                <div style="position:absolute; bottom:36px; left:36px;">
-                    <h3 style="font-family:var(--font-display); font-size:2.5rem; font-weight:900; color:#fff; margin:0 0 12px; letter-spacing:-1px;">HOMBRE</h3>
-                    <span style="font-size:0.78rem; font-weight:700; letter-spacing:2px; color:var(--color-accent);">VER COLECCIÓN →</span>
+                <div style="position:absolute; bottom:36px; left:36px; z-index:2;">
+                    <h3 style="font-family:var(--font-display); font-size:2.5rem; font-weight:900; color:#fff; margin:0 0 12px; letter-spacing:-1px;">
+                        {% if banner_hombre %}{{ banner_hombre.title }}{% else %}HOMBRE{% endif %}
+                    </h3>
+                    <span style="font-size:0.78rem; font-weight:700; letter-spacing:2px; color:var(--color-accent);">
+                        {% if banner_hombre %}{{ banner_hombre.btn_text }}{% else %}VER COLECCIÓN →{% endif %}
+                    </span>
                 </div>
             </a>
 
             <!-- Mujer -->
-            <a href="{{ url_for('catalogo') }}" class="home-cat-card" style="height:500px;">
-                <div style="position:absolute; inset:0; background:linear-gradient(135deg, #1a1a1a 0%, #111 100%);"></div>
-                <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 60%);"></div>
-                <div style="position:absolute; top:24px; left:24px;">
+            <a href="{{ url_for('catalogo') }}?genero=mujer" class="home-cat-card" style="height:500px;">
+                <div id="cat-mujer-bg" data-bg="{{ banner_mujer.image_src if banner_mujer and banner_mujer.image_src else '' }}"
+                    style="position:absolute; inset:0; background:linear-gradient(135deg, #1a1a1a 0%, #111 100%); background-size:cover; background-position:center;"></div>
+                <script>(function(){ var e=document.getElementById('cat-mujer-bg'),b=e.getAttribute('data-bg'); if(b) e.style.backgroundImage="url('"+b+"')"; })();</script>
+                <!-- Fade superior -->
+                <div style="position:absolute; inset:0; background:linear-gradient(to bottom, #000 0%, transparent 35%); z-index:1;"></div>
+                <!-- Fade inferior -->
+                <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 60%); z-index:1;"></div>
+                <div style="position:absolute; top:24px; left:24px; z-index:2;">
                     <span style="font-size:0.68rem; font-weight:700; letter-spacing:3px; color:var(--color-accent); background:rgba(255,107,53,0.1); border:1px solid rgba(255,107,53,0.3); padding:6px 12px; border-radius:20px;">
-                        NUEVA COLECCIÓN
+                        {% if banner_mujer %}{{ banner_mujer.tag }}{% else %}NUEVA COLECCIÓN{% endif %}
                     </span>
                 </div>
-                <div style="position:absolute; bottom:36px; left:36px;">
-                    <h3 style="font-family:var(--font-display); font-size:2.5rem; font-weight:900; color:#fff; margin:0 0 12px; letter-spacing:-1px;">MUJER</h3>
-                    <span style="font-size:0.78rem; font-weight:700; letter-spacing:2px; color:var(--color-accent);">VER COLECCIÓN →</span>
+                <div style="position:absolute; bottom:36px; left:36px; z-index:2;">
+                    <h3 style="font-family:var(--font-display); font-size:2.5rem; font-weight:900; color:#fff; margin:0 0 12px; letter-spacing:-1px;">
+                        {% if banner_mujer %}{{ banner_mujer.title }}{% else %}MUJER{% endif %}
+                    </h3>
+                    <span style="font-size:0.78rem; font-weight:700; letter-spacing:2px; color:var(--color-accent);">
+                        {% if banner_mujer %}{{ banner_mujer.btn_text }}{% else %}VER COLECCIÓN →{% endif %}
+                    </span>
                 </div>
             </a>
 
-        </div>
     </div>
 </section>
 

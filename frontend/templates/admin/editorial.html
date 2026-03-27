@@ -1,0 +1,375 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Editorial — Admin{% endblock %}
+{% block topbar_title %}Editorial{% endblock %}
+
+{% block content %}
+
+<!-- ══ BANNER HERO (PORTADA) ══════════════════════════════════════ -->
+<div class="admin-card" style="margin-bottom:28px;">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <div>
+            <h2 style="font-size:0.9rem; font-weight:800; color:#111; margin:0 0 4px;">BANNER PORTADA</h2>
+            <p style="font-size:0.75rem; color:#888; margin:0;">Sección principal al entrar a la tienda (hero)</p>
+        </div>
+        {% if hero.active %}
+        <span class="status-badge status-badge--ok">ACTIVO</span>
+        {% else %}
+        <span class="status-badge status-badge--default">INACTIVO</span>
+        {% endif %}
+    </div>
+
+    <!-- Preview hero -->
+    <div style="position:relative; height:180px; border-radius:6px; overflow:hidden; margin-bottom:24px; background:#0f0f0f;">
+        <div id="prev-hero-bg"
+             data-bg="{{ hero.image_src or '' }}"
+             style="position:absolute; inset:0; background:linear-gradient(135deg,#0a0a0a,#1a1a1a); background-size:cover; background-position:center;">
+        </div>
+        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.45);"></div>
+        <div style="position:relative; z-index:2; padding:24px 32px; height:100%; display:flex; flex-direction:column; justify-content:center;">
+            <p style="font-size:0.6rem; letter-spacing:4px; color:#ff6b35; margin:0 0 8px;">{{ hero.tag }}</p>
+            <p style="font-size:1.6rem; font-weight:900; color:#fff; margin:0 0 8px; letter-spacing:-1px; line-height:1.1;">
+                {% if hero.accent_word and hero.accent_word in hero.title %}
+                    {% set parts = hero.title.split(hero.accent_word) %}
+                    {{ parts[0] }}<span style="color:#ff6b35;">{{ hero.accent_word }}</span>{{ parts[1] if parts|length > 1 else '' }}
+                {% else %}
+                    {{ hero.title }}
+                {% endif %}
+            </p>
+            <p style="font-size:0.72rem; color:#888; margin:0;">{{ hero.subtitle }}</p>
+        </div>
+    </div>
+    <script>
+        (function(){
+            var el = document.getElementById('prev-hero-bg');
+            var bg = el.getAttribute('data-bg');
+            if (bg) el.style.backgroundImage = "url('" + bg + "')";
+        })();
+    </script>
+
+    <!-- Formulario hero -->
+    <form method="POST" action="/admin/editorial/guardar/{{ hero.id }}" enctype="multipart/form-data">
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+            <div class="admin-campo">
+                <label class="admin-label">Etiqueta superior</label>
+                <input class="admin-input" type="text" name="tag" value="{{ hero.tag }}"
+                    placeholder="Nueva Colección 2025">
+            </div>
+            <div class="admin-campo">
+                <label class="admin-label">Subtítulo / descripción</label>
+                <input class="admin-input" type="text" name="subtitle" value="{{ hero.subtitle }}"
+                    placeholder="Ropa diseñada para...">
+            </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:2fr 1fr; gap:16px; margin-bottom:16px;">
+            <div class="admin-campo">
+                <label class="admin-label">Título principal</label>
+                <input class="admin-input" type="text" name="title" value="{{ hero.title }}"
+                    placeholder="DEFINE TU ESTILO URBANO">
+                <p style="font-size:0.7rem; color:#aaa; margin:4px 0 0;">Escribe el título completo en una sola línea.</p>
+            </div>
+            <div class="admin-campo">
+                <label class="admin-label">Palabra en naranja</label>
+                <input class="admin-input" type="text" name="accent_word" value="{{ hero.accent_word }}"
+                    placeholder="ESTILO">
+                <p style="font-size:0.7rem; color:#aaa; margin:4px 0 0;">Debe aparecer exactamente en el título.</p>
+            </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+            <div class="admin-campo">
+                <label class="admin-label">Botón principal</label>
+                <input class="admin-input" type="text" name="btn_text" value="{{ hero.btn_text }}"
+                    placeholder="VER COLECCIÓN">
+            </div>
+            <div class="admin-campo">
+                <label class="admin-label">Botón secundario</label>
+                <input class="admin-input" type="text" name="btn2_text" value="{{ hero.btn2_text }}"
+                    placeholder="NEW IN">
+            </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
+            <div class="admin-campo">
+                <label class="admin-label">Subir imagen de fondo</label>
+                <input class="admin-input" type="file" name="imagen" accept="image/*"
+                    style="padding:8px 14px; cursor:pointer;">
+            </div>
+            <div class="admin-campo">
+                <label class="admin-label">O pegar URL de imagen</label>
+                <input class="admin-input" type="text" name="imagen_url"
+                    value="{{ hero.image_url or '' }}"
+                    placeholder="https://... o /static/uploads/foto.jpg">
+            </div>
+        </div>
+
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                <input type="checkbox" name="active" {% if hero.active %}checked{% endif %}
+                    style="width:16px; height:16px; accent-color:#ff6b35; cursor:pointer;">
+                <span style="font-size:0.8rem; font-weight:600; color:#555;">Mostrar en la tienda</span>
+            </label>
+            <button type="submit" class="btn-admin btn-admin--primary" style="padding:10px 28px;">
+                GUARDAR PORTADA
+            </button>
+        </div>
+    </form>
+</div>
+
+
+<!-- ══ BANNER EDITORIAL ══════════════════════════════════════════ -->
+<div class="admin-card">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <div>
+            <h2 style="font-size:0.9rem; font-weight:800; color:#111; margin:0 0 4px;">BANNER EDITORIAL</h2>
+            <p style="font-size:0.75rem; color:#888; margin:0;">Aparece después de los 4 productos en el home</p>
+        </div>
+        {% if editorial.active %}
+        <span class="status-badge status-badge--ok">ACTIVO</span>
+        {% else %}
+        <span class="status-badge status-badge--default">INACTIVO</span>
+        {% endif %}
+    </div>
+
+    <!-- Preview editorial -->
+    <div style="position:relative; height:140px; border-radius:6px; overflow:hidden; margin-bottom:24px; background:#1a1a1a;">
+        <div id="prev-edit-bg"
+             data-bg="{{ editorial.image_src or '' }}"
+             style="position:absolute; inset:0; background:linear-gradient(135deg,#1a1a1a,#2d2d2d); background-size:cover; background-position:center; opacity:0.6;">
+        </div>
+        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.4);"></div>
+        <div style="position:absolute; left:0; top:0; bottom:0; width:3px; background:#ff6b35;"></div>
+        <div style="position:relative; z-index:2; padding:20px 32px; height:100%; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <p style="font-size:0.58rem; letter-spacing:4px; color:#ff6b35; margin:0 0 4px;">{{ editorial.tag }}</p>
+                <p style="font-size:1.3rem; font-weight:900; color:#fff; margin:0; letter-spacing:-1px;">{{ editorial.title }} ®</p>
+                <p style="font-size:0.65rem; color:#aaa; margin:0; letter-spacing:1px;">{{ editorial.subtitle }}</p>
+            </div>
+            <div style="text-align:right;">
+                <p style="font-size:0.8rem; color:#fff; margin:0 0 4px;">{{ editorial.description }}</p>
+                <p style="font-size:0.62rem; color:#bbb; margin:0 0 2px;">{{ editorial.badge1 }}</p>
+                <p style="font-size:0.62rem; color:#bbb; margin:0;">{{ editorial.badge2 }}</p>
+            </div>
+        </div>
+    </div>
+    <script>
+        (function(){
+            var el = document.getElementById('prev-edit-bg');
+            var bg = el.getAttribute('data-bg');
+            if (bg) el.style.backgroundImage = "url('" + bg + "')";
+        })();
+    </script>
+
+    <!-- Formulario editorial -->
+    <form method="POST" action="/admin/editorial/guardar/{{ editorial.id }}" enctype="multipart/form-data">
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+            <div class="admin-campo">
+                <label class="admin-label">Etiqueta superior (TAG)</label>
+                <input class="admin-input" type="text" name="tag" value="{{ editorial.tag }}"
+                    placeholder="COLECCIÓN EXCLUSIVA">
+            </div>
+            <div class="admin-campo">
+                <label class="admin-label">Título / Nombre de marca</label>
+                <input class="admin-input" type="text" name="title" value="{{ editorial.title }}"
+                    placeholder="URBANWEAR">
+            </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+            <div class="admin-campo">
+                <label class="admin-label">Subtítulo de marca</label>
+                <input class="admin-input" type="text" name="subtitle" value="{{ editorial.subtitle }}"
+                    placeholder="Street Culture & Urban Design Corp.">
+            </div>
+            <div class="admin-campo">
+                <label class="admin-label">Descripción principal (derecha)</label>
+                <input class="admin-input" type="text" name="description" value="{{ editorial.description }}"
+                    placeholder="Diseño Urbano & Cultura de Calle">
+            </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:16px;">
+            <div class="admin-campo">
+                <label class="admin-label">Badge 1</label>
+                <input class="admin-input" type="text" name="badge1" value="{{ editorial.badge1 }}"
+                    placeholder="Nueva Temporada • Edición Limitada">
+            </div>
+            <div class="admin-campo">
+                <label class="admin-label">Badge 2</label>
+                <input class="admin-input" type="text" name="badge2" value="{{ editorial.badge2 }}"
+                    placeholder="Piezas de Colección Especial">
+            </div>
+            <div class="admin-campo">
+                <label class="admin-label">Texto del botón</label>
+                <input class="admin-input" type="text" name="btn_text" value="{{ editorial.btn_text }}"
+                    placeholder="VER COLECCIÓN →">
+            </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
+            <div class="admin-campo">
+                <label class="admin-label">Subir imagen de fondo</label>
+                <input class="admin-input" type="file" name="imagen" accept="image/*"
+                    style="padding:8px 14px; cursor:pointer;">
+            </div>
+            <div class="admin-campo">
+                <label class="admin-label">O pegar URL de imagen</label>
+                <input class="admin-input" type="text" name="imagen_url"
+                    value="{{ editorial.image_url or '' }}"
+                    placeholder="https://... o /static/uploads/foto.jpg">
+            </div>
+        </div>
+
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                <input type="checkbox" name="active" {% if editorial.active %}checked{% endif %}
+                    style="width:16px; height:16px; accent-color:#ff6b35; cursor:pointer;">
+                <span style="font-size:0.8rem; font-weight:600; color:#555;">Mostrar en la tienda</span>
+            </label>
+            <button type="submit" class="btn-admin btn-admin--primary" style="padding:10px 28px;">
+                GUARDAR EDITORIAL
+            </button>
+        </div>
+    </form>
+</div>
+
+
+<!-- ══ BANNERS CATEGORÍAS (HOMBRE / MUJER) ══════════════════════ -->
+<div class="admin-card" style="margin-top:20px;">
+
+    <div style="margin-bottom:20px;">
+        <h2 style="font-size:0.9rem; font-weight:800; color:#111; margin:0 0 4px;">BANNERS CATEGORÍAS</h2>
+        <p style="font-size:0.75rem; color:#888; margin:0;">Sección del home con las cards HOMBRE y MUJER lado a lado</p>
+    </div>
+
+    <!-- Preview doble -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0; border-radius:6px; overflow:hidden; margin-bottom:28px; height:160px;">
+
+        <!-- Preview Hombre -->
+        <div id="prev-cat-hombre"
+             data-bg="{{ cat_hombre.image_src or '' }}"
+             style="position:relative; background:linear-gradient(135deg,#0f0f0f,#1a1a1a); background-size:cover; background-position:center;">
+            <div style="position:absolute; inset:0; background:rgba(0,0,0,0.55);"></div>
+            <div style="position:relative; z-index:2; padding:16px 20px; height:100%; display:flex; flex-direction:column; justify-content:flex-end;">
+                <p style="font-size:0.55rem; letter-spacing:3px; color:#ff6b35; margin:0 0 4px;">{{ cat_hombre.tag }}</p>
+                <p style="font-size:1.4rem; font-weight:900; color:#fff; margin:0 0 4px; letter-spacing:-1px;">{{ cat_hombre.title }}</p>
+                <span style="font-size:0.6rem; color:#ff6b35; font-weight:700; letter-spacing:2px;">{{ cat_hombre.btn_text }}</span>
+            </div>
+        </div>
+
+        <!-- Preview Mujer -->
+        <div id="prev-cat-mujer"
+             data-bg="{{ cat_mujer.image_src or '' }}"
+             style="position:relative; background:linear-gradient(135deg,#1a1a1a,#0f0f0f); background-size:cover; background-position:center; border-left:1px solid rgba(255,255,255,0.06);">
+            <div style="position:absolute; inset:0; background:rgba(0,0,0,0.55);"></div>
+            <div style="position:relative; z-index:2; padding:16px 20px; height:100%; display:flex; flex-direction:column; justify-content:flex-end;">
+                <p style="font-size:0.55rem; letter-spacing:3px; color:#ff6b35; margin:0 0 4px;">{{ cat_mujer.tag }}</p>
+                <p style="font-size:1.4rem; font-weight:900; color:#fff; margin:0 0 4px; letter-spacing:-1px;">{{ cat_mujer.title }}</p>
+                <span style="font-size:0.6rem; color:#ff6b35; font-weight:700; letter-spacing:2px;">{{ cat_mujer.btn_text }}</span>
+            </div>
+        </div>
+    </div>
+    <script>
+        (function(){
+            var ids = ['prev-cat-hombre', 'prev-cat-mujer'];
+            ids.forEach(function(id){
+                var el = document.getElementById(id);
+                var bg = el.getAttribute('data-bg');
+                if (bg) el.style.backgroundImage = "url('" + bg + "')";
+            });
+        })();
+    </script>
+
+    <!-- Formularios lado a lado -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+
+        <!-- ─ Hombre ─ -->
+        <div>
+            <p style="font-size:0.72rem; font-weight:800; letter-spacing:2px; color:#555; margin:0 0 14px; padding-bottom:8px; border-bottom:2px solid #f0f0f0;">
+                HOMBRE
+                {% if cat_hombre.active %}<span class="status-badge status-badge--ok" style="margin-left:8px;">ACTIVO</span>
+                {% else %}<span class="status-badge status-badge--default" style="margin-left:8px;">INACTIVO</span>{% endif %}
+            </p>
+            <form method="POST" action="/admin/editorial/guardar/{{ cat_hombre.id }}" enctype="multipart/form-data">
+                <div class="admin-campo">
+                    <label class="admin-label">Etiqueta</label>
+                    <input class="admin-input" type="text" name="tag" value="{{ cat_hombre.tag }}" placeholder="NUEVA COLECCIÓN">
+                </div>
+                <div class="admin-campo">
+                    <label class="admin-label">Título</label>
+                    <input class="admin-input" type="text" name="title" value="{{ cat_hombre.title }}" placeholder="HOMBRE">
+                </div>
+                <div class="admin-campo">
+                    <label class="admin-label">Texto del botón</label>
+                    <input class="admin-input" type="text" name="btn_text" value="{{ cat_hombre.btn_text }}" placeholder="VER COLECCIÓN →">
+                </div>
+                <div class="admin-campo">
+                    <label class="admin-label">Subir imagen</label>
+                    <input class="admin-input" type="file" name="imagen" accept="image/*" style="padding:8px 14px; cursor:pointer;">
+                </div>
+                <div class="admin-campo">
+                    <label class="admin-label">O pegar URL</label>
+                    <input class="admin-input" type="text" name="imagen_url" value="{{ cat_hombre.image_url or '' }}" placeholder="https://...">
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-top:12px;">
+                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                        <input type="checkbox" name="active" {% if cat_hombre.active %}checked{% endif %}
+                            style="width:15px; height:15px; accent-color:#ff6b35; cursor:pointer;">
+                        <span style="font-size:0.78rem; color:#555;">Activo</span>
+                    </label>
+                    <button type="submit" class="btn-admin btn-admin--primary" style="padding:9px 22px;">
+                        GUARDAR HOMBRE
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- ─ Mujer ─ -->
+        <div>
+            <p style="font-size:0.72rem; font-weight:800; letter-spacing:2px; color:#555; margin:0 0 14px; padding-bottom:8px; border-bottom:2px solid #f0f0f0;">
+                MUJER
+                {% if cat_mujer.active %}<span class="status-badge status-badge--ok" style="margin-left:8px;">ACTIVO</span>
+                {% else %}<span class="status-badge status-badge--default" style="margin-left:8px;">INACTIVO</span>{% endif %}
+            </p>
+            <form method="POST" action="/admin/editorial/guardar/{{ cat_mujer.id }}" enctype="multipart/form-data">
+                <div class="admin-campo">
+                    <label class="admin-label">Etiqueta</label>
+                    <input class="admin-input" type="text" name="tag" value="{{ cat_mujer.tag }}" placeholder="NUEVA COLECCIÓN">
+                </div>
+                <div class="admin-campo">
+                    <label class="admin-label">Título</label>
+                    <input class="admin-input" type="text" name="title" value="{{ cat_mujer.title }}" placeholder="MUJER">
+                </div>
+                <div class="admin-campo">
+                    <label class="admin-label">Texto del botón</label>
+                    <input class="admin-input" type="text" name="btn_text" value="{{ cat_mujer.btn_text }}" placeholder="VER COLECCIÓN →">
+                </div>
+                <div class="admin-campo">
+                    <label class="admin-label">Subir imagen</label>
+                    <input class="admin-input" type="file" name="imagen" accept="image/*" style="padding:8px 14px; cursor:pointer;">
+                </div>
+                <div class="admin-campo">
+                    <label class="admin-label">O pegar URL</label>
+                    <input class="admin-input" type="text" name="imagen_url" value="{{ cat_mujer.image_url or '' }}" placeholder="https://...">
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-top:12px;">
+                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                        <input type="checkbox" name="active" {% if cat_mujer.active %}checked{% endif %}
+                            style="width:15px; height:15px; accent-color:#ff6b35; cursor:pointer;">
+                        <span style="font-size:0.78rem; color:#555;">Activo</span>
+                    </label>
+                    <button type="submit" class="btn-admin btn-admin--primary" style="padding:9px 22px;">
+                        GUARDAR MUJER
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

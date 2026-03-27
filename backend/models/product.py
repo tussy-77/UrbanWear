@@ -13,6 +13,7 @@ class Product(db.Model):
     sizes      = db.Column(db.String(100), nullable=True)  # ej: "S,M,L,XL"
     item_number = db.Column(db.String(50), nullable=True)
     destacado = db.Column(db.Boolean, default=False)
+    gender    = db.Column(db.String(10), default='unisex')  # 'hombre', 'mujer', 'unisex'
     
 
     category_id = db.Column(
@@ -25,6 +26,14 @@ class Product(db.Model):
         db.DateTime,
         server_default=db.func.current_timestamp()
     )
+
+    @property
+    def image_src(self):
+        if not self.image_url:
+            return None
+        if self.image_url.startswith('/') or self.image_url.startswith('http'):
+            return self.image_url
+        return f'/static/uploads/{self.image_url}'
 
     def to_dict(self):
         return {
