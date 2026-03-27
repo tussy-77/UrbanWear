@@ -6,16 +6,15 @@
 
 ## Tabla de Contenidos
 
-- [Descripción](#-descripción)
-- [Características](#-características)
-- [Arquitectura](#-arquitectura)
-- [Stack Tecnológico](#-stack-tecnológico)
-- [Modelo de Base de Datos](#-modelo-de-base-de-datos)
-- [Estructura del Proyecto](#-estructura-del-proyecto)
-- [Primeros Pasos](#-primeros-pasos)
-- [Estado del Proyecto](#-estado-del-proyecto)
-- [Objetivo Profesional](#-objetivo-profesional)
-- [Equipo](#-equipo)
+- [Descripción](#descripción)
+- [Características](#características)
+- [Arquitectura](#arquitectura)
+- [Stack Tecnológico](#stack-tecnológico)
+- [Modelo de Base de Datos](#modelo-de-base-de-datos)
+- [Estructura del Proyecto](#estructura-del-proyecto)
+- [Primeros Pasos](#primeros-pasos)
+- [Estado del Proyecto](#estado-del-proyecto)
+- [Objetivo Profesional](#objetivo-profesional)
 
 ---
 
@@ -29,26 +28,26 @@
 
 ### Tienda Pública (Clientes)
 
-| Módulo                   | Descripción                                      |
-| ------------------------ | ------------------------------------------------ |
-| **Catálogo**             | Exploración de productos con imágenes y precios  |
-| **Filtros**              | Búsqueda y filtrado por categoría                |
-| **Detalle de producto**  | Vista completa con descripción, talla y stock    |
-| **Carrito dinámico**     | Agregar, modificar y eliminar ítems sin recargar |
-| **Checkout simulado**    | Flujo de compra completo paso a paso             |
-| **Autenticación**        | Registro e inicio de sesión de clientes          |
-| **Historial de pedidos** | Seguimiento de órdenes por usuario               |
+| Módulo                   | Descripción                                                           |
+| ------------------------ | --------------------------------------------------------------------- |
+| **Home**                 | Hero banner, sección New In, banners HOMBRE/MUJER y editorial         |
+| **Catálogo**             | Tabs HOMBRE / MUJER / TODOS con filtrado cliente sin recarga          |
+| **Detalle de producto**  | Vista completa con descripción, tallas, stock e imagen                |
+| **Carrito dinámico**     | Agregar, modificar y eliminar ítems sin recargar                      |
+| **Checkout**             | Flujo completo: identificación → envío → pago → confirmación          |
+| **Autenticación**        | Registro, inicio de sesión y Google OAuth                             |
+| **Perfil**               | Datos editables y contraseña                                          |
+| **Historial de pedidos** | Seguimiento de órdenes por usuario                                    |
 
 ### Panel Administrativo
 
-| Módulo               | Descripción                                        |
-| -------------------- | -------------------------------------------------- |
-| **Dashboard**        | Métricas clave: ventas, stock, pedidos recientes   |
-| **Productos (CRUD)** | Crear, editar, archivar y eliminar productos       |
-| **Categorías**       | Gestión completa de categorías                     |
-| **Pedidos**          | Visualización y actualización de estado de órdenes |
-| **Clientes**         | Consulta y administración de usuarios registrados  |
-| **Inventario**       | Control automático de stock al procesar pedidos    |
+| Módulo               | Descripción                                                             |
+| -------------------- | ----------------------------------------------------------------------- |
+| **Dashboard**        | Métricas clave, gráficas de ventas mensuales (Chart.js) y top productos |
+| **Productos (CRUD)** | Crear, editar, eliminar; campo género (hombre/mujer/unisex) y destacado |
+| **Pedidos**          | Visualización y actualización de estado de órdenes                      |
+| **Clientes**         | Consulta y administración de usuarios registrados                       |
+| **Editorial**        | Editar hero, banner lookbook y banners HOMBRE/MUJER con imagen y texto  |
 
 ---
 
@@ -63,16 +62,13 @@ Frontend (Templates Jinja2 + JavaScript)
               ↓
      Endpoints internos /api/
               ↓
-  Capa de Servicios (lógica de negocio)
-              ↓
-     SQLAlchemy ORM
+         SQLAlchemy ORM
               ↓
          PostgreSQL
 ```
 
 - Las **vistas públicas** se renderizan con Flask + Jinja2 (SSR).
 - Los **datos dinámicos** (carrito, stock, dashboard) se consumen via `fetch()` desde endpoints `/api/`.
-- La **lógica de negocio** está desacoplada en servicios reutilizables.
 - La **base de datos** sigue un modelo relacional normalizado, diseñado para escalar.
 
 ---
@@ -87,68 +83,72 @@ Frontend (Templates Jinja2 + JavaScript)
 | ORM                  | SQLAlchemy                | 2.0               |
 | Migraciones          | Flask-Migrate (Alembic)   | Latest            |
 | Autenticación        | Flask-Login + Bcrypt      | Latest            |
+| OAuth                | Authlib (Google OAuth2)   | Latest            |
 | Plantillas           | Jinja2                    | Incluido en Flask |
 | Frontend             | HTML5 + CSS3 + JavaScript | —                 |
 | API interna          | Fetch API (nativa)        | —                 |
-| Gráficas             | Chart.js                  | 4.x               |
+| Gráficas             | Chart.js                  | 4.4               |
 | Control de versiones | Git & GitHub              | —                 |
 
 ---
 
 ## Modelo de Base de Datos
 
-El esquema relacional está diseñado para escalabilidad y automatización futura:
-
 ```
 users
-  └── orders ──── order_items ──── products
-                                      └── categories
+  └── orders ──── order_items ──── products ──── categories
+                                      └── (gender, destacado)
 carts
   └── cart_items ──── products
+
+banners  (hero | editorial | categoria_hombre | categoria_mujer)
 ```
 
 **Tablas principales:**
 
-| Tabla         | Descripción                                       |
-| ------------- | ------------------------------------------------- |
-| `users`       | Clientes y administradores del sistema            |
-| `categories`  | Categorías de productos (Oversize, Hoodies, etc.) |
-| `products`    | Catálogo con precio, stock y estado               |
-| `carts`       | Carritos activos por usuario                      |
-| `cart_items`  | Productos y cantidades dentro de un carrito       |
-| `orders`      | Órdenes de compra con estado y total              |
-| `order_items` | Detalle de productos por orden                    |
+| Tabla         | Descripción                                                        |
+| ------------- | ------------------------------------------------------------------ |
+| `users`       | Clientes y administradores del sistema                             |
+| `categories`  | Categorías de productos (Oversize, Hoodies, etc.)                  |
+| `products`    | Catálogo con precio, stock, género y flag de destacado             |
+| `banners`     | Banners editables por posición (hero, editorial, hombre, mujer)    |
+| `carts`       | Carritos activos por usuario                                       |
+| `cart_items`  | Productos y cantidades dentro de un carrito                        |
+| `orders`      | Órdenes de compra con estado y total                               |
+| `order_items` | Detalle de productos por orden                                     |
 
 ---
 
 ## Estructura del Proyecto
 
 ```
-urbanwear/
+sistema-ventas/
 │
 ├── backend/
-│   ├── models/             # Modelos SQLAlchemy (User, Product, Order...)
-│   ├── routes/             # Blueprints Flask: public, admin, api
-│   └── services/           # Lógica de negocio (inventario, pedidos...)
+│   ├── app.py              # Application factory + todas las rutas
+│   ├── database.py         # Instancia SQLAlchemy
+│   └── models/
+│       ├── user.py
+│       ├── product.py
+│       ├── banner.py
+│       ├── order.py
+│       └── cart.py
 │
 ├── frontend/
-│   ├── templates/          # Plantillas Jinja2 por módulo
+│   ├── templates/
+│   │   ├── public/         # home, catalogo, producto, checkout, perfil...
+│   │   └── admin/          # dashboard, products, orders, editorial...
 │   └── static/
-│       ├── css/            # Estilos globales y por módulo
-│       ├── js/             # Scripts con Fetch API
-│       └── img/            # Assets e imágenes de productos
-│
-├── database/
-│   ├── schema.sql          # DDL — estructura de tablas
-│   └── seed.sql            # DML — datos iniciales de prueba
+│       ├── css/
+│       ├── js/
+│       └── uploads/        # Imágenes subidas desde el admin
 │
 ├── migrations/             # Migraciones Alembic (Flask-Migrate)
 ├── instance/               # Configuración local (no versionada)
-├── .env.example            # Variables de entorno requeridas
+├── .env.example
 ├── .gitignore
 ├── requirements.txt
-├── run.py                  # Punto de entrada
-└── README.md
+└── run.py
 ```
 
 ---
@@ -167,8 +167,8 @@ urbanwear/
 1. **Clona el repositorio**
 
    ```bash
-   git clone https://github.com/tu-usuario/urbanwear.git
-   cd urbanwear
+   git clone https://github.com/tussy-77/sistema-ventas.git
+   cd sistema-ventas
    ```
 
 2. **Crea y activa el entorno virtual**
@@ -196,19 +196,13 @@ urbanwear/
    # Edita .env con tus credenciales de PostgreSQL y demás valores
    ```
 
-5. **Crea la base de datos y aplica migraciones**
+5. **Aplica migraciones**
 
    ```bash
    flask db upgrade
    ```
 
-6. **Carga datos de prueba** _(opcional)_
-
-   ```bash
-   psql -U tu_usuario -d urbanwear -f database/seed.sql
-   ```
-
-7. **Inicia la aplicación**
+6. **Inicia la aplicación**
 
    ```bash
    python run.py
@@ -219,36 +213,35 @@ urbanwear/
 ### Variables de Entorno
 
 ```env
-# Flask
 FLASK_ENV=development
 SECRET_KEY=tu_clave_secreta
-
-# PostgreSQL
 DATABASE_URL=postgresql://usuario:password@localhost:5432/urbanwear
-
-# Admin por defecto
-ADMIN_EMAIL=admin@urbanwear.com
-ADMIN_PASSWORD=tu_password_seguro
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
 ```
 
 > Nunca versiones tu `.env`. Verifica que esté incluido en `.gitignore`.
 
 ---
 
-## 📊 Estado del Proyecto
+## Estado del Proyecto
 
 **Fase 1 — En desarrollo activo**
 
 - [x] Arquitectura base del proyecto
 - [x] Modelado y migraciones de base de datos
-- [x] Módulo de productos (CRUD completo)
-- [x] Catálogo público con filtros por categoría
+- [x] Autenticación de clientes (registro, login, Google OAuth)
+- [x] Módulo de productos (CRUD completo + género + destacado)
+- [x] Catálogo público con tabs HOMBRE / MUJER / TODOS
 - [x] Carrito dinámico con Fetch API
-- [ ] Checkout y generación de órdenes
-- [ ] Dashboard administrativo con Chart.js
-- [ ] Control automático de inventario
-- [ ] Autenticación de clientes y administradores
-- [ ] Historial de pedidos por usuario
+- [x] Checkout completo paso a paso
+- [x] Historial de pedidos por usuario
+- [x] Perfil de usuario editable
+- [x] Dashboard administrativo con gráficas Chart.js
+- [x] Panel editorial: hero, lookbook y banners de categoría editables
+- [ ] Control automático de inventario al procesar pedidos
+- [ ] Integración con pasarela de pago (MercadoPago / Stripe)
+- [ ] Notificaciones por email al confirmar pedido
 
 ---
 
@@ -260,23 +253,9 @@ Este proyecto está diseñado como **pieza principal de portafolio** para demost
 - Sistemas administrativos empresariales con dashboard
 - Arquitecturas híbridas SSR + API interna
 - Modelado relacional con PostgreSQL y SQLAlchemy
+- Integración de OAuth y autenticación segura
 - Automatización e integración futura con APIs externas (Stripe, MercadoPago, etc.)
 
-> Orientado a aplicaciones en **Workana**, proyectos freelance y desarrollo de sistemas a medida.
-
----
-
-## 👥 Equipo
-
-| Rol                    | Responsabilidad                                                  |
-| ---------------------- | ---------------------------------------------------------------- |
-| **Backend Developer**  | Arquitectura, lógica de negocio, base de datos y endpoints API   |
-| **Frontend Developer** | Experiencia visual, catálogo, carrito y dashboard administrativo |
-
----
-
-## 📄 Licencia
-
-Distribuido bajo la licencia MIT. Ver [`LICENSE`](./LICENSE) para más información.
+> Diseñado para pequeñas tiendas de ropa que necesitan gestionar su catálogo, ventas e inventario desde una sola plataforma.
 
 ---
