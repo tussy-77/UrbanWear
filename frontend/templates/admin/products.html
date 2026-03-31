@@ -78,6 +78,12 @@
                             class="btn-admin btn-admin--secondary" style="padding:6px 14px;">
                             EDITAR
                         </button>
+                        <form method="POST" action="/admin/productos/esencial/{{ p.id }}">
+                            <button type="submit" class="btn-admin {% if p.esencial %}btn-admin--primary{% else %}btn-admin--secondary{% endif %}"
+                                style="padding:6px 14px;" title="{% if p.esencial %}Quitar de Essential{% else %}Añadir a Essential{% endif %}">
+                                {% if p.esencial %}◆ ESS{% else %}◇ ESS{% endif %}
+                            </button>
+                        </form>
                         <form method="POST" action="/admin/productos/eliminar/{{ p.id }}"
                             onsubmit="return confirm('¿Eliminar {{ p.name }}?')">
                             <button type="submit" class="btn-admin btn-admin--danger" style="padding:6px 14px;">

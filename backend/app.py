@@ -85,11 +85,23 @@ def create_app():
             productos_db = destacados + relleno
         else:
             productos_db = Product.query.order_by(Product.id.desc()).limit(4).all()
+        # Sección Essential: productos marcados como esencial
+        esenciales = Product.query.filter_by(esencial=True).limit(4).all()
+        if len(esenciales) < 4:
+            ids_esenciales = [p.id for p in esenciales]
+            ids_new_in = [p.id for p in productos_db]
+            excluir = list(set(ids_esenciales + ids_new_in))
+            relleno_e = Product.query.filter(
+                ~Product.id.in_(excluir)
+            ).order_by(Product.id.asc()).limit(4 - len(esenciales)).all()
+            esenciales = esenciales + relleno_e
+
         hero_banner    = Banner.query.filter_by(active=True, position='hero').first()
         editorial      = Banner.query.filter_by(active=True, position='editorial').first()
         banner_hombre  = Banner.query.filter_by(active=True, position='categoria_hombre').first()
         banner_mujer   = Banner.query.filter_by(active=True, position='categoria_mujer').first()
         return render_template('public/home.html', productos=productos_db,
+                               esenciales=esenciales,
                                hero_banner=hero_banner, banner=editorial,
                                banner_hombre=banner_hombre, banner_mujer=banner_mujer)
 
@@ -375,6 +387,13 @@ def create_app():
     def admin_destacar_producto(product_id):
         producto = Product.query.get_or_404(product_id)
         producto.destacado = not producto.destacado
+        db.session.commit()
+        return redirect(url_for('admin_productos'))
+
+    @app.route('/admin/productos/esencial/<int:product_id>', methods=['POST'])
+    def admin_esencial_producto(product_id):
+        producto = Product.query.get_or_404(product_id)
+        producto.esencial = not producto.esencial
         db.session.commit()
         return redirect(url_for('admin_productos'))
 

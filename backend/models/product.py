@@ -13,6 +13,7 @@ class Product(db.Model):
     sizes      = db.Column(db.String(100), nullable=True)  # ej: "S,M,L,XL"
     item_number = db.Column(db.String(50), nullable=True)
     destacado = db.Column(db.Boolean, default=False)
+    esencial  = db.Column(db.Boolean, default=False)
     gender    = db.Column(db.String(10), default='unisex')  # 'hombre', 'mujer', 'unisex'
     
 
