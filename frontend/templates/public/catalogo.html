@@ -85,63 +85,8 @@
 
 <script type="application/json" id="catalogo-config">{{ genero_inicial | default('hombre') | tojson }}</script>
 
-<script>
-(function () {
-    var generoInicial = JSON.parse(document.getElementById('catalogo-config').textContent);
-    var tabActivo = generoInicial || 'hombre';
+{% endblock %}
 
-    var ACTIVE_COLOR = '#FF6B00';
-
-    function setTab(genero) {
-        tabActivo = genero;
-
-        ['hombre', 'mujer', 'todos'].forEach(function (g) {
-            var btn = document.getElementById('tab-' + g);
-            if (!btn) return;
-            if (g === genero) {
-                btn.style.borderBottomColor = ACTIVE_COLOR;
-                btn.style.color = ACTIVE_COLOR;
-            } else {
-                btn.style.borderBottomColor = 'transparent';
-                btn.style.color = '#333';
-            }
-        });
-
-        var cards = document.querySelectorAll('#catalogo-grid .product-card');
-        var visible = 0;
-
-        cards.forEach(function (card) {
-            var gender = card.getAttribute('data-gender') || 'unisex';
-            var show = false;
-
-            if (genero === 'todos') {
-                show = true;
-            } else if (genero === 'hombre') {
-                show = (gender === 'hombre' || gender === 'unisex');
-            } else if (genero === 'mujer') {
-                show = (gender === 'mujer' || gender === 'unisex');
-            }
-
-            card.style.display = show ? '' : 'none';
-            if (show) visible++;
-        });
-
-        var countEl = document.getElementById('catalogo-count');
-        if (countEl) {
-            var label = genero === 'todos' ? 'Todos los productos' :
-                        genero === 'hombre' ? 'Hombre' : 'Mujer';
-            countEl.textContent = visible + ' producto' + (visible !== 1 ? 's' : '') + ' — ' + label;
-        }
-
-        var noResults = document.getElementById('no-results');
-        if (noResults) noResults.style.display = visible === 0 ? 'block' : 'none';
-    }
-
-    // Exponer para los botones onclick
-    window.setTab = setTab;
-
-    // Activar tab inicial al cargar
-    setTab(tabActivo);
-})();
-</script>
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/catalogo.js') }}"></script>
 {% endblock %}

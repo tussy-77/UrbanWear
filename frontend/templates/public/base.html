@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}UrbanWear{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
 </head>
 <body style="background-color: #000; color: #fff;">
 
@@ -51,23 +53,22 @@
 </header>
 
 <!-- ── Panel lateral de perfil (fuera del header) ── -->
-<div id="profile-sidebar-overlay" onclick="toggleProfileMenu()"
-    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:2000;"></div>
+<div id="profile-sidebar-overlay" class="profile-sidebar-overlay" onclick="toggleProfileMenu()"></div>
 
-<div id="profile-sidebar" style="position:fixed; top:0; right:-320px; width:300px; height:100vh; background:#fff; z-index:2001; transition:right 0.3s ease; display:flex; flex-direction:column; box-shadow:-4px 0 20px rgba(0,0,0,0.15);">
-    <div style="padding:24px 20px 20px; border-bottom:1px solid #eee; display:flex; align-items:center; justify-content:space-between;">
-        <div style="display:flex; align-items:center; gap:12px;">
-            <div style="width:40px; height:40px; border-radius:50%; background:#f0f0f0; display:flex; align-items:center; justify-content:center;">
+<div id="profile-sidebar" class="profile-sidebar">
+    <div class="profile-sidebar__header">
+        <div class="profile-sidebar__user">
+            <div class="profile-sidebar__avatar">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 256 256" fill="#555"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM128,144a40,40,0,1,1,40-40A40,40,0,0,1,128,144Zm76.24,42.81a80,80,0,0,0-152.48,0,87.81,87.81,0,0,1,152.48,0Z"/></svg>
             </div>
             <div>
-                <p style="margin:0; font-size:0.75rem; color:#888;">Hola,</p>
-                <p id="user-display-name" style="margin:0; font-weight:700; color:#111; font-size:0.95rem;"></p>
+                <p class="profile-sidebar__greeting">Hola,</p>
+                <p id="user-display-name" class="profile-sidebar__name"></p>
             </div>
         </div>
-        <button onclick="toggleProfileMenu()" style="background:none; border:none; cursor:pointer; font-size:1.2rem; color:#888;">✕</button>
+        <button onclick="toggleProfileMenu()" class="profile-sidebar__close">✕</button>
     </div>
-    <nav style="flex:1; padding:12px 0;">
+    <nav class="profile-sidebar__nav">
         <a href="/perfil" class="profile-nav-item">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 256 256" fill="#555"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM128,144a40,40,0,1,1,40-40A40,40,0,0,1,128,144Zm76.24,42.81a80,80,0,0,0-152.48,0,87.81,87.81,0,0,1,152.48,0Z"/></svg>
             <span>Perfil</span>
@@ -165,12 +166,12 @@
     <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
 
 <!-- MODAL LOGIN -->
-<div id="login-modal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); align-items:center; justify-content:center;">
-    <div style="background:#fff; border-radius:12px; padding:48px 40px; width:100%; max-width:480px; position:relative; text-align:center;">
-        
-        <button onclick="cerrarModal()" style="position:absolute; top:16px; right:20px; background:none; border:none; font-size:1.4rem; cursor:pointer; color:#333;">✕</button>
+<div id="login-modal" class="login-modal">
+    <div class="login-modal__panel">
 
-        <h2 style="font-size:1.1rem; font-weight:700; letter-spacing:2px; color:#111; margin-bottom:32px;">INICIA SESIÓN</h2>
+        <button onclick="cerrarModal()" class="login-modal__close">✕</button>
+
+        <h2 class="login-modal__title">INICIA SESIÓN</h2>
 
         <!-- Magic Link -->
         <button onclick="mostrarFormEmail('magic')" class="login-option-btn">
@@ -196,25 +197,22 @@
         </button>
 
         <!-- Sub-formulario dinámico -->
-        <div id="sub-form" style="display:none; margin-top:24px; text-align:left;">
-            <input type="email" id="input-email" placeholder="Tu email" 
-                style="width:100%; padding:12px 16px; border:1px solid #ddd; border-radius:8px; font-size:0.95rem; margin-bottom:12px; box-sizing:border-box;">
-            <input type="password" id="input-password" placeholder="Contraseña" 
-                style="width:100%; padding:12px 16px; border:1px solid #ddd; border-radius:8px; font-size:0.95rem; margin-bottom:16px; box-sizing:border-box; display:none;">
-            <button id="sub-form-btn" onclick="submitAuth()" 
-                style="width:100%; padding:13px; background:#111; color:#fff; border:none; border-radius:8px; font-weight:700; font-size:0.9rem; letter-spacing:1px; cursor:pointer;">
+        <div id="sub-form" class="login-modal__sub-form">
+            <input type="email" id="input-email" placeholder="Tu email" class="login-modal__input">
+            <input type="password" id="input-password" placeholder="Contraseña" class="login-modal__input login-modal__input--password">
+            <button id="sub-form-btn" onclick="submitAuth()" class="login-modal__submit-btn">
                 CONTINUAR
             </button>
 
-            <p id="link-registro" style="display:none; text-align:center; margin-top:16px; font-size:0.85rem; color:#555;">
-                ¿No tienes cuenta? 
-                <a href="/user_register" style="color:#111; font-weight:700; text-decoration:underline;">
-                    Crear una aquí
-                </a>
+            <p id="link-registro" class="login-modal__register">
+                ¿No tienes cuenta?
+                <a href="/user_register">Crear una aquí</a>
             </p>
-            <p id="auth-msg" style="margin-top:12px; font-size:0.85rem; display:none;"></p>
+            <p id="auth-msg" class="login-modal__msg"></p>
         </div>
     </div>
 </div>
+
+{% block scripts %}{% endblock %}
 </body>
 </html>

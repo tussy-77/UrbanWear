@@ -49,9 +49,7 @@
                 </td>
                 <td style="color:#888; font-size:0.8rem;">{{ p.sizes or '—' }}</td>
                 <td>
-                    <span style="font-size:0.75rem; font-weight:700; padding:3px 8px; border-radius:12px;
-                        background:{% if p.gender == 'hombre' %}#dbeafe{% elif p.gender == 'mujer' %}#fce7f3{% else %}#f3f4f6{% endif %};
-                        color:{% if p.gender == 'hombre' %}#1d4ed8{% elif p.gender == 'mujer' %}#be185d{% else %}#6b7280{% endif %};">
+                    <span class="gender-badge gender-badge--{{ p.gender or 'unisex' }}">
                         {{ (p.gender or 'unisex')|upper }}
                     </span>
                 </td>
@@ -204,42 +202,8 @@
     </div>
 </div>
 
-<script>
-function abrirModalAgregar() {
-    document.getElementById('modal-agregar').classList.add('active');
-}
+{% endblock %}
 
-function abrirModalEditarBtn(btn) {
-    const id          = btn.dataset.id;
-    const nombre      = btn.dataset.nombre;
-    const precio      = btn.dataset.precio;
-    const descripcion = btn.dataset.descripcion;
-    const stock       = btn.dataset.stock;
-    const tallas      = btn.dataset.tallas;
-    const imagen      = btn.dataset.imagen;
-
-    const genero = btn.dataset.genero || 'unisex';
-    document.getElementById('form-editar').action = `/admin/productos/editar/${id}`;
-    document.getElementById('edit-nombre').value      = nombre;
-    document.getElementById('edit-precio').value      = precio;
-    document.getElementById('edit-descripcion').value = descripcion;
-    document.getElementById('edit-stock').value       = stock;
-    document.getElementById('edit-tallas').value      = tallas;
-    document.getElementById('edit-imagen-url').value  = imagen.startsWith('http') ? imagen : '';
-    document.getElementById('edit-genero').value      = genero;
-    document.getElementById('modal-editar').classList.add('active');
-}
-
-function cerrarModal(id) {
-    document.getElementById(id).classList.remove('active');
-}
-
-// Cerrar al click fuera
-document.querySelectorAll('.admin-modal').forEach(modal => {
-    modal.addEventListener('click', function(e) {
-        if (e.target === this) cerrarModal(this.id);
-    });
-});
-</script>
-
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin-products.js') }}"></script>
 {% endblock %}

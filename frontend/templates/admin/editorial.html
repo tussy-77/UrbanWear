@@ -39,13 +39,6 @@
             <p style="font-size:0.72rem; color:#888; margin:0;">{{ hero.subtitle }}</p>
         </div>
     </div>
-    <script>
-        (function(){
-            var el = document.getElementById('prev-hero-bg');
-            var bg = el.getAttribute('data-bg');
-            if (bg) el.style.backgroundImage = "url('" + bg + "')";
-        })();
-    </script>
 
     <!-- Formulario hero -->
     <form method="POST" action="/admin/editorial/guardar/{{ hero.id }}" enctype="multipart/form-data">
@@ -155,13 +148,6 @@
             </div>
         </div>
     </div>
-    <script>
-        (function(){
-            var el = document.getElementById('prev-edit-bg');
-            var bg = el.getAttribute('data-bg');
-            if (bg) el.style.backgroundImage = "url('" + bg + "')";
-        })();
-    </script>
 
     <!-- Formulario editorial -->
     <form method="POST" action="/admin/editorial/guardar/{{ editorial.id }}" enctype="multipart/form-data">
@@ -273,16 +259,6 @@
             </div>
         </div>
     </div>
-    <script>
-        (function(){
-            var ids = ['prev-cat-hombre', 'prev-cat-mujer'];
-            ids.forEach(function(id){
-                var el = document.getElementById(id);
-                var bg = el.getAttribute('data-bg');
-                if (bg) el.style.backgroundImage = "url('" + bg + "')";
-            });
-        })();
-    </script>
 
     <!-- Formularios lado a lado -->
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
@@ -372,4 +348,8 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin-editorial.js') }}"></script>
 {% endblock %}
