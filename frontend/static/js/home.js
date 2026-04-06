@@ -15,4 +15,28 @@ document.addEventListener('DOMContentLoaded', function () {
         if (pattern) pattern.style.display = 'none';
     }
 
+    // Reveal escalonado de los productos New In y Essential al hacer scroll
+    var revealItems = document.querySelectorAll('.newin-item');
+    if (revealItems.length) {
+        if ('IntersectionObserver' in window) {
+            var observer = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.12 });
+
+            revealItems.forEach(function (el) {
+                observer.observe(el);
+            });
+        } else {
+            // Fallback para navegadores sin IntersectionObserver
+            revealItems.forEach(function (el) {
+                el.classList.add('is-visible');
+            });
+        }
+    }
+
 });

@@ -96,13 +96,15 @@ def create_app():
             ).order_by(Product.id.asc()).limit(4 - len(esenciales)).all()
             esenciales = esenciales + relleno_e
 
-        hero_banner    = Banner.query.filter_by(active=True, position='hero').first()
-        editorial      = Banner.query.filter_by(active=True, position='editorial').first()
-        banner_hombre  = Banner.query.filter_by(active=True, position='categoria_hombre').first()
-        banner_mujer   = Banner.query.filter_by(active=True, position='categoria_mujer').first()
+        hero_banner       = Banner.query.filter_by(active=True, position='hero').first()
+        editorial         = Banner.query.filter_by(active=True, position='editorial').first()
+        banner_secundario = Banner.query.filter_by(active=True, position='banner_secundario').first()
+        banner_hombre     = Banner.query.filter_by(active=True, position='categoria_hombre').first()
+        banner_mujer      = Banner.query.filter_by(active=True, position='categoria_mujer').first()
         return render_template('public/home.html', productos=productos_db,
                                esenciales=esenciales,
                                hero_banner=hero_banner, banner=editorial,
+                               banner_secundario=banner_secundario,
                                banner_hombre=banner_hombre, banner_mujer=banner_mujer)
 
     @app.route('/perfil')
@@ -401,10 +403,11 @@ def create_app():
 
     @app.route('/admin/editorial')
     def admin_editorial():
-        hero           = Banner.query.filter_by(position='hero').first()
-        editorial      = Banner.query.filter_by(position='editorial').first()
-        cat_hombre     = Banner.query.filter_by(position='categoria_hombre').first()
-        cat_mujer      = Banner.query.filter_by(position='categoria_mujer').first()
+        hero              = Banner.query.filter_by(position='hero').first()
+        editorial         = Banner.query.filter_by(position='editorial').first()
+        banner_secundario = Banner.query.filter_by(position='banner_secundario').first()
+        cat_hombre        = Banner.query.filter_by(position='categoria_hombre').first()
+        cat_mujer         = Banner.query.filter_by(position='categoria_mujer').first()
         if not hero:
             hero = Banner(
                 name='Banner Hero (Portada)',
@@ -421,6 +424,18 @@ def create_app():
         if not editorial:
             editorial = Banner(name='Banner Editorial', position='editorial')
             db.session.add(editorial)
+        if not banner_secundario:
+            banner_secundario = Banner(
+                name='Banner Secundario',
+                position='banner_secundario',
+                tag='NUEVA COLECCIÓN',
+                title='URBANWEAR',
+                subtitle='Street Culture & Urban Design Corp.',
+                description='Diseño Urbano & Cultura de Calle',
+                badge1='', badge2='',
+                btn_text='VER COLECCIÓN →',
+            )
+            db.session.add(banner_secundario)
         if not cat_hombre:
             cat_hombre = Banner(
                 name='Categoría Hombre',
@@ -444,6 +459,7 @@ def create_app():
         db.session.commit()
         return render_template('admin/editorial.html',
                                hero=hero, editorial=editorial,
+                               banner_secundario=banner_secundario,
                                cat_hombre=cat_hombre, cat_mujer=cat_mujer)
 
     @app.route('/admin/editorial/guardar/<int:banner_id>', methods=['POST'])

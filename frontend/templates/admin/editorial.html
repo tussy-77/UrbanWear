@@ -348,6 +348,106 @@
     </div>
 </div>
 
+<!-- ══ BANNER SECUNDARIO ══════════════════════════════════════════ -->
+<div class="admin-card" style="margin-top:20px;">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <div>
+            <h2 style="font-size:0.9rem; font-weight:800; color:#111; margin:0 0 4px;">BANNER SECUNDARIO</h2>
+            <p style="font-size:0.75rem; color:#888; margin:0;">Aparece después de la frase de marca, antes del newsletter</p>
+        </div>
+        {% if banner_secundario.active %}
+        <span class="status-badge status-badge--ok">ACTIVO</span>
+        {% else %}
+        <span class="status-badge status-badge--default">INACTIVO</span>
+        {% endif %}
+    </div>
+
+    <!-- Preview -->
+    <div style="position:relative; height:140px; border-radius:6px; overflow:hidden; margin-bottom:24px; background:#1a1a1a;">
+        <div id="prev-sec-bg"
+             data-bg="{{ banner_secundario.image_src or '' }}"
+             style="position:absolute; inset:0; background:linear-gradient(135deg,#1a1a1a,#2d2d2d); background-size:cover; background-position:center; opacity:0.6;">
+        </div>
+        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.4);"></div>
+        <div style="position:absolute; left:0; top:0; bottom:0; width:3px; background:#ff6b35;"></div>
+        <div style="position:relative; z-index:2; padding:20px 32px; height:100%; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <p style="font-size:0.58rem; letter-spacing:4px; color:#ff6b35; margin:0 0 4px;">{{ banner_secundario.tag }}</p>
+                <p style="font-size:1.3rem; font-weight:900; color:#fff; margin:0; letter-spacing:-1px;">{{ banner_secundario.title }} ®</p>
+                <p style="font-size:0.65rem; color:#aaa; margin:0; letter-spacing:1px;">{{ banner_secundario.subtitle }}</p>
+            </div>
+            <div style="text-align:right;">
+                <p style="font-size:0.8rem; color:#fff; margin:0 0 4px;">{{ banner_secundario.description }}</p>
+                <p style="font-size:0.62rem; color:#bbb; margin:0 0 2px;">{{ banner_secundario.badge1 }}</p>
+                <p style="font-size:0.62rem; color:#bbb; margin:0;">{{ banner_secundario.badge2 }}</p>
+            </div>
+        </div>
+    </div>
+
+    <form method="POST" action="/admin/editorial/guardar/{{ banner_secundario.id }}" enctype="multipart/form-data">
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+            <div class="admin-campo">
+                <label class="admin-label">Etiqueta superior (TAG)</label>
+                <input class="admin-input" type="text" name="tag" value="{{ banner_secundario.tag }}" placeholder="COLECCIÓN EXCLUSIVA">
+            </div>
+            <div class="admin-campo">
+                <label class="admin-label">Título / Nombre</label>
+                <input class="admin-input" type="text" name="title" value="{{ banner_secundario.title }}" placeholder="URBANWEAR">
+            </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+            <div class="admin-campo">
+                <label class="admin-label">Subtítulo</label>
+                <input class="admin-input" type="text" name="subtitle" value="{{ banner_secundario.subtitle }}" placeholder="Street Culture & Urban Design Corp.">
+            </div>
+            <div class="admin-campo">
+                <label class="admin-label">Descripción (derecha)</label>
+                <input class="admin-input" type="text" name="description" value="{{ banner_secundario.description }}" placeholder="Diseño Urbano & Cultura de Calle">
+            </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:16px;">
+            <div class="admin-campo">
+                <label class="admin-label">Badge 1</label>
+                <input class="admin-input" type="text" name="badge1" value="{{ banner_secundario.badge1 }}" placeholder="Nueva Temporada">
+            </div>
+            <div class="admin-campo">
+                <label class="admin-label">Badge 2</label>
+                <input class="admin-input" type="text" name="badge2" value="{{ banner_secundario.badge2 }}" placeholder="Edición Limitada">
+            </div>
+            <div class="admin-campo">
+                <label class="admin-label">Texto del botón</label>
+                <input class="admin-input" type="text" name="btn_text" value="{{ banner_secundario.btn_text }}" placeholder="VER COLECCIÓN →">
+            </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
+            <div class="admin-campo">
+                <label class="admin-label">Subir imagen de fondo</label>
+                <input class="admin-input" type="file" name="imagen" accept="image/*" style="padding:8px 14px; cursor:pointer;">
+            </div>
+            <div class="admin-campo">
+                <label class="admin-label">O pegar URL de imagen</label>
+                <input class="admin-input" type="text" name="imagen_url" value="{{ banner_secundario.image_url or '' }}" placeholder="https://...">
+            </div>
+        </div>
+
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                <input type="checkbox" name="active" {% if banner_secundario.active %}checked{% endif %}
+                    style="width:16px; height:16px; accent-color:#ff6b35; cursor:pointer;">
+                <span style="font-size:0.8rem; font-weight:600; color:#555;">Mostrar en la tienda</span>
+            </label>
+            <button type="submit" class="btn-admin btn-admin--primary" style="padding:10px 28px;">
+                GUARDAR BANNER SECUNDARIO
+            </button>
+        </div>
+    </form>
+</div>
+
 {% endblock %}
 
 {% block scripts %}

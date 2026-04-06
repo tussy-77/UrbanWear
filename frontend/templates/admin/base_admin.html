@@ -30,7 +30,7 @@
         </a>
     </nav>
     <div class="admin-sidebar__footer">
-        <a href="/">← Ver tienda</a>
+        <a href="/" class="admin-sidebar__back-btn">← Ver tienda</a>
     </div>
 </aside>
 
@@ -38,7 +38,7 @@
 <main class="admin-main">
     <div class="admin-topbar">
         <span class="admin-topbar__title">{% block topbar_title %}Panel Admin{% endblock %}</span>
-        <span class="admin-topbar__meta">UrbanWear Admin</span>
+        <a href="/" class="admin-topbar__home-btn">← Ver tienda</a>
     </div>
     <div class="admin-content">
         {% block content %}{% endblock %}
