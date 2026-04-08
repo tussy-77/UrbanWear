@@ -3,83 +3,64 @@
 {% block title %}Catálogo | UrbanWear{% endblock %}
 
 {% block content %}
-<main class="section-padding">
-    <div class="container">
+<main class="catalogo-section">
 
-        <!-- Header -->
-        <header class="featured__header" style="margin-bottom:32px;">
-            <h1 class="section-title">Catálogo</h1>
-            <p style="color:#888;">Explora toda la colección UrbanWear</p>
-        </header>
-
-        <!-- Tabs HOMBRE / MUJER -->
-        <div style="display:flex; gap:0; border-bottom:2px solid #e5e7eb; margin-bottom:36px;">
-            <button id="tab-hombre" onclick="setTab('hombre')"
-                style="padding:12px 32px; font-size:0.85rem; font-weight:800; letter-spacing:0.08em;
-                       border:none; background:none; cursor:pointer; border-bottom:3px solid transparent;
-                       margin-bottom:-2px; transition:all .2s;">
-                HOMBRE
-            </button>
-            <button id="tab-mujer" onclick="setTab('mujer')"
-                style="padding:12px 32px; font-size:0.85rem; font-weight:800; letter-spacing:0.08em;
-                       border:none; background:none; cursor:pointer; border-bottom:3px solid transparent;
-                       margin-bottom:-2px; transition:all .2s;">
-                MUJER
-            </button>
-            <button id="tab-todos" onclick="setTab('todos')"
-                style="padding:12px 32px; font-size:0.85rem; font-weight:800; letter-spacing:0.08em;
-                       border:none; background:none; cursor:pointer; border-bottom:3px solid transparent;
-                       margin-bottom:-2px; transition:all .2s;">
-                TODOS
-            </button>
+    <!-- Header Principal (Full Width) -->
+    <div class="catalogo-header">
+        <div class="catalogo-header__left">
+            <h1 class="catalogo-header__title">Catálogo</h1>
         </div>
+        <div class="catalogo-header__right">
+            <p class="catalogo-header__subtitle">Explora toda la colección UrbanWear</p>
+        </div>
+    </div>
 
-        <!-- Contador -->
-        <p id="catalogo-count" style="color:#888; font-size:0.82rem; margin-bottom:24px;"></p>
+    <!-- Tabs de Categoría (Full Width) -->
+    <div class="catalogo-tabs">
+        <button id="tab-hombre" onclick="setTab('hombre')" class="catalogo-tab">
+            HOMBRE
+        </button>
+        <button id="tab-mujer" onclick="setTab('mujer')" class="catalogo-tab">
+            MUJER
+        </button>
+        <button id="tab-todos" onclick="setTab('todos')" class="catalogo-tab">
+            TODOS
+        </button>
+    </div>
 
-        <!-- Grid de productos -->
-        <div class="featured__grid" id="catalogo-grid">
-            {% for producto in productos %}
-            <div class="product-card" data-gender="{{ producto.gender or 'unisex' }}">
-                <a href="/producto/{{ producto.id }}" style="text-decoration:none; color:inherit;">
-                    <div class="product-card__image">
-                        {% if producto.image_src %}
-                            <img src="{{ producto.image_src }}"
-                                 alt="{{ producto.name }}"
-                                 style="width:100%; height:100%; object-fit:cover;">
-                        {% else %}
-                            <div class="product-card__image-placeholder"></div>
-                        {% endif %}
-                    </div>
-                </a>
-                <div class="product-card__content">
-                    <span class="product-card__category">
-                        {{ (producto.gender or 'unisex')|capitalize }}
-                    </span>
-                    <h3 class="product-card__title">
-                        <a href="/producto/{{ producto.id }}" style="text-decoration:none; color:inherit;">
-                            {{ producto.name }}
-                        </a>
-                    </h3>
-                    <p class="product-card__price">${{ "{:,.0f}".format(producto.price) }}</p>
-                    <a href="/producto/{{ producto.id }}" class="btn btn--secondary btn--full"
-                       style="text-align:center; display:block;">
-                        Ver producto
-                    </a>
+    <!-- Contador (Full Width) -->
+    <p id="catalogo-count" class="catalogo-count"></p>
+
+    <!-- Grid de productos (Full Width) -->
+    <div class="catalogo-grid" id="catalogo-grid">
+        {% for producto in productos %}
+        <div class="catalogo-card" data-gender="{{ producto.gender or 'unisex' }}">
+            <a href="/producto/{{ producto.id }}" class="catalogo-card__link">
+                <div class="catalogo-card__image">
+                    {% if producto.image_src %}
+                        <img src="{{ producto.image_src }}"
+                             alt="{{ producto.name }}"
+                             class="catalogo-card__img">
+                    {% else %}
+                        <div class="catalogo-card__placeholder"></div>
+                    {% endif %}
                 </div>
-            </div>
-            {% else %}
-            <div id="empty-state" style="grid-column:1/-1; text-align:center; padding:60px 0;">
-                <p style="color:#888;">Aún no hay productos en el catálogo.</p>
-            </div>
-            {% endfor %}
+                <div class="catalogo-card__body">
+                    <h3 class="catalogo-card__name">{{ producto.name.lower() }}</h3>
+                    <p class="catalogo-card__price">${{ "{:,.0f}".format(producto.price) }}</p>
+                </div>
+            </a>
         </div>
-
-        <!-- Sin resultados para el tab activo -->
-        <div id="no-results" style="display:none; text-align:center; padding:60px 0;">
-            <p style="color:#888; font-size:0.9rem;">No hay productos en esta categoría por el momento.</p>
+        {% else %}
+        <div class="catalogo-empty">
+            <p>Aún no hay productos en el catálogo.</p>
         </div>
+        {% endfor %}
+    </div>
 
+    <!-- Sin resultados para el tab activo (Full Width) -->
+    <div id="no-results" class="catalogo-empty" style="display:none;">
+        <p>No hay productos en esta categoría por el momento.</p>
     </div>
 </main>
 

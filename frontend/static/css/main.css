@@ -20,6 +20,7 @@
     /* Tipografía */
     --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-display: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-gotham: 'Gotham', 'Gotham Bold', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Georgia', sans-serif;
     --fs-xs: 12px;
     --fs-sm: 14px;
     --fs-base: 16px;
@@ -1498,3 +1499,334 @@ button {
 
 .home-cat-card:hover { transform: scale(1.01); }
 .home-cat-card:hover h3 { color: #fff !important; }
+
+/* ============================================
+   CATÁLOGO - DISEÑO PREMIUM MINIMALISTA
+   ============================================ */
+
+.catalogo-section {
+    background: #f4efef;
+    padding: 60px 0;
+    min-height: 100vh;
+}
+
+/* ── ENCABEZADO DEL CATÁLOGO ── */
+
+.catalogo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0;
+    gap: 60px;
+    padding: 0 1.5rem 40px;
+    width: 100%;
+}
+
+.catalogo-header__left {
+    flex: 1;
+}
+
+.catalogo-header__title {
+    font-family: var(--font-display);
+    font-size: 2.8rem;
+    font-weight: 900;
+    color: #111;
+    letter-spacing: -1.5px;
+    margin: 0;
+    line-height: 1.1;
+}
+
+.catalogo-header__right {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+}
+
+.catalogo-header__subtitle {
+    font-size: 0.95rem;
+    color: #999;
+    margin: 0;
+    text-align: right;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+}
+
+/* ── TABS DE CATEGORÍA ── */
+
+.catalogo-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 0;
+    border-bottom: 1px solid #DDD;
+    padding: 0 1.5rem;
+    width: 100%;
+}
+
+.catalogo-tab {
+    background: none;
+    border: none;
+    padding: 16px 0;
+    margin-right: 48px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #999;
+    cursor: pointer;
+    position: relative;
+    text-transform: uppercase;
+    transition: color 0.2s ease;
+    font-family: var(--font-primary);
+}
+
+.catalogo-tab:hover {
+    color: #333;
+}
+
+.catalogo-tab::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: auto;
+    width: 100%;
+    height: 1px;
+    background: #111;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.2s ease;
+}
+
+.catalogo-tab.active {
+    color: #111;
+}
+
+.catalogo-tab.active::after {
+    transform: scaleX(1);
+}
+
+/* ── CONTADOR DE PRODUCTOS ── */
+
+.catalogo-count {
+    font-size: 0.85rem;
+    color: #999;
+    margin: 0;
+    font-weight: 400;
+    letter-spacing: 0.3px;
+    padding: 24px 1.5rem;
+    width: 100%;
+}
+
+/* ── GRID DE PRODUCTOS ── */
+
+.catalogo-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+/* ── TARJETA DE PRODUCTO ── */
+
+.catalogo-card {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background: transparent;
+}
+
+.catalogo-card__link {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.catalogo-card__image {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 3 / 4;
+    background: transparent;
+    margin-bottom: 6px;
+}
+
+.catalogo-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    transition: transform 0.4s ease;
+}
+
+.catalogo-card:hover .catalogo-card__img {
+    transform: scale(1.02);
+}
+
+.catalogo-card__placeholder {
+    width: 100%;
+    height: 100%;
+    background: #E0DDD5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    font-size: 14px;
+}
+
+.catalogo-card__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 2px;
+    padding: 0 4px;
+}
+
+.catalogo-card__name {
+    font-family: var(--font-gotham);
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: #111;
+    margin: 0;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.catalogo-card__price {
+    font-family: var(--font-primary);
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: #666;
+    margin: 0;
+    letter-spacing: 0.02em;
+}
+
+/* ── ESTADO VACÍO ── */
+
+.catalogo-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 80px 0;
+}
+
+.catalogo-empty p {
+    font-size: 0.95rem;
+    color: #999;
+    margin: 0;
+    font-weight: 400;
+}
+
+/* ── RESPONSIVE ── */
+
+@media (max-width: 1024px) {
+    .catalogo-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+    }
+
+    .catalogo-header {
+        flex-direction: column;
+        gap: 40px;
+        padding: 0 1.5rem 30px;
+    }
+
+    .catalogo-header__right {
+        justify-content: flex-start;
+    }
+
+    .catalogo-header__subtitle {
+        text-align: left;
+    }
+
+    .catalogo-header__title {
+        font-size: 2.2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .catalogo-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 4px;
+    }
+
+    .catalogo-section {
+        padding: 40px 0;
+    }
+
+    .catalogo-header {
+        padding: 0 1rem 24px;
+    }
+
+    .catalogo-header__title {
+        font-size: 2rem;
+    }
+
+    .catalogo-tabs {
+        padding: 0 1rem;
+    }
+
+    .catalogo-tab {
+        margin-right: 30px;
+        padding: 12px 0;
+        font-size: 0.7rem;
+    }
+
+    .catalogo-count {
+        padding: 16px 1rem;
+        margin-bottom: 0;
+        font-size: 0.8rem;
+    }
+
+    .catalogo-card__body {
+        padding: 0 2px;
+    }
+}
+
+@media (max-width: 480px) {
+    .catalogo-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2px;
+    }
+
+    .catalogo-section {
+        padding: 30px 0;
+    }
+
+    .catalogo-header {
+        flex-direction: column;
+        gap: 24px;
+        padding: 0 0.75rem 16px;
+    }
+
+    .catalogo-header__title {
+        font-size: 1.5rem;
+    }
+
+    .catalogo-tabs {
+        padding: 0 0.75rem;
+    }
+
+    .catalogo-tab {
+        margin-right: 20px;
+        padding: 12px 0;
+        font-size: 0.65rem;
+    }
+
+    .catalogo-count {
+        padding: 12px 0.75rem;
+        font-size: 0.75rem;
+    }
+
+    .catalogo-card__name {
+        font-size: 0.65rem;
+    }
+
+    .catalogo-card__price {
+        font-size: 0.6rem;
+    }
+}
