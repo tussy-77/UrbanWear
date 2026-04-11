@@ -2,6 +2,7 @@
 {% block title %}Usuarios — Admin{% endblock %}
 {% block topbar_title %}Gestión de Usuarios{% endblock %}
 
+{% block content %}
 <div style="margin-bottom:24px;">
     <h2 style="font-size:1.1rem; font-weight:800; margin:0;">Usuarios</h2>
     <p style="font-size:0.82rem; color:#888; margin:4px 0 0;">{{ usuarios|length }} usuarios registrados</p>
@@ -27,7 +28,7 @@
                 <td>
                     <span class="status-badge {% if u.role.value == 'admin' %}status-badge--pending{% else %}status-badge--default{% endif %}">
                         {{ u.role.value | upper }}
-                    </span>>
+                    </span>
                 </td>
                 <td style="color:#888;">{{ u.created_at.strftime('%d/%m/%Y') if u.created_at else '—' }}</td>
             </tr>
