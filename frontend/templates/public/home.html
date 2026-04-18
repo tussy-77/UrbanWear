@@ -2,11 +2,6 @@
 {% block title %}UrbanWear - Moda Urbana Moderna{% endblock %}
 {% block content %}
 
-<!-- ── BARRA SUPERIOR DE BENEFICIO ── -->
-<div class="benefit-bar">
-    <p class="benefit-bar__text">ENVÍO GRATIS EN ROPA SIN DESCUENTO — COLOMBIA</p>
-</div>
-
 <!-- ── HERO BANNER ── -->
 <section class="hero">
 
@@ -280,28 +275,15 @@
 
 <!-- ── BANNER SECUNDARIO ── -->
 {% if banner_secundario %}
-<section class="editorial">
+<section class="editorial" style="min-height: 340px;">
     <div id="banner-sec-bg"
          data-bg="{{ banner_secundario.image_src or '' }}"
          class="editorial__bg">
     </div>
-    <div class="editorial__overlay"></div>
-    <div class="editorial__accent-line"></div>
-    <div class="editorial__content">
-        <div>
-            <p class="editorial__tag">{{ banner_secundario.tag }}</p>
-            <h2 class="editorial__title">{{ banner_secundario.title }} ®</h2>
-            <p class="editorial__subtitle">{{ banner_secundario.subtitle }}</p>
-        </div>
-        <div class="editorial__divider"></div>
-        <div class="editorial__right">
-            <p class="editorial__description">{{ banner_secundario.description }}</p>
-            <p class="editorial__badge">{{ banner_secundario.badge1 }}</p>
-            <p class="editorial__badge2">{{ banner_secundario.badge2 }}</p>
-            <a href="{{ url_for('catalogo') }}" class="editorial__btn">{{ banner_secundario.btn_text }}</a>
-        </div>
+    <div class="editorial__overlay" style="opacity: 0.45;"></div>
+    <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none;">
+        <span style="font-family: 'Poppins', sans-serif; font-size: 1.1rem; font-weight: 800; letter-spacing: 6px; color: rgba(255,255,255,0.55); text-transform: uppercase;">URBANWEAR</span>
     </div>
-    <div class="editorial__watermark">URBANWEAR — STREET CULTURE — 2025</div>
 </section>
 {% endif %}
 

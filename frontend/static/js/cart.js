@@ -13,18 +13,24 @@ function getAuthToken() {
 function actualizarInterfazUsuario() {
     const token = getAuthToken();
     const userName = localStorage.getItem('client_name') || 'Cliente';
-    
+
     const guestIcon = document.getElementById('guest-icon');
     const userProfileIcon = document.getElementById('user-profile-icon');
     const displayName = document.getElementById('user-display-name');
+    const sidebarLoggedIn = document.getElementById('profile-logged-in');
+    const sidebarGuest = document.getElementById('profile-guest');
 
     if (token) {
         if (guestIcon) guestIcon.style.display = 'none';
         if (userProfileIcon) userProfileIcon.style.display = 'flex';
         if (displayName) displayName.innerText = userName;
+        if (sidebarLoggedIn) sidebarLoggedIn.style.display = 'flex';
+        if (sidebarGuest) sidebarGuest.style.display = 'none';
     } else {
         if (guestIcon) guestIcon.style.display = 'flex';
         if (userProfileIcon) userProfileIcon.style.display = 'none';
+        if (sidebarLoggedIn) sidebarLoggedIn.style.display = 'none';
+        if (sidebarGuest) sidebarGuest.style.display = 'flex';
     }
 }
 
@@ -226,7 +232,29 @@ function irAlCheckout() {
     window.location.href = '/checkout';
 }
 
-// 5. EVENTOS E INICIALIZACIÓN
+// 5. SCROLL — ocultar/mostrar header según dirección
+(function () {
+    var lastY = 0;
+    var header = null;
+    var threshold = 80; // px desde el top donde empieza a ocultarse
+
+    window.addEventListener('scroll', function () {
+        if (!header) header = document.querySelector('.header');
+        if (!header) return;
+
+        var currentY = window.scrollY;
+
+        if (currentY > threshold && currentY > lastY) {
+            header.classList.add('header--hidden');
+        } else {
+            header.classList.remove('header--hidden');
+        }
+
+        lastY = currentY;
+    }, { passive: true });
+})();
+
+// 6. EVENTOS E INICIALIZACIÓN
 document.addEventListener('DOMContentLoaded', () => {
       const urlParams = new URLSearchParams(window.location.search);
     const tokenUrl = urlParams.get('token');
@@ -244,13 +272,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cartOverlay) cartOverlay.onclick = cerrarCarrito;
 
     
-    const guestIcon = document.getElementById('guest-icon');
-    if (guestIcon) {
-        guestIcon.addEventListener('click', function(e) {
-            e.preventDefault();
-            abrirModal();
-        });
-    }
     
 
    

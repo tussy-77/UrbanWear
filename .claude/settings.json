@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wc -l c:/proyectos/sistema-ventas/frontend/static/css/*.css c:/proyectos/sistema-ventas/frontend/static/js/*.js)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git restore:*)",
+      "Bash(git push:*)"
+    ]
+  }
+}

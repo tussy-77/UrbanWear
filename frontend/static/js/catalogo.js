@@ -18,7 +18,7 @@
 
         cards.forEach(function (card) {
             var gender = card.getAttribute('data-gender') || 'unisex';
-            var show   = genero === 'todos' ||
+            var show   = (genero === 'todos'  && gender === 'accesorios') ||
                          (genero === 'hombre' && (gender === 'hombre' || gender === 'unisex')) ||
                          (genero === 'mujer'  && (gender === 'mujer'  || gender === 'unisex'));
             card.style.display = show ? '' : 'none';
@@ -28,7 +28,7 @@
         // Actualizar contador
         var countEl = document.getElementById('catalogo-count');
         if (countEl) {
-            var label = genero === 'todos' ? 'todos los productos' :
+            var label = genero === 'todos'  ? 'accesorios' :
                         genero === 'hombre' ? 'colección hombre' : 'colección mujer';
             countEl.textContent = visible + ' producto' + (visible !== 1 ? 's' : '') + ' — ' + label;
         }

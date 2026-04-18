@@ -12,29 +12,37 @@
 <body style="background-color: #000; color: #fff;">
 
     <header class="header">
+    <!-- Barra superior de beneficio -->
+    <div class="benefit-bar">
+        <p class="benefit-bar__text">ENVÍO GRATIS EN ROPA SIN DESCUENTO — COLOMBIA</p>
+    </div>
     <div class="container">
-        <div class="header__wrapper" style="width: 100%;">
-            <div class="logo" style="cursor: pointer;" onclick="window.location.href='/'">
+        <div class="header__wrapper" style="width: 100%; display: flex; align-items: center;">
+
+            <!-- Nav izquierda (ocupa 1/3) -->
+            <nav class="nav" style="display: flex; gap: 36px; flex: 1; justify-content: flex-start;">
+                <a href="{{ url_for('catalogo') }}?genero=hombre" class="nav__link">HOMBRE</a>
+                <a href="{{ url_for('catalogo') }}?genero=mujer" class="nav__link">MUJER</a>
+                <a href="{{ url_for('catalogo') }}" class="nav__link">ACCESORIOS</a>
+            </nav>
+
+            <!-- Logo centrado (auto) -->
+            <div class="logo" style="cursor: pointer; flex-shrink: 0;" onclick="window.location.href='/'">
                 <span class="logo__icon">◆</span>
                 <span class="logo__text">UrbanWear</span>
             </div>
 
-            <nav class="nav" style="display: flex; gap: 40px; flex: 1; justify-content: center;">
-                <a href="{{ url_for('catalogo') }}" class="nav__link">CATÁLOGO</a>
-                <a href="#" class="nav__link">Nuevo</a>
-                <a href="#" class="nav__link">Sobre</a>
-                <a href="#" class="nav__link">Contacto</a>
-            </nav>
-
-            <div class="header__actions" style="display: flex; align-items: center; gap: 20px;">
+            <!-- Iconos derecha (ocupa 1/3) -->
+            <div class="header__actions" style="display: flex; align-items: center; gap: 20px; flex: 1; justify-content: flex-end;">
                 <button class="header-icon-btn" id="search-toggle" style="background: none; border: none; cursor: pointer; padding: 0;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 256 256" style="fill: #888; transition: fill 0.3s;"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path></svg>
                 </button>
 
                 <div class="user-menu-wrapper" style="position: relative;">
-                    <a href="#" id="guest-icon" class="header-icon-btn" style="display: flex;">
+                    <button id="guest-icon" class="header-icon-btn" onclick="toggleProfileMenu()"
+                        style="display: flex; background: none; border: none; cursor: pointer; padding: 0;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 256 256" style="fill: #888; transition: fill 0.3s;"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM128,144a40,40,0,1,1,40-40A40,40,0,0,1,128,144Zm76.24,42.81a80,80,0,0,0-152.48,0,87.81,87.81,0,0,1,152.48,0Z"></path></svg>
-                    </a>
+                    </button>
                     <button id="user-profile-icon" class="header-icon-btn" onclick="toggleProfileMenu()"
                         style="display: none; background: none; border: none; cursor: pointer; padding: 0;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 256 256" style="fill: #888; transition: fill 0.3s;"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM128,144a40,40,0,1,1,40-40A40,40,0,0,1,128,144Zm76.24,42.81a80,80,0,0,0-152.48,0,87.81,87.81,0,0,1,152.48,0Z"></path></svg>
@@ -56,40 +64,71 @@
 <div id="profile-sidebar-overlay" class="profile-sidebar-overlay" onclick="toggleProfileMenu()"></div>
 
 <div id="profile-sidebar" class="profile-sidebar">
-    <div class="profile-sidebar__header">
-        <div class="profile-sidebar__user">
-            <div class="profile-sidebar__avatar">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 256 256" fill="#555"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM128,144a40,40,0,1,1,40-40A40,40,0,0,1,128,144Zm76.24,42.81a80,80,0,0,0-152.48,0,87.81,87.81,0,0,1,152.48,0Z"/></svg>
+
+    <!-- Vista invitado (no logueado) -->
+    <div id="profile-guest" style="display:none; flex-direction:column; height:100%;">
+        <div class="profile-sidebar__header">
+            <div class="profile-sidebar__user">
+                <div class="profile-sidebar__avatar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 256 256" fill="#555"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM128,144a40,40,0,1,1,40-40A40,40,0,0,1,128,144Zm76.24,42.81a80,80,0,0,0-152.48,0,87.81,87.81,0,0,1,152.48,0Z"/></svg>
+                </div>
+                <div>
+                    <p class="profile-sidebar__greeting" style="font-size:1rem; font-weight:800; letter-spacing:1px; color:#111;">¡HOLA!</p>
+                    <p style="font-size:0.78rem; color:#777; letter-spacing:0.5px; margin:0;">INICIA SESIÓN</p>
+                </div>
             </div>
-            <div>
-                <p class="profile-sidebar__greeting">Hola,</p>
-                <p id="user-display-name" class="profile-sidebar__name"></p>
-            </div>
+            <button onclick="toggleProfileMenu()" class="profile-sidebar__close">✕</button>
         </div>
-        <button onclick="toggleProfileMenu()" class="profile-sidebar__close">✕</button>
+        <div style="padding: 24px 20px; display:flex; flex-direction:column; gap:12px;">
+            <button onclick="toggleProfileMenu(); abrirModal();"
+                style="width:100%; padding:13px; background:#111; color:#fff; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.85rem; letter-spacing:1.5px;">
+                INICIAR SESIÓN
+            </button>
+            <p style="text-align:center; color:#888; font-size:0.8rem; margin:0;">
+                ¿No tienes cuenta?
+                <a href="/user_register" style="color:#111; font-weight:700; text-decoration:none;"> Regístrate aquí</a>
+            </p>
+        </div>
     </div>
-    <nav class="profile-sidebar__nav">
-        <a href="/perfil" class="profile-nav-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 256 256" fill="#555"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM128,144a40,40,0,1,1,40-40A40,40,0,0,1,128,144Zm76.24,42.81a80,80,0,0,0-152.48,0,87.81,87.81,0,0,1,152.48,0Z"/></svg>
-            <span>Perfil</span>
-        </a>
-        <a href="/direcciones" class="profile-nav-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 256 256" fill="#555"><path d="M128,16a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,16Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,192Zm40-104H136V72a8,8,0,0,0-16,0v24H104a8,8,0,0,0,0,16h16v72a8,8,0,0,0,16,0V112h32a8,8,0,0,0,0-16Z"/></svg>
-            <span>Direcciones</span>
-        </a>
-        <a href="/pedidos" class="profile-nav-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 256 256" fill="#555"><path d="M223.15,68.72l-96-40a8,8,0,0,0-6.3,0l-96,40A8,8,0,0,0,20,76V180a8,8,0,0,0,4.85,7.28l96,40a8,8,0,0,0,6.3,0l96-40A8,8,0,0,0,236,180V76A8,8,0,0,0,223.15,68.72ZM128,45l76.81,32L128,109,51.19,77ZM36,90.54l84,35v95.67L36,186.12ZM136,221.21V125.54l84-35v95.58Z"/></svg>
-            <span>Pedidos</span>
-        </a>
-        <a href="/informacion" class="profile-nav-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 256 256" fill="#555"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a16,16,0,1,1,16,16A16,16,0,0,1,112,84Z"/></svg>
-            <span>Información</span>
-        </a>
-        <button onclick="cerrarSesion()" class="profile-nav-item profile-nav-item--danger">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 256 256" fill="#e53e3e"><path d="M120,216a8,8,0,0,1-8,8H48a16,16,0,0,1-16-16V48A16,16,0,0,1,48,32h64a8,8,0,0,1,0,16H48V208h64A8,8,0,0,1,120,216Zm109.66-93.66-40-40a8,8,0,0,0-11.32,11.32L204.69,120H112a8,8,0,0,0,0,16h92.69l-26.35,26.34a8,8,0,0,0,11.32,11.32l40-40A8,8,0,0,0,229.66,122.34Z"/></svg>
-            <span>Cerrar Sesión</span>
-        </button>
-    </nav>
+
+    <!-- Vista usuario logueado -->
+    <div id="profile-logged-in" style="display:none; flex-direction:column; height:100%;">
+        <div class="profile-sidebar__header">
+            <div class="profile-sidebar__user">
+                <div class="profile-sidebar__avatar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 256 256" fill="#555"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM128,144a40,40,0,1,1,40-40A40,40,0,0,1,128,144Zm76.24,42.81a80,80,0,0,0-152.48,0,87.81,87.81,0,0,1,152.48,0Z"/></svg>
+                </div>
+                <div>
+                    <p class="profile-sidebar__greeting">Hola,</p>
+                    <p id="user-display-name" class="profile-sidebar__name"></p>
+                </div>
+            </div>
+            <button onclick="toggleProfileMenu()" class="profile-sidebar__close">✕</button>
+        </div>
+        <nav class="profile-sidebar__nav">
+            <a href="/perfil" class="profile-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 256 256" fill="#555"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM128,144a40,40,0,1,1,40-40A40,40,0,0,1,128,144Zm76.24,42.81a80,80,0,0,0-152.48,0,87.81,87.81,0,0,1,152.48,0Z"/></svg>
+                <span>Perfil</span>
+            </a>
+            <a href="/direcciones" class="profile-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 256 256" fill="#555"><path d="M128,16a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,16Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,192Zm40-104H136V72a8,8,0,0,0-16,0v24H104a8,8,0,0,0,0,16h16v72a8,8,0,0,0,16,0V112h32a8,8,0,0,0,0-16Z"/></svg>
+                <span>Direcciones</span>
+            </a>
+            <a href="/pedidos" class="profile-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 256 256" fill="#555"><path d="M223.15,68.72l-96-40a8,8,0,0,0-6.3,0l-96,40A8,8,0,0,0,20,76V180a8,8,0,0,0,4.85,7.28l96,40a8,8,0,0,0,6.3,0l96-40A8,8,0,0,0,236,180V76A8,8,0,0,0,223.15,68.72ZM128,45l76.81,32L128,109,51.19,77ZM36,90.54l84,35v95.67L36,186.12ZM136,221.21V125.54l84-35v95.58Z"/></svg>
+                <span>Pedidos</span>
+            </a>
+            <a href="/informacion" class="profile-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 256 256" fill="#555"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a16,16,0,1,1,16,16A16,16,0,0,1,112,84Z"/></svg>
+                <span>Información</span>
+            </a>
+            <button onclick="cerrarSesion()" class="profile-nav-item profile-nav-item--danger">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 256 256" fill="#e53e3e"><path d="M120,216a8,8,0,0,1-8,8H48a16,16,0,0,1-16-16V48A16,16,0,0,1,48,32h64a8,8,0,0,1,0,16H48V208h64A8,8,0,0,1,120,216Zm109.66-93.66-40-40a8,8,0,0,0-11.32,11.32L204.69,120H112a8,8,0,0,0,0,16h92.69l-26.35,26.34a8,8,0,0,0,11.32,11.32l40-40A8,8,0,0,0,229.66,122.34Z"/></svg>
+                <span>Cerrar Sesión</span>
+            </button>
+        </nav>
+    </div>
+
 </div>
     </header>
 
