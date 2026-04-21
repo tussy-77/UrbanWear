@@ -232,6 +232,63 @@ function irAlCheckout() {
     window.location.href = '/checkout';
 }
 
+// 4b. BUSCADOR
+var searchTimer = null;
+
+function abrirBuscador() {
+    document.getElementById('search-overlay').style.display = 'block';
+    document.getElementById('search-panel').style.display = 'block';
+    setTimeout(() => document.getElementById('search-input').focus(), 50);
+}
+
+function cerrarBuscador() {
+    document.getElementById('search-overlay').style.display = 'none';
+    document.getElementById('search-panel').style.display = 'none';
+    document.getElementById('search-results').style.display = 'none';
+    document.getElementById('search-input').value = '';
+}
+
+function onSearchInput(q) {
+    clearTimeout(searchTimer);
+    if (!q.trim()) { document.getElementById('search-results').style.display = 'none'; return; }
+    searchTimer = setTimeout(() => buscarProductos(q), 280);
+}
+
+async function buscarProductos(q) {
+    try {
+        const res = await fetch(`http://127.0.0.1:5000/api/search?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        renderResultados(data.products, q);
+    } catch (e) {}
+}
+
+function renderResultados(products, q) {
+    const box = document.getElementById('search-results');
+    if (!products.length) {
+        box.style.display = 'block';
+        box.innerHTML = `<p style="padding:18px 20px; color:rgba(255,255,255,0.4); font-size:0.82rem; letter-spacing:1px;">Sin resultados para "${q}" — <a href="/catalogo?q=${encodeURIComponent(q)}" style="color:rgba(255,255,255,0.65); text-decoration:underline;">ver catálogo</a></p>`;
+        return;
+    }
+    box.style.display = 'block';
+    box.innerHTML = products.map(p => `
+        <a href="/producto/${p.id}" onclick="cerrarBuscador()" style="display:flex; align-items:center; gap:14px; padding:12px 20px; text-decoration:none; border-bottom:1px solid rgba(255,255,255,0.06); transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='none'">
+            <div style="width:42px; height:42px; border-radius:6px; overflow:hidden; flex-shrink:0; background:#1a1a1a;">
+                ${p.image_src ? `<img src="${p.image_src}" style="width:100%; height:100%; object-fit:cover;">` : ''}
+            </div>
+            <div style="flex:1; min-width:0;">
+                <p style="margin:0; font-size:0.82rem; font-weight:500; color:#fff; letter-spacing:0.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</p>
+                <p style="margin:0; font-size:0.75rem; color:rgba(255,255,255,0.4);">$${p.price.toLocaleString()}</p>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 256 256" style="fill:rgba(255,255,255,0.25); flex-shrink:0;"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/></svg>
+        </a>
+    `).join('') + `<a href="/catalogo?q=${encodeURIComponent(q)}" onclick="cerrarBuscador()" style="display:block; padding:12px 20px; font-size:0.75rem; letter-spacing:1.5px; color:rgba(255,255,255,0.45); text-decoration:none; text-align:center; text-transform:uppercase;" onmouseover="this.style.color='rgba(255,255,255,0.75)'" onmouseout="this.style.color='rgba(255,255,255,0.45)'">Ver todos los resultados →</a>`;
+}
+
+function irAlCatalogoBusqueda() {
+    const q = document.getElementById('search-input').value.trim();
+    if (q) { cerrarBuscador(); window.location.href = `/catalogo?q=${encodeURIComponent(q)}`; }
+}
+
 // 5. SCROLL — ocultar/mostrar header según dirección
 (function () {
     var lastY = 0;
@@ -266,6 +323,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     actualizarInterfazUsuario();
     actualizarVistaCarrito();
+
+  const searchToggle = document.getElementById('search-toggle');
+    if (searchToggle) searchToggle.onclick = (e) => { e.preventDefault(); abrirBuscador(); };
 
   if (cartToggle) cartToggle.onclick = (e) => { e.preventDefault(); abrirCarrito(); };
     if (cartClose) cartClose.onclick = (e) => { e.preventDefault(); cerrarCarrito(); };

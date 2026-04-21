@@ -43,7 +43,38 @@
     document.addEventListener('DOMContentLoaded', function () {
         var configEl      = document.getElementById('catalogo-config');
         var generoInicial = configEl ? JSON.parse(configEl.textContent) : 'hombre';
-        setTab(generoInicial || 'hombre');
+
+        var q = new URLSearchParams(window.location.search).get('q');
+        if (q) {
+            filtrarPorBusqueda(q);
+        } else {
+            setTab(generoInicial || 'hombre');
+        }
     });
+
+    function filtrarPorBusqueda(q) {
+        // Desactivar todos los tabs
+        ['hombre', 'mujer', 'todos'].forEach(function (g) {
+            var btn = document.getElementById('tab-' + g);
+            if (btn) btn.classList.remove('active');
+        });
+
+        var termino = q.toLowerCase();
+        var cards   = document.querySelectorAll('#catalogo-grid .catalogo-card');
+        var visible = 0;
+
+        cards.forEach(function (card) {
+            var nombre = (card.querySelector('.catalogo-card__name') || card).textContent.toLowerCase();
+            var show   = nombre.includes(termino);
+            card.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+
+        var countEl = document.getElementById('catalogo-count');
+        if (countEl) countEl.textContent = visible + ' resultado' + (visible !== 1 ? 's' : '') + ' para "' + q + '"';
+
+        var noResults = document.getElementById('no-results');
+        if (noResults) noResults.style.display = visible === 0 ? 'block' : 'none';
+    }
 
 })();

@@ -10,8 +10,8 @@
 /* ── Hero ── */
 .hero {
     position: relative;
-    height: 90vh;
-    min-height: 600px;
+    height: 100vh;
+    min-height: 100vh;
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -277,19 +277,87 @@
     position: fixed;
     inset: 0;
     z-index: 9999;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     align-items: center;
     justify-content: center;
 }
-.login-modal.active        { display: flex; }
-.login-modal__panel        { background: #fff; border-radius: 12px; padding: 48px 40px; width: 100%; max-width: 480px; position: relative; text-align: center; }
-.login-modal__close        { position: absolute; top: 16px; right: 20px; background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #333; }
-.login-modal__title        { font-size: 1.1rem; font-weight: 700; letter-spacing: 2px; color: #111; margin-bottom: 32px; }
-.login-modal__sub-form     { display: none; margin-top: 24px; text-align: left; }
-.login-modal__input        { width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.95rem; margin-bottom: 12px; box-sizing: border-box; }
+.login-modal.active { display: flex; }
+
+.login-modal__panel {
+    background: rgba(10, 10, 10, 0.72);
+    backdrop-filter: blur(24px) saturate(1.4);
+    -webkit-backdrop-filter: blur(24px) saturate(1.4);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 16px;
+    padding: 48px 40px;
+    width: 100%;
+    max-width: 460px;
+    position: relative;
+    text-align: center;
+    box-shadow: 0 8px 48px rgba(0, 0, 0, 0.5);
+}
+
+.login-modal__close {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.45);
+    transition: color 0.2s;
+}
+.login-modal__close:hover { color: #fff; }
+
+.login-modal__title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 3px;
+    color: rgba(255, 255, 255, 0.90);
+    margin-bottom: 32px;
+    text-transform: uppercase;
+}
+
+.login-modal__sub-form     { display: none; margin-top: 20px; text-align: left; }
+
+.login-modal__input {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+    color: #fff;
+    font-family: inherit;
+    transition: border-color 0.2s;
+}
+.login-modal__input::placeholder { color: rgba(255,255,255,0.35); }
+.login-modal__input:focus { outline: none; border-color: rgba(255,255,255,0.35); }
+
 .login-modal__input--password { margin-bottom: 16px; display: none; }
-.login-modal__submit-btn   { width: 100%; padding: 13px; background: #111; color: #fff; border: none; border-radius: 8px; font-weight: 700; font-size: 0.9rem; letter-spacing: 1px; cursor: pointer; }
-.login-modal__register     { display: none; text-align: center; margin-top: 16px; font-size: 0.85rem; color: #555; }
-.login-modal__register a   { color: #111; font-weight: 700; text-decoration: underline; }
+
+.login-modal__submit-btn {
+    width: 100%;
+    padding: 13px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 8px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.78rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    font-family: inherit;
+    text-transform: uppercase;
+    transition: background 0.2s, border-color 0.2s;
+}
+.login-modal__submit-btn:hover { background: rgba(255,255,255,0.20); border-color: rgba(255,255,255,0.35); }
+
+.login-modal__register     { display: none; text-align: center; margin-top: 16px; font-size: 0.82rem; color: rgba(255,255,255,0.45); }
+.login-modal__register a   { color: rgba(255,255,255,0.75); font-weight: 600; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.3); }
 .login-modal__msg          { margin-top: 12px; font-size: 0.85rem; display: none; }

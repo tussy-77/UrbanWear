@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session
+from functools import wraps
 from sqlalchemy import text
 from backend.config import Config
 from backend.database import db
@@ -15,6 +16,7 @@ from itsdangerous import URLSafeTimedSerializer
 from datetime import datetime
 from backend.routes.auth import auth_bp, mail, oauth
 from backend.models import User, Category, Product, Order, OrderItem, Cart, CartItem, Address, Banner
+from backend.models.user import UserRole
 
 
 
@@ -60,6 +62,20 @@ def create_app():
         print("¡Tablas sincronizadas en PostgreSQL!")
 
     # ---------Rutas de la API y Vistas-----------------
+
+    @app.route("/api/search")
+    def search_products():
+        q = request.args.get("q", "").strip()
+        if not q:
+            return jsonify({"products": []})
+        results = Product.query.filter(Product.name.ilike(f"%{q}%")).limit(8).all()
+        return jsonify({"products": [{
+            "id": p.id,
+            "name": p.name,
+            "price": float(p.price),
+            "gender": p.gender,
+            "image_src": p.image_src
+        } for p in results]})
 
     @app.route("/api/products")
     def get_products():
@@ -235,9 +251,44 @@ def create_app():
         producto = Product.query.get_or_404(product_id)
         return render_template('public/producto.html', producto=producto)
 
+   # ---------Autenticación de Administración-------------
+
+    def admin_required(f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            if not session.get('admin_id'):
+                return redirect(url_for('admin_login'))
+            return f(*args, **kwargs)
+        return decorated
+
+    @app.route('/admin/login', methods=['GET'])
+    def admin_login():
+        if session.get('admin_id'):
+            return redirect(url_for('admin_dashboard'))
+        return render_template('admin/login.html')
+
+    @app.route('/api/admin/login', methods=['POST'])
+    def admin_login_api():
+        data = request.get_json()
+        user = User.query.filter_by(email=data.get('email')).first()
+        if not user or not user.check_password(data.get('password')):
+            return jsonify({"msg": "Credenciales incorrectas"}), 401
+        if user.role != UserRole.admin:
+            return jsonify({"msg": "No tienes permisos de administrador"}), 403
+        session['admin_id'] = user.id
+        session['admin_name'] = user.name
+        return jsonify({"msg": "ok"})
+
+    @app.route('/admin/logout')
+    def admin_logout():
+        session.pop('admin_id', None)
+        session.pop('admin_name', None)
+        return redirect(url_for('admin_login'))
+
    # ---------Rutas de Administración-------------
 
     @app.route('/admin')
+    @admin_required
     def admin_dashboard():
         from sqlalchemy import func, extract
         import json
@@ -302,11 +353,13 @@ def create_app():
         )
 
     @app.route('/admin/productos')
+    @admin_required
     def admin_productos():
         productos = Product.query.order_by(Product.id.desc()).all()
         return render_template('admin/products.html', productos=productos)
 
     @app.route('/admin/productos/agregar', methods=['POST'])
+    @admin_required
     def admin_agregar_producto():
         nombre      = request.form.get('nombre')
         precio      = request.form.get('precio')
@@ -342,6 +395,7 @@ def create_app():
         return redirect(url_for('admin_productos'))
 
     @app.route('/admin/productos/editar/<int:product_id>', methods=['POST'])
+    @admin_required
     def admin_editar_producto(product_id):
         producto             = Product.query.get_or_404(product_id)
         producto.name        = request.form.get('nombre')
@@ -365,6 +419,7 @@ def create_app():
         return redirect(url_for('admin_productos'))
 
     @app.route('/admin/productos/eliminar/<int:product_id>', methods=['POST'])
+    @admin_required
     def admin_eliminar_producto(product_id):
         producto = Product.query.get_or_404(product_id)
         
@@ -377,15 +432,18 @@ def create_app():
         return redirect(url_for('admin_productos'))
 
     @app.route('/admin/pedidos')
+    @admin_required
     def admin_pedidos():
         pedidos = Order.query.order_by(Order.created_at.desc()).all()
         return render_template('admin/orders.html', pedidos=pedidos)
 
     @app.route('/admin/usuarios')
+    @admin_required
     def admin_usuarios():
         usuarios = User.query.order_by(User.created_at.desc()).all()
         return render_template('admin/customers.html', usuarios=usuarios)
     @app.route('/admin/productos/destacar/<int:product_id>', methods=['POST'])
+    @admin_required
     def admin_destacar_producto(product_id):
         producto = Product.query.get_or_404(product_id)
         producto.destacado = not producto.destacado
@@ -393,6 +451,7 @@ def create_app():
         return redirect(url_for('admin_productos'))
 
     @app.route('/admin/productos/esencial/<int:product_id>', methods=['POST'])
+    @admin_required
     def admin_esencial_producto(product_id):
         producto = Product.query.get_or_404(product_id)
         producto.esencial = not producto.esencial
@@ -402,6 +461,7 @@ def create_app():
     # ── Rutas Editorial (Banners) ──────────────────────────────────
 
     @app.route('/admin/editorial')
+    @admin_required
     def admin_editorial():
         hero              = Banner.query.filter_by(position='hero').first()
         editorial         = Banner.query.filter_by(position='editorial').first()
@@ -463,6 +523,7 @@ def create_app():
                                cat_hombre=cat_hombre, cat_mujer=cat_mujer)
 
     @app.route('/admin/editorial/guardar/<int:banner_id>', methods=['POST'])
+    @admin_required
     def admin_guardar_banner(banner_id):
         banner = Banner.query.get_or_404(banner_id)
         banner.name        = request.form.get('name',        banner.name)
@@ -492,6 +553,7 @@ def create_app():
         return redirect(url_for('admin_editorial'))
 
     @app.route('/admin/editorial/nuevo', methods=['POST'])
+    @admin_required
     def admin_nuevo_banner():
         banner = Banner(name=request.form.get('name', 'Nuevo banner'))
         db.session.add(banner)
@@ -499,6 +561,7 @@ def create_app():
         return redirect(url_for('admin_editorial'))
 
     @app.route('/admin/editorial/eliminar/<int:banner_id>', methods=['POST'])
+    @admin_required
     def admin_eliminar_banner(banner_id):
         banner = Banner.query.get_or_404(banner_id)
         db.session.delete(banner)
