@@ -15,15 +15,28 @@ def add_to_cart():
     product_id = data.get('product_id')
     quantity = data.get('quantity', 1)
 
-    # Buscar o crear el carrito para este usuario
+    product = Product.query.get(product_id)
+    if not product:
+        return jsonify({"msg": "Producto no encontrado"}), 404
+
+    if product.stock <= 0:
+        return jsonify({"msg": "Este producto está agotado"}), 400
+
     cart = Cart.query.filter_by(user_id=user_id).first()
     if not cart:
         cart = Cart(user_id=user_id)
         db.session.add(cart)
-        db.session.commit()
+        db.session.flush()
 
-    # Verificar si el producto ya está en el carrito
     item = CartItem.query.filter_by(cart_id=cart.id, product_id=product_id).first()
+    cantidad_actual = item.quantity if item else 0
+
+    if cantidad_actual + quantity > product.stock:
+        disponible = product.stock - cantidad_actual
+        if disponible <= 0:
+            return jsonify({"msg": f"Ya tienes el máximo disponible ({product.stock}) en el carrito"}), 400
+        return jsonify({"msg": f"Solo quedan {product.stock} unidades disponibles"}), 400
+
     if item:
         item.quantity += quantity
     else:

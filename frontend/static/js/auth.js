@@ -4,87 +4,53 @@
  */
 
 const AuthUtils = {
-    // Claves para localStorage
-    TOKEN_KEY: 'access_token',
-    USER_KEY: 'user',
+    // Claves únicas para localStorage — en sinc con cart.js
+    TOKEN_KEY: 'urban_token',
+    USER_KEY: 'client_name',
     REMEMBER_KEY: 'remember_me',
 
-    /**
-     * Almacenar token JWT en localStorage
-     * @param {string} token - Token JWT del servidor
-     */
     setToken(token) {
         localStorage.setItem(this.TOKEN_KEY, token);
     },
 
-    /**
-     * Obtener token JWT del localStorage
-     * @returns {string|null} Token JWT o null si no existe
-     */
     getToken() {
         return localStorage.getItem(this.TOKEN_KEY);
     },
 
-    /**
-     * Verificar si el usuario está autenticado
-     * @returns {boolean} true si hay token, false si no
-     */
     isAuthenticated() {
         return !!this.getToken();
     },
 
-    /**
-     * Almacenar datos del usuario en localStorage
-     * @param {object} user - Objeto con datos del usuario
-     */
-    setUser(user) {
-        localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    // Guarda solo el nombre visible (string), no un objeto JSON
+    setUser(nameOrObj) {
+        const name = typeof nameOrObj === 'object'
+            ? (nameOrObj.name || nameOrObj.username || 'Cliente')
+            : nameOrObj;
+        localStorage.setItem(this.USER_KEY, name);
     },
 
-    /**
-     * Obtener datos del usuario desde localStorage
-     * @returns {object|null} Objeto usuario o null
-     */
     getUser() {
-        const user = localStorage.getItem(this.USER_KEY);
-        return user ? JSON.parse(user) : null;
+        return localStorage.getItem(this.USER_KEY) || null;
     },
 
-    /**
-     * Cerrar sesión - limpiar localStorage y redirigir a login
-     */
+    // Cierra sesión y redirige al home
     logout() {
         localStorage.removeItem(this.TOKEN_KEY);
         localStorage.removeItem(this.USER_KEY);
         localStorage.removeItem(this.REMEMBER_KEY);
-        window.location.href = '/login';
+        window.location.href = '/';
     },
 
-    /**
-     * Crear headers HTTP con token para peticiones autenticadas
-     * @returns {object} Headers con Content-Type y Authorization
-     */
     getAuthHeaders() {
-        const token = this.getToken();
         return {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${this.getToken()}`
         };
     },
 
-    /**
-     * Hacer petición HTTP con token automáticamente
-     * @param {string} url - URL del endpoint
-     * @param {object} options - Opciones fetch (method, body, etc)
-     * @returns {Promise<Response|null>} Response o null si no autenticado
-     */
     async authenticatedFetch(url, options = {}) {
         const token = this.getToken();
-
-        if (!token) {
-            window.location.href = '/login';
-            return null;
-        }
+        if (!token) { this.logout(); return null; }
 
         const headers = {
             'Content-Type': 'application/json',
@@ -93,17 +59,8 @@ const AuthUtils = {
         };
 
         try {
-            const response = await fetch(url, {
-                ...options,
-                headers
-            });
-
-            // Si el token expiró (401), redirigir a login
-            if (response.status === 401) {
-                this.logout();
-                return null;
-            }
-
+            const response = await fetch(url, { ...options, headers });
+            if (response.status === 401) { this.logout(); return null; }
             return response;
         } catch (error) {
             console.error('Error en petición autenticada:', error);
@@ -111,76 +68,41 @@ const AuthUtils = {
         }
     },
 
-    /**
-     * Proteger ruta - redirigir a login si no está autenticado
-     * @returns {boolean} true si autenticado, false si no
-     */
     protectRoute() {
-        if (!this.isAuthenticated()) {
-            window.location.href = '/login';
-            return false;
-        }
+        if (!this.isAuthenticated()) { this.logout(); return false; }
         return true;
     },
 
-    /**
-     * Guardar preferencia "recuérdame"
-     * @param {boolean} remember
-     */
     setRememberMe(remember) {
-        if (remember) {
-            localStorage.setItem(this.REMEMBER_KEY, 'true');
-        } else {
-            localStorage.removeItem(this.REMEMBER_KEY);
-        }
+        if (remember) localStorage.setItem(this.REMEMBER_KEY, 'true');
+        else localStorage.removeItem(this.REMEMBER_KEY);
     },
 
-    /**
-     * Obtener preferencia "recuérdame"
-     * @returns {boolean}
-     */
     getRememberMe() {
         return localStorage.getItem(this.REMEMBER_KEY) === 'true';
     },
 
-    /**
-     * Obtener información del token (sin verificar firma)
-     * @returns {object|null} Payload del token
-     */
     decodeToken() {
         const token = this.getToken();
         if (!token) return null;
-
         try {
             const base64Url = token.split('.')[1];
             const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
             const jsonPayload = decodeURIComponent(
-                atob(base64).split('').map(c => {
-                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                }).join('')
+                atob(base64).split('').map(c =>
+                    '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+                ).join('')
             );
             return JSON.parse(jsonPayload);
-        } catch (error) {
-            console.error('Error decodificando token:', error);
-            return null;
-        }
+        } catch { return null; }
     },
 
-    /**
-     * Verificar si el token ha expirado
-     * @returns {boolean} true si expirado
-     */
     isTokenExpired() {
         const payload = this.decodeToken();
         if (!payload || !payload.exp) return true;
-
-        const currentTime = Math.floor(Date.now() / 1000);
-        return payload.exp < currentTime;
+        return payload.exp < Math.floor(Date.now() / 1000);
     },
 
-    /**
-     * Limpiar todos los datos de autenticación (sin redirigir)
-     */
     clearAuth() {
         localStorage.removeItem(this.TOKEN_KEY);
         localStorage.removeItem(this.USER_KEY);

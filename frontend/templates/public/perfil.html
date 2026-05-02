@@ -126,7 +126,7 @@ async function cargarPerfil() {
     if (!token) return;
 
     try {
-        const res = await fetch('http://127.0.0.1:5000/api/auth/perfil', {
+        const res = await fetch('/api/auth/perfil', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) return;
@@ -172,7 +172,7 @@ async function guardarPerfil() {
         phone:      document.getElementById('edit-phone').value,
     };
 
-    const res = await fetch('http://127.0.0.1:5000/api/auth/perfil', {
+    const res = await fetch('/api/auth/perfil', {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -183,7 +183,7 @@ async function guardarPerfil() {
     if (res.ok) {
         localStorage.setItem('client_name', payload.name);
         msg.style.color = '#2f855a';
-        msg.textContent = '✅ Cambios guardados correctamente.';
+        msg.textContent = 'Cambios guardados correctamente.';
         msg.style.display = 'block';
         setTimeout(() => { toggleEditar(); cargarPerfil(); msg.style.display = 'none'; }, 1500);
     } else {

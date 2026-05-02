@@ -5,6 +5,7 @@ from backend.config import Config
 from backend.database import db
 from backend.models import User, Category, Product, Order, OrderItem, Cart, CartItem
 import os
+import mercadopago
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from backend.routes.auth import auth_bp
@@ -170,14 +171,21 @@ def create_app():
             return jsonify({"msg": "El carrito está vacío"}), 400
 
         try:
-            total_pago = 0
-            for item in cart.items:
+            # Validar stock de todos los items antes de crear la orden
+            items_snapshot = list(cart.items)
+            for item in items_snapshot:
                 producto = Product.query.get(item.product_id)
-                print("PRODUCTO:", producto, "PRECIO:", producto.price if producto else "None")
-                if producto:
-                    total_pago += producto.price * item.quantity
+                if not producto:
+                    return jsonify({"msg": f"Un producto del carrito ya no existe"}), 400
+                if producto.stock < item.quantity:
+                    if producto.stock == 0:
+                        return jsonify({"msg": f'"{producto.name}" se agotó. Retíralo del carrito para continuar.'}), 400
+                    return jsonify({"msg": f'Solo quedan {producto.stock} unidades de "{producto.name}".'}), 400
 
-            print("TOTAL CALCULADO:", total_pago)
+            total_pago = sum(
+                Product.query.get(item.product_id).price * item.quantity
+                for item in items_snapshot
+            )
 
             nueva_orden = Order(
                 user_id=user_id,
@@ -187,15 +195,15 @@ def create_app():
             db.session.add(nueva_orden)
             db.session.flush()
 
-            for item in cart.items:
+            for item in items_snapshot:
                 producto = Product.query.get(item.product_id)
-                detalle = OrderItem(
+                db.session.add(OrderItem(
                     order_id=nueva_orden.id,
                     product_id=item.product_id,
                     quantity=item.quantity,
                     price_at_purchase=producto.price
-                )
-                db.session.add(detalle)
+                ))
+                producto.stock -= item.quantity
                 db.session.delete(item)
 
             db.session.commit()
@@ -203,12 +211,115 @@ def create_app():
 
         except Exception as e:
             db.session.rollback()
-            print("ERROR EN CHECKOUT:", str(e))
             return jsonify({"msg": "Error interno", "error": str(e)}), 500
             
     @app.route('/pedido-confirmado')
     def pedido_confirmado():
         return render_template('public/producto_confirmado.html')
+
+    # ── MercadoPago ──────────────────────────────────────────────────
+
+    @app.route('/api/payment/create-preference', methods=['POST'])
+    @jwt_required()
+    def create_mp_preference():
+        user_id = get_jwt_identity()
+        data = request.get_json()
+        order_id = data.get('order_id')
+
+        order = Order.query.get(order_id)
+        if not order or order.user_id != user_id:
+            return jsonify({"msg": "Orden no encontrada"}), 404
+
+        sdk = mercadopago.SDK(os.getenv("MP_ACCESS_TOKEN", ""))
+
+        items = []
+        for item in order.items:
+            product = Product.query.get(item.product_id)
+            items.append({
+                "title": product.name if product else "Producto UrbanWear",
+                "quantity": int(item.quantity),
+                "unit_price": float(item.price_at_purchase),
+                "currency_id": "COP"
+            })
+
+        base_url = os.getenv("APP_BASE_URL", "http://127.0.0.1:5000")
+        preference_data = {
+            "items": items,
+            "external_reference": str(order_id),
+            "back_urls": {
+                "success": f"{base_url}/pago-exitoso",
+                "failure": f"{base_url}/pago-fallido",
+                "pending": f"{base_url}/pago-pendiente"
+            },
+            "auto_return": "approved",
+            "notification_url": f"{base_url}/api/payment/webhook",
+            "statement_descriptor": "UrbanWear"
+        }
+
+        result = sdk.preference().create(preference_data)
+        if result["status"] not in (200, 201):
+            return jsonify({"msg": "Error al crear preferencia de pago", "detail": result.get("response")}), 500
+
+        preference = result["response"]
+        init_point = preference.get("sandbox_init_point") or preference.get("init_point")
+        return jsonify({"init_point": init_point})
+
+    @app.route('/api/payment/webhook', methods=['POST'])
+    def mp_webhook():
+        data = request.get_json(silent=True) or {}
+        topic = data.get("type") or request.args.get("type")
+        payment_id = (data.get("data") or {}).get("id") or request.args.get("data.id")
+
+        if topic == "payment" and payment_id:
+            try:
+                sdk = mercadopago.SDK(os.getenv("MP_ACCESS_TOKEN", ""))
+                payment_info = sdk.payment().get(payment_id)
+                payment = payment_info.get("response", {})
+                order_id = payment.get("external_reference")
+                status = payment.get("status")
+                if order_id:
+                    order = Order.query.get(int(order_id))
+                    if order:
+                        if status == "approved":
+                            order.status = "pagado"
+                        elif status == "rejected":
+                            order.status = "cancelado"
+                        db.session.commit()
+            except Exception:
+                pass
+
+        return jsonify({"status": "ok"}), 200
+
+    @app.route('/pago-exitoso')
+    def pago_exitoso():
+        order_id = request.args.get('external_reference')
+        if order_id:
+            try:
+                order = Order.query.get(int(order_id))
+                if order and order.status == 'pendiente':
+                    order.status = 'pagado'
+                    db.session.commit()
+            except Exception:
+                pass
+        return render_template('public/pago_resultado.html', estado='exitoso', order_id=order_id)
+
+    @app.route('/pago-fallido')
+    def pago_fallido():
+        order_id = request.args.get('external_reference')
+        if order_id:
+            try:
+                order = Order.query.get(int(order_id))
+                if order:
+                    order.status = 'cancelado'
+                    db.session.commit()
+            except Exception:
+                pass
+        return render_template('public/pago_resultado.html', estado='fallido', order_id=order_id)
+
+    @app.route('/pago-pendiente')
+    def pago_pendiente():
+        order_id = request.args.get('external_reference')
+        return render_template('public/pago_resultado.html', estado='pendiente', order_id=order_id)
     
     @app.route('/api/orders/mis-pedidos', methods=['GET'])
     @jwt_required()

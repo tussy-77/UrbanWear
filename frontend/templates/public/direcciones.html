@@ -175,7 +175,7 @@ function mostrarLista() {
 
 async function cargarDirecciones() {
     const token = localStorage.getItem('urban_token');
-    const res = await fetch('http://127.0.0.1:5000/api/auth/direcciones', {
+    const res = await fetch('/api/auth/direcciones', {
         headers: { 'Authorization': `Bearer ${token}` }
     });
     const dirs = await res.json();
@@ -220,13 +220,13 @@ async function guardarDireccion() {
     if (!payload.department || !payload.city || !payload.address) {
         mostrarDirMsg('Completa los campos obligatorios.', 'error'); return;
     }
-    const res = await fetch('http://127.0.0.1:5000/api/auth/direcciones', {
+    const res = await fetch('/api/auth/direcciones', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
     });
     if (res.ok) {
-        mostrarDirMsg('✅ Dirección guardada.', 'success');
+        mostrarDirMsg('Dirección guardada.', 'success');
         setTimeout(() => mostrarLista(), 1000);
     } else {
         mostrarDirMsg('Error al guardar.', 'error');
@@ -236,7 +236,7 @@ async function guardarDireccion() {
 async function eliminarDireccion(id) {
     if (!confirm('¿Eliminar esta dirección?')) return;
     const token = localStorage.getItem('urban_token');
-    await fetch(`http://127.0.0.1:5000/api/auth/direcciones/${id}`, {
+    await fetch(`/api/auth/direcciones/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -253,7 +253,7 @@ function mostrarDirMsg(texto, tipo) {
 document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('urban_token');
     if (!token) { window.location.href = '/'; return; }
-    const res = await fetch('http://127.0.0.1:5000/api/auth/perfil', {
+    const res = await fetch('/api/auth/perfil', {
         headers: { 'Authorization': `Bearer ${token}` }
     });
     const user = await res.json();

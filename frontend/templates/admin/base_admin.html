@@ -14,23 +14,31 @@
     <div class="admin-sidebar__logo">◆ Urban<span>Wear</span></div>
     <nav class="admin-nav">
         <a href="/admin" class="admin-nav__item {% if request.path == '/admin' %}admin-nav__item--active{% endif %}">
-            📊 DASHBOARD
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 256 256" fill="currentColor"><path d="M224,200h-8V136h8a8,8,0,0,0,4.9-14.37l-96-72a8,8,0,0,0-9.8,0l-96,72A8,8,0,0,0,32,136h8v64H24a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16ZM48,136l80-60,80,60v64H160V168a8,8,0,0,0-8-8H104a8,8,0,0,0-8,8v32H48Zm96,64H112V176h32Z"/></svg>
+            DASHBOARD
         </a>
         <a href="/admin/productos" class="admin-nav__item {% if '/admin/productos' in request.path %}admin-nav__item--active{% endif %}">
-            👕 PRODUCTOS
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 256 256" fill="currentColor"><path d="M223.15,68.72l-96-40a8,8,0,0,0-6.3,0l-96,40A8,8,0,0,0,20,76V180a8,8,0,0,0,4.85,7.28l96,40a8,8,0,0,0,6.3,0l96-40A8,8,0,0,0,236,180V76A8,8,0,0,0,223.15,68.72ZM128,45l76.81,32L128,109,51.19,77ZM36,90.54l84,35v95.67L36,186.12ZM136,221.21V125.54l84-35v95.58Z"/></svg>
+            PRODUCTOS
         </a>
         <a href="/admin/pedidos" class="admin-nav__item {% if '/admin/pedidos' in request.path %}admin-nav__item--active{% endif %}">
-            📦 PEDIDOS
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 256 256" fill="currentColor"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,160H40V56H216V200ZM176,88a48,48,0,0,1-96,0,8,8,0,0,1,16,0,32,32,0,0,0,64,0,8,8,0,0,1,16,0Z"/></svg>
+            PEDIDOS
         </a>
         <a href="/admin/usuarios" class="admin-nav__item {% if '/admin/usuarios' in request.path %}admin-nav__item--active{% endif %}">
-            👥 USUARIOS
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM128,144a40,40,0,1,1,40-40A40,40,0,0,1,128,144Zm76.24,42.81a80,80,0,0,0-152.48,0,87.81,87.81,0,0,1,152.48,0Z"/></svg>
+            USUARIOS
         </a>
         <a href="/admin/editorial" class="admin-nav__item {% if '/admin/editorial' in request.path %}admin-nav__item--active{% endif %}">
-            🎨 EDITORIAL
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 256 256" fill="currentColor"><path d="M228,144a36,36,0,0,1-36,36H124c-20,0-36-16-36-36V76a12,12,0,0,1,12-12H172C205.31,64,232,89.07,232,120A35.88,35.88,0,0,1,228,144ZM92,52H48A20,20,0,0,0,28,72V184a20,20,0,0,0,20,20H148a20,20,0,0,0,20-20V164H128C98.06,164,74,140.29,74,116V52Z"/></svg>
+            EDITORIAL
         </a>
     </nav>
     <div class="admin-sidebar__footer">
-        <a href="/" class="admin-sidebar__back-btn">← Ver tienda</a>
+        <a href="/admin/logout" class="admin-sidebar__back-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 256 256" fill="currentColor"><path d="M120,216a8,8,0,0,1-8,8H48a16,16,0,0,1-16-16V48A16,16,0,0,1,48,32h64a8,8,0,0,1,0,16H48V208h64A8,8,0,0,1,120,216Zm109.66-93.66-40-40a8,8,0,0,0-11.32,11.32L204.69,120H112a8,8,0,0,0,0,16h92.69l-26.35,26.34a8,8,0,0,0,11.32,11.32l40-40A8,8,0,0,0,229.66,122.34Z"/></svg>
+            CERRAR SESIÓN
+        </a>
     </div>
 </aside>
 

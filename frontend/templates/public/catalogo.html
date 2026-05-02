@@ -34,20 +34,29 @@
     <!-- Grid de productos (Full Width) -->
     <div class="catalogo-grid" id="catalogo-grid">
         {% for producto in productos %}
-        <div class="catalogo-card" data-gender="{{ producto.gender or 'unisex' }}">
+        <div class="catalogo-card" data-gender="{{ producto.gender or 'unisex' }}" data-stock="{{ producto.stock }}">
             <a href="/producto/{{ producto.id }}" class="catalogo-card__link">
-                <div class="catalogo-card__image">
+                <div class="catalogo-card__image" style="position:relative;">
                     {% if producto.image_src %}
                         <img src="{{ producto.image_src }}"
                              alt="{{ producto.name }}"
-                             class="catalogo-card__img">
+                             class="catalogo-card__img"
+                             {% if producto.stock == 0 %}style="opacity:0.5;"{% endif %}>
                     {% else %}
                         <div class="catalogo-card__placeholder"></div>
+                    {% endif %}
+                    {% if producto.stock == 0 %}
+                    <span style="position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.75);color:#fff;font-size:0.6rem;font-weight:700;letter-spacing:1.5px;padding:4px 8px;border-radius:4px;">AGOTADO</span>
+                    {% elif producto.stock <= 5 %}
+                    <span style="position:absolute;top:10px;left:10px;background:#d97706;color:#fff;font-size:0.6rem;font-weight:700;letter-spacing:1.5px;padding:4px 8px;border-radius:4px;">ÚLTIMAS {{ producto.stock }}</span>
                     {% endif %}
                 </div>
                 <div class="catalogo-card__body">
                     <h3 class="catalogo-card__name">{{ producto.name.lower() }}</h3>
-                    <p class="catalogo-card__price">${{ "{:,.0f}".format(producto.price) }}</p>
+                    <p class="catalogo-card__price">
+                        ${{ "{:,.0f}".format(producto.price) }}
+                        {% if producto.stock == 0 %}<span style="font-size:0.7rem;font-weight:400;color:#aaa;margin-left:6px;">Agotado</span>{% endif %}
+                    </p>
                 </div>
             </a>
         </div>

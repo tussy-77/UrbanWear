@@ -64,12 +64,12 @@ function togglePedido(id) {
     const arrow = document.getElementById(`pedido-arrow-${id}`);
     const isOpen = body.style.display === 'block';
     body.style.display = isOpen ? 'none' : 'block';
-    arrow.textContent = isOpen ? '▼' : '▲';
+    arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
 }
 
 async function cargarPedidos() {
     const token = localStorage.getItem('urban_token');
-    const res = await fetch('http://127.0.0.1:5000/api/orders/mis-pedidos', {
+    const res = await fetch('/api/orders/mis-pedidos', {
         headers: { 'Authorization': `Bearer ${token}` }
     });
     const pedidos = await res.json();
@@ -98,7 +98,9 @@ async function cargarPedidos() {
                 <div style="display:flex; align-items:center; gap:16px;">
                     <span style="font-size:0.9rem; font-weight:700; color:#111;">$ ${p.total.toLocaleString()}</span>
                     <span class="pedido-badge" style="background:${st.bg}; color:${st.color};">${st.label}</span>
-                    <span id="pedido-arrow-${p.id}" style="color:#888; font-size:0.7rem;">▼</span>
+                    <span id="pedido-arrow-${p.id}" style="color:#888; display:flex; transition:transform 0.2s;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"/></svg>
+                    </span>
                 </div>
             </div>
 
@@ -129,7 +131,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('urban_token');
     if (!token) { window.location.href = '/'; return; }
 
-    const res = await fetch('http://127.0.0.1:5000/api/auth/perfil', {
+    const res = await fetch('/api/auth/perfil', {
         headers: { 'Authorization': `Bearer ${token}` }
     });
     const user = await res.json();

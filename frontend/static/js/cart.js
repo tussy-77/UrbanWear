@@ -51,7 +51,6 @@ function toggleProfileMenu() {
 function cerrarSesion() {
     localStorage.removeItem('urban_token');
     localStorage.removeItem('client_name');
-    alert("Sesión cerrada correctamente.");
     window.location.href = "/";
 }
 
@@ -93,7 +92,7 @@ async function submitAuth() {
         if (!password) { mostrarAuthMsg('Ingresa tu contraseña.', 'error'); return; }
 
         try {
-            const res = await fetch('http://127.0.0.1:5000/api/auth/login', {
+            const res = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
@@ -115,7 +114,7 @@ async function submitAuth() {
 
     } else if (authMode === 'magic') {
         try {
-            const res = await fetch('http://127.0.0.1:5000/api/auth/magic-link', {
+            const res = await fetch('/api/auth/magic-link', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email })
@@ -133,7 +132,7 @@ async function submitAuth() {
 }
 
 function loginGoogle() {
-    window.location.href = 'http://127.0.0.1:5000/api/auth/google';
+    window.location.href = '/api/auth/google';
 }
 
 function mostrarAuthMsg(texto, tipo) {
@@ -149,7 +148,7 @@ async function actualizarVistaCarrito() {
     if (!token) return;
 
     try {
-        const res = await fetch('http://127.0.0.1:5000/api/cart', {
+        const res = await fetch('/api/cart', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
@@ -196,16 +195,44 @@ function cerrarCarrito() {
 
 async function agregarAlCarrito(productId) {
     const token = getAuthToken();
-    if (!token) { alert("Inicia sesión primero"); return; }
+    if (!token) { mostrarToast('Inicia sesión para agregar al carrito', 'error'); return; }
 
     try {
-        const res = await fetch('http://127.0.0.1:5000/api/cart/add', {
+        const res = await fetch('/api/cart/add', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ product_id: productId, quantity: 1 })
         });
-        if (res.ok) { actualizarVistaCarrito(); abrirCarrito(); }
-    } catch (e) { console.error(e); }
+        const data = await res.json();
+        if (res.ok) {
+            actualizarVistaCarrito();
+            abrirCarrito();
+        } else {
+            mostrarToast(data.msg || 'No se pudo agregar al carrito', 'error');
+        }
+    } catch (e) {
+        mostrarToast('Error de conexión', 'error');
+    }
+}
+
+function mostrarToast(mensaje, tipo) {
+    let toast = document.getElementById('cart-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'cart-toast';
+        toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);padding:12px 20px;border-radius:8px;font-size:0.82rem;font-weight:600;letter-spacing:0.3px;z-index:9999;opacity:0;transition:opacity 0.25s,transform 0.25s;pointer-events:none;font-family:inherit;';
+        document.body.appendChild(toast);
+    }
+    toast.textContent = mensaje;
+    toast.style.background = tipo === 'error' ? '#111' : '#16a34a';
+    toast.style.color = '#fff';
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(12px)';
+    }, 3000);
 }
 
 async function procesarPago() {
@@ -213,7 +240,7 @@ async function procesarPago() {
     if (!token) return;
     window.location.href = '/checkout';
     try {
-        const res = await fetch('http://127.0.0.1:5000/api/orders/checkout', {
+        const res = await fetch('/api/orders/checkout', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
         });
@@ -256,7 +283,7 @@ function onSearchInput(q) {
 
 async function buscarProductos(q) {
     try {
-        const res = await fetch(`http://127.0.0.1:5000/api/search?q=${encodeURIComponent(q)}`);
+        const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
         const data = await res.json();
         renderResultados(data.products, q);
     } catch (e) {}

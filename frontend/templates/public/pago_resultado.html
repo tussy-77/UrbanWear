@@ -1,0 +1,47 @@
+{% extends 'public/base.html' %}
+{% block content %}
+
+<div style="min-height: 60vh; display:flex; align-items:center; justify-content:center; padding: 60px 20px;">
+    <div style="text-align:center; max-width: 480px;">
+
+        {% if estado == 'exitoso' %}
+        <div style="width:72px; height:72px; background:#16a34a; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 24px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 256 256" fill="white"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg>
+        </div>
+        <h2 style="font-size:1.5rem; font-weight:800; color:#111; margin-bottom:12px; letter-spacing:-0.5px;">¡Pago exitoso!</h2>
+        <p style="color:#555; font-size:0.95rem; line-height:1.6; margin-bottom:8px;">Tu pedido #{{ order_id }} ha sido confirmado y está siendo preparado.</p>
+        <p style="color:#888; font-size:0.85rem; margin-bottom:32px;">Recibirás actualizaciones sobre el estado de tu envío.</p>
+        <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+            <a href="/pedidos" style="padding:13px 28px; background:#111; color:#fff; border-radius:8px; text-decoration:none; font-size:0.82rem; font-weight:700; letter-spacing:1.5px;">VER MIS PEDIDOS</a>
+            <a href="/" style="padding:13px 28px; background:#fff; border:1px solid #ddd; color:#333; border-radius:8px; text-decoration:none; font-size:0.82rem; font-weight:700; letter-spacing:1.5px;">SEGUIR COMPRANDO</a>
+        </div>
+
+        {% elif estado == 'fallido' %}
+        <div style="width:72px; height:72px; background:#dc2626; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 24px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 256 256" fill="white"><path d="M165.66,101.66,139.31,128l26.35,26.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg>
+        </div>
+        <h2 style="font-size:1.5rem; font-weight:800; color:#111; margin-bottom:12px; letter-spacing:-0.5px;">Pago no procesado</h2>
+        <p style="color:#555; font-size:0.95rem; line-height:1.6; margin-bottom:8px;">No pudimos completar tu pago. No se realizó ningún cargo.</p>
+        <p style="color:#888; font-size:0.85rem; margin-bottom:32px;">Verifica los datos de tu tarjeta o elige otro método de pago.</p>
+        <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+            <a href="/checkout" style="padding:13px 28px; background:#111; color:#fff; border-radius:8px; text-decoration:none; font-size:0.82rem; font-weight:700; letter-spacing:1.5px;">INTENTAR DE NUEVO</a>
+            <a href="/" style="padding:13px 28px; background:#fff; border:1px solid #ddd; color:#333; border-radius:8px; text-decoration:none; font-size:0.82rem; font-weight:700; letter-spacing:1.5px;">VOLVER AL INICIO</a>
+        </div>
+
+        {% else %}
+        <div style="width:72px; height:72px; background:#d97706; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 24px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 256 256" fill="white"><path d="M236.8,188.09,149.35,36.22a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM120,104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm8,88a12,12,0,1,1,12-12A12,12,0,0,1,128,192Z"/></svg>
+        </div>
+        <h2 style="font-size:1.5rem; font-weight:800; color:#111; margin-bottom:12px; letter-spacing:-0.5px;">Pago en revisión</h2>
+        <p style="color:#555; font-size:0.95rem; line-height:1.6; margin-bottom:8px;">Tu pago está siendo verificado por MercadoPago.</p>
+        <p style="color:#888; font-size:0.85rem; margin-bottom:32px;">Te notificaremos cuando sea aprobado. El pedido #{{ order_id }} quedó registrado.</p>
+        <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+            <a href="/pedidos" style="padding:13px 28px; background:#111; color:#fff; border-radius:8px; text-decoration:none; font-size:0.82rem; font-weight:700; letter-spacing:1.5px;">VER MIS PEDIDOS</a>
+            <a href="/" style="padding:13px 28px; background:#fff; border:1px solid #ddd; color:#333; border-radius:8px; text-decoration:none; font-size:0.82rem; font-weight:700; letter-spacing:1.5px;">VOLVER AL INICIO</a>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}
