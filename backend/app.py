@@ -548,6 +548,18 @@ def create_app():
         pedidos = Order.query.order_by(Order.created_at.desc()).all()
         return render_template('admin/orders.html', pedidos=pedidos)
 
+    @app.route('/admin/pedidos/<int:order_id>/estado', methods=['POST'])
+    @admin_required
+    def admin_actualizar_estado(order_id):
+        order = Order.query.get_or_404(order_id)
+        nuevo_estado = (request.get_json() or {}).get('estado')
+        estados_validos = ['pendiente', 'pagado', 'enviado', 'entregado', 'cancelado']
+        if nuevo_estado not in estados_validos:
+            return jsonify({"msg": "Estado inválido"}), 400
+        order.status = nuevo_estado
+        db.session.commit()
+        return jsonify({"msg": "Estado actualizado", "estado": nuevo_estado})
+
     @app.route('/admin/usuarios')
     @admin_required
     def admin_usuarios():

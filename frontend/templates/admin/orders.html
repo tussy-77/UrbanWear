@@ -3,41 +3,291 @@
 {% block topbar_title %}Gestión de Pedidos{% endblock %}
 {% block content %}
 
-<div style="margin-bottom:24px;">
-    <h2 style="font-size:1.1rem; font-weight:800; margin:0;">Pedidos</h2>
-    <p style="font-size:0.82rem; color:#888; margin:4px 0 0;">{{ pedidos|length }} pedidos en total</p>
+{# Macro vacío — las acciones reales se inyectan por JS en DOMContentLoaded #}
+{% macro acciones_html(order_id, status) %}{% endmacro %}
+
+<!-- Header + contadores por estado -->
+<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
+    <div>
+        <h2 style="font-size:1.1rem; font-weight:800; margin:0;">Pedidos</h2>
+        <p style="font-size:0.82rem; color:#888; margin:4px 0 0;">{{ pedidos|length }} pedidos en total</p>
+    </div>
 </div>
 
+<!-- Tabs de filtro -->
+<div style="display:flex; gap:6px; margin-bottom:20px; flex-wrap:wrap;">
+    {% set estados = [('todos','Todos', pedidos|length),
+                      ('pendiente','Pendiente', pedidos|selectattr('status','eq','pendiente')|list|length),
+                      ('pagado','Pagado', pedidos|selectattr('status','eq','pagado')|list|length),
+                      ('enviado','Enviado', pedidos|selectattr('status','eq','enviado')|list|length),
+                      ('entregado','Entregado', pedidos|selectattr('status','eq','entregado')|list|length),
+                      ('cancelado','Cancelado', pedidos|selectattr('status','eq','cancelado')|list|length)] %}
+    {% for val, label, count in estados %}
+    <button onclick="filtrarPedidos('{{ val }}')" id="tab-{{ val }}"
+        class="tab-estado {% if val == 'todos' %}tab-estado--active{% endif %}">
+        {{ label }} <span class="tab-count">{{ count }}</span>
+    </button>
+    {% endfor %}
+</div>
+
+<!-- Tabla -->
 <div class="admin-card" style="padding:0; overflow:hidden;">
-    <table class="admin-table">
+    <table class="admin-table" id="tabla-pedidos">
         <thead>
             <tr>
-                <th>ORDEN</th>
-                <th>USUARIO</th>
+                <th style="width:50px;">ORDEN</th>
+                <th>CLIENTE</th>
+                <th>PRODUCTOS</th>
                 <th>TOTAL</th>
                 <th>ESTADO</th>
                 <th>FECHA</th>
+                <th style="text-align:center;">ACCIONES</th>
             </tr>
         </thead>
         <tbody>
             {% for p in pedidos %}
-            <tr>
+            {% set cliente = p.user %}
+            <tr id="fila-{{ p.id }}" data-status="{{ p.status }}">
                 <td><strong>#{{ p.id }}</strong></td>
-                <td>{{ p.user_id }}</td>
-                <td>${{ "{:,.0f}".format(p.total_price) }}</td>
                 <td>
-                    <span class="status-badge 
-                        {% if p.status == 'completado' %}status-badge--ok
-                        {% elif p.status == 'pendiente' %}status-badge--pending
-                        {% else %}status-badge--default{% endif %}">
+                    <p style="margin:0; font-weight:600; font-size:0.85rem;">
+                        {{ cliente.name }} {{ cliente.last_name or '' }}
+                    </p>
+                    <p style="margin:2px 0 0; font-size:0.75rem; color:#888;">{{ cliente.email }}</p>
+                </td>
+                <td>
+                    <button data-order="{{ p.id }}" class="toggle-items-btn"
+                        style="background:none; border:none; cursor:pointer; font-size:0.78rem; color:#555; font-weight:600; padding:4px 0; display:flex; align-items:center; gap:4px; font-family:inherit;">
+                        <span id="item-count-{{ p.id }}"></span>
+                        <svg id="chevron-{{ p.id }}" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 256 256" fill="currentColor" style="transition:transform 0.2s;"><path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"/></svg>
+                    </button>
+                    <div id="items-{{ p.id }}" style="display:none; margin-top:8px; padding:8px; background:#f9f9f9; border-radius:6px; border:1px solid #eee;"></div>
+                </td>
+                <td><strong>${{ "{:,.0f}".format(p.total_price) }}</strong></td>
+                <td>
+                    <span id="badge-{{ p.id }}" class="order-badge order-badge--{{ p.status }}">
                         {{ p.status | upper }}
                     </span>
                 </td>
-                <td style="color:#888;">{{ p.created_at.strftime('%d/%m/%Y') if p.created_at else '—' }}</td>
+                <td style="color:#888; font-size:0.8rem; white-space:nowrap;">
+                    {{ p.created_at.strftime('%d/%m/%Y') if p.created_at else '—' }}
+                </td>
+                <td style="text-align:center; white-space:nowrap;">
+                    <div id="acciones-{{ p.id }}" style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
+                        {{ acciones_html(p.id, p.status) }}
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" style="text-align:center; padding:40px; color:#888;">No hay pedidos registrados.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+
+<!-- Toast -->
+<div id="admin-toast" style="position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:8px;font-size:0.82rem;font-weight:600;z-index:9999;opacity:0;transition:opacity 0.25s;pointer-events:none;"></div>
+
+<style>
+.tab-estado {
+    padding: 7px 16px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    background: #fff;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    color: #555;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.tab-estado:hover { border-color: #bbb; background: #f9f9f9; }
+.tab-estado--active { background: #111; color: #fff; border-color: #111; }
+.tab-count {
+    background: rgba(255,255,255,0.2);
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+}
+.tab-estado--active .tab-count { background: rgba(255,255,255,0.2); }
+.tab-estado:not(.tab-estado--active) .tab-count { background: #f0f0f0; color: #666; }
+
+.order-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+.order-badge--pendiente  { background: #fff8e1; color: #b7791f; }
+.order-badge--pagado     { background: #e0f2fe; color: #0369a1; }
+.order-badge--enviado    { background: #ede9fe; color: #6d28d9; }
+.order-badge--entregado  { background: #f0fff4; color: #276749; }
+.order-badge--cancelado  { background: #fff5f5; color: #c53030; }
+
+.accion-btn {
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 0.3px;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+.accion-btn--success { background: #f0fff4; color: #276749; border-color: #9ae6b4; }
+.accion-btn--success:hover { background: #c6f6d5; }
+.accion-btn--primary { background: #ede9fe; color: #6d28d9; border-color: #c4b5fd; }
+.accion-btn--primary:hover { background: #ddd6fe; }
+.accion-btn--done    { background: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
+.accion-btn--done:hover { background: #bae6fd; }
+.accion-btn--danger  { background: #fff5f5; color: #c53030; border-color: #fed7d7; }
+.accion-btn--danger:hover { background: #fed7d7; }
+</style>
+
+<script id="pedidos-items-data" type="application/json">
+{
+    {% for p in pedidos %}
+    "{{ p.id }}": [{% for item in p.items %}{ "name": {{ (item.product.name if item.product else "Producto eliminado") | tojson }}, "qty": {{ item.quantity }}, "price": {{ item.price_at_purchase }} }{% if not loop.last %},{% endif %}{% endfor %}]{% if not loop.last %},{% endif %}
+    {% endfor %}
+}
+</script>
+
+<script>
+const PEDIDOS_ITEMS = JSON.parse(document.getElementById('pedidos-items-data').textContent);
+
+function itemsHTML(items) {
+    if (!items || !items.length) return '<p style="font-size:0.78rem;color:#888;margin:0;">Sin productos</p>';
+    return items.map((item, i) => {
+        const sep = i < items.length - 1 ? 'border-bottom:1px solid #eee; margin-bottom:3px;' : '';
+        const subtotal = Math.round(item.qty * item.price).toLocaleString('en-US');
+        return `<div style="display:flex; justify-content:space-between; font-size:0.78rem; padding:3px 0; color:#444; ${sep}">
+            <span>${item.name} × ${item.qty}</span>
+            <span style="font-weight:600;">$${subtotal}</span>
+        </div>`;
+    }).join('');
+}
+
+// Mapas de acciones disponibles por estado
+const TRANSICIONES = {
+    pendiente:  [{ label: 'MARCAR PAGADO',    estado: 'pagado',     cls: 'success' },
+                 { label: 'CANCELAR',          estado: 'cancelado',  cls: 'danger'  }],
+    pagado:     [{ label: 'MARCAR ENVIADO',   estado: 'enviado',    cls: 'primary' },
+                 { label: 'CANCELAR',          estado: 'cancelado',  cls: 'danger'  }],
+    enviado:    [{ label: 'MARCAR ENTREGADO', estado: 'entregado',  cls: 'done'    }],
+    entregado:  [],
+    cancelado:  []
+};
+
+function accionesHTML(orderId, status) {
+    const trans = TRANSICIONES[status] || [];
+    if (!trans.length) return '<span style="color:#bbb;font-size:0.75rem;">—</span>';
+    return trans.map(t =>
+        `<button class="accion-btn accion-btn--${t.cls}"
+            onclick="cambiarEstado(${orderId}, '${t.estado}')">
+            ${t.label}
+        </button>`
+    ).join('');
+}
+
+async function cambiarEstado(orderId, nuevoEstado) {
+    const btn = event.currentTarget;
+    btn.disabled = true;
+    btn.style.opacity = '0.6';
+
+    try {
+        const res = await fetch(`/admin/pedidos/${orderId}/estado`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ estado: nuevoEstado })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+            // Actualizar badge
+            const badge = document.getElementById(`badge-${orderId}`);
+            badge.className = `order-badge order-badge--${nuevoEstado}`;
+            badge.textContent = nuevoEstado.toUpperCase();
+
+            // Actualizar acciones
+            document.getElementById(`acciones-${orderId}`).innerHTML = accionesHTML(orderId, nuevoEstado);
+
+            // Actualizar data-status en la fila (para el filtro)
+            document.getElementById(`fila-${orderId}`).dataset.status = nuevoEstado;
+
+            mostrarToast(`Orden #${orderId} → ${nuevoEstado}`, 'ok');
+        } else {
+            mostrarToast(data.msg || 'Error al actualizar', 'error');
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        }
+    } catch {
+        mostrarToast('Error de conexión', 'error');
+        btn.disabled = false;
+        btn.style.opacity = '1';
+    }
+}
+
+function toggleItems(orderId) {
+    const box = document.getElementById(`items-${orderId}`);
+    const chevron = document.getElementById(`chevron-${orderId}`);
+    const open = box.style.display === 'block';
+    if (!open && !box.dataset.rendered) {
+        box.innerHTML = itemsHTML(PEDIDOS_ITEMS[String(orderId)]);
+        box.dataset.rendered = '1';
+    }
+    box.style.display = open ? 'none' : 'block';
+    chevron.style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+
+function filtrarPedidos(estado) {
+    // Actualizar tabs
+    document.querySelectorAll('.tab-estado').forEach(t => t.classList.remove('tab-estado--active'));
+    document.getElementById(`tab-${estado}`).classList.add('tab-estado--active');
+
+    // Mostrar/ocultar filas
+    document.querySelectorAll('#tabla-pedidos tbody tr[id^="fila-"]').forEach(fila => {
+        fila.style.display = (estado === 'todos' || fila.dataset.status === estado) ? '' : 'none';
+    });
+}
+
+function mostrarToast(msg, tipo) {
+    const t = document.getElementById('admin-toast');
+    t.textContent = msg;
+    t.style.background = tipo === 'ok' ? '#16a34a' : '#dc2626';
+    t.style.color = '#fff';
+    t.style.opacity = '1';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.style.opacity = '0'; }, 3000);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('#tabla-pedidos tbody tr[id^="fila-"]').forEach(fila => {
+        const id = fila.id.replace('fila-', '');
+
+        // Acciones por estado
+        document.getElementById(`acciones-${id}`).innerHTML = accionesHTML(id, fila.dataset.status);
+
+        // Contador de productos en el botón
+        const items = PEDIDOS_ITEMS[id] || [];
+        const n = items.length;
+        document.getElementById(`item-count-${id}`).textContent = `${n} producto${n !== 1 ? 's' : ''}`;
+    });
+
+    // Conectar botones de toggle (sin onclick inline)
+    document.querySelectorAll('.toggle-items-btn').forEach(btn => {
+        btn.addEventListener('click', () => toggleItems(btn.dataset.order));
+    });
+});
+</script>
 
 {% endblock %}
