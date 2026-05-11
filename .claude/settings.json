@@ -9,7 +9,8 @@
       "Bash(python -c ' *)",
       "Bash(venv/Scripts/python -c ' *)",
       "Bash(python -m pip install mercadopago)",
-      "Bash(c:/proyectos/sistema-ventas/venv/Scripts/pip install *)"
+      "Bash(c:/proyectos/sistema-ventas/venv/Scripts/pip install *)",
+      "Bash(venv\\\\Scripts\\\\flask db *)"
     ]
   }
 }

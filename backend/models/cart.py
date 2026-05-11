@@ -16,7 +16,6 @@ class CartItem(db.Model):
     cart_id = db.Column(db.Integer, db.ForeignKey('carts.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
     quantity = db.Column(db.Integer, default=1, nullable=False)
+    size = db.Column(db.String(20), nullable=True)
 
-    # Relación para obtener detalles del producto fácilmente
-    
     product = db.relationship('Product')

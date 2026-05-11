@@ -112,7 +112,7 @@ async function cargarPedidos() {
                             style="width:56px; height:56px; object-fit:cover; border-radius:6px; border:1px solid #eee;">
                         <div style="flex:1;">
                             <p style="margin:0; font-size:0.88rem; font-weight:600; color:#111;">${item.product_name}</p>
-                            <p style="margin:4px 0 0; font-size:0.78rem; color:#888;">Cant: ${item.quantity} · $ ${item.price.toLocaleString()} c/u</p>
+                            <p style="margin:4px 0 0; font-size:0.78rem; color:#888;">Cant: ${item.quantity}${item.size ? ` · <strong style="color:#555;">Talla ${item.size}</strong>` : ''} · $ ${item.price.toLocaleString()} c/u</p>
                         </div>
                         <span style="font-size:0.88rem; font-weight:700; color:#111;">$ ${item.subtotal.toLocaleString()}</span>
                     </div>

@@ -201,7 +201,8 @@ def create_app():
                     order_id=nueva_orden.id,
                     product_id=item.product_id,
                     quantity=item.quantity,
-                    price_at_purchase=producto.price
+                    price_at_purchase=producto.price,
+                    size=item.size
                 ))
                 producto.stock -= item.quantity
                 db.session.delete(item)
@@ -336,6 +337,7 @@ def create_app():
                     'product_name': producto.name if producto else 'Producto eliminado',
                     'image_url':    producto.image_url if producto else '',
                     'quantity':     item.quantity,
+                    'size':         item.size,
                     'price':        float(item.price_at_purchase),
                     'subtotal':     float(item.price_at_purchase * item.quantity),
                 })

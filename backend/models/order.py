@@ -31,6 +31,7 @@ class OrderItem(db.Model):
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     price_at_purchase = db.Column(db.Float, nullable=False)
+    size = db.Column(db.String(20), nullable=True)
 
     order = db.relationship('Order', back_populates='items')
     product = db.relationship('Product') 

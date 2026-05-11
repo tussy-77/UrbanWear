@@ -14,6 +14,7 @@ def add_to_cart():
     data = request.get_json()
     product_id = data.get('product_id')
     quantity = data.get('quantity', 1)
+    size = data.get('size') or None
 
     product = Product.query.get(product_id)
     if not product:
@@ -22,13 +23,16 @@ def add_to_cart():
     if product.stock <= 0:
         return jsonify({"msg": "Este producto está agotado"}), 400
 
+    if product.sizes and not size:
+        return jsonify({"msg": "Debes seleccionar una talla"}), 400
+
     cart = Cart.query.filter_by(user_id=user_id).first()
     if not cart:
         cart = Cart(user_id=user_id)
         db.session.add(cart)
         db.session.flush()
 
-    item = CartItem.query.filter_by(cart_id=cart.id, product_id=product_id).first()
+    item = CartItem.query.filter_by(cart_id=cart.id, product_id=product_id, size=size).first()
     cantidad_actual = item.quantity if item else 0
 
     if cantidad_actual + quantity > product.stock:
@@ -40,7 +44,7 @@ def add_to_cart():
     if item:
         item.quantity += quantity
     else:
-        item = CartItem(cart_id=cart.id, product_id=product_id, quantity=quantity)
+        item = CartItem(cart_id=cart.id, product_id=product_id, quantity=quantity, size=size)
         db.session.add(item)
 
     db.session.commit()
@@ -66,9 +70,10 @@ def get_cart():
             items.append({
                 "id": item.id,
                 "product_name": item.product.name,
-                "price": item.product.price,
+                "price": float(item.product.price),
                 "quantity": item.quantity,
-                "subtotal": subtotal
+                "size": item.size,
+                "subtotal": float(subtotal)
             })
 
     return jsonify({"items": items, "total": total}), 200

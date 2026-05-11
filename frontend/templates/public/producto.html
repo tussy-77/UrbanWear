@@ -83,8 +83,8 @@
                         AGOTADO
                     </button>
                     {% else %}
-                    <button data-id="{{ producto.id }}"
-                        onclick="agregarAlCarrito(parseInt(this.dataset.id))"
+                    <button data-id="{{ producto.id }}" data-has-sizes="{{ 'true' if producto.sizes else 'false' }}"
+                        onclick="agregarDesdeProducto(this)"
                         style="width:100%; padding:16px; background:#111; color:#fff; border:none; font-size:0.78rem; font-weight:800; letter-spacing:2px; cursor:pointer; font-family:inherit; margin-bottom:10px; transition:background 0.2s;"
                         onmouseover="this.style.background='#333'" onmouseout="this.style.background='#111'">
                         AGREGAR AL CARRITO
@@ -188,10 +188,19 @@ function toggleDescripcion() {
     icon.textContent = isOpen ? '+' : '—';
 }
 
-function agregarDesdeDetalle(productId) {
+function agregarDesdeProducto(btn) {
     const token = localStorage.getItem('urban_token');
     if (!token) { abrirModal(); return; }
-    agregarAlCarrito(productId);
+    const hasSizes = btn.dataset.hasSizes === 'true';
+    if (hasSizes && !tallaSeleccionada) {
+        const container = document.getElementById('tallas-container');
+        container.style.outline = '2px solid #dc2626';
+        container.style.borderRadius = '4px';
+        setTimeout(() => { container.style.outline = ''; }, 1500);
+        mostrarToast('Selecciona una talla', 'error');
+        return;
+    }
+    agregarAlCarrito(parseInt(btn.dataset.id), tallaSeleccionada || null);
 }
 </script>
 

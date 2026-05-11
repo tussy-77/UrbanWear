@@ -163,13 +163,19 @@ async function actualizarVistaCarrito() {
                 container.innerHTML = '<p class="cart-empty-msg">Tu carrito está vacío</p>';
             } else {
                 data.items.forEach(item => {
+                    const sizeBadge = item.size
+                        ? `<span style="background:rgba(255,255,255,0.12); color:rgba(255,255,255,0.7); font-size:0.68rem; font-weight:700; padding:2px 7px; border-radius:4px; letter-spacing:0.5px;">${item.size}</span>`
+                        : '';
                     container.innerHTML += `
-                        <div class="cart-sidebar-item" style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <div class="cart-sidebar-item" style="display:flex; gap:10px; margin-bottom:15px;">
                             <img src="https://placehold.co/60x60?text=Item" style="width:60px; border-radius:5px;">
-                            <div>
-                                <p style="margin:0; font-weight:bold;">${item.product_name}</p>
-                                <p style="margin:0; font-size:0.8rem; color:#888;">Cant: ${item.quantity}</p>
-                                <p style="margin:0; color:#fff;">$${item.subtotal.toLocaleString()}</p>
+                            <div style="flex:1;">
+                                <p style="margin:0; font-weight:bold; font-size:0.85rem;">${item.product_name}</p>
+                                <div style="display:flex; align-items:center; gap:6px; margin:3px 0;">
+                                    <p style="margin:0; font-size:0.78rem; color:rgba(255,255,255,0.5);">Cant: ${item.quantity}</p>
+                                    ${sizeBadge}
+                                </div>
+                                <p style="margin:0; color:#fff; font-size:0.85rem;">$${item.subtotal.toLocaleString()}</p>
                             </div>
                         </div>`;
                 });
@@ -193,15 +199,18 @@ function cerrarCarrito() {
     if (cartSidebar) cartSidebar.classList.remove('active');
 }
 
-async function agregarAlCarrito(productId) {
+async function agregarAlCarrito(productId, size) {
     const token = getAuthToken();
     if (!token) { mostrarToast('Inicia sesión para agregar al carrito', 'error'); return; }
 
     try {
+        const body = { product_id: productId, quantity: 1 };
+        if (size) body.size = size;
+
         const res = await fetch('/api/cart/add', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ product_id: productId, quantity: 1 })
+            body: JSON.stringify(body)
         });
         const data = await res.json();
         if (res.ok) {
