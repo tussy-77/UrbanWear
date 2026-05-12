@@ -149,8 +149,10 @@
                 <input class="admin-input" name="imagen_url" type="url" placeholder="https://...">
             </div>
             <div class="admin-campo">
-                <label class="admin-label">O subir imagen desde PC</label>
-                <input class="admin-input" name="imagen" type="file" accept="image/*">
+                <label class="admin-label">O subir imagen desde PC (máximo 3)</label>
+                <input class="admin-input" name="imagen" type="file" accept="image/*" multiple id="agregar-imagenes">
+                <p style="font-size:0.75rem; color:#888; margin:4px 0 0;">Puedes seleccionar hasta 3 imágenes</p>
+                <div id="preview-agregar" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;"></div>
             </div>
             <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:8px;">
                 <button type="button" onclick="cerrarModal('modal-agregar')" class="btn-admin btn-admin--secondary">CANCELAR</button>
@@ -202,8 +204,15 @@
                 <input class="admin-input" name="imagen_url" id="edit-imagen-url" type="url">
             </div>
             <div class="admin-campo">
-                <label class="admin-label">O subir nueva imagen</label>
-                <input class="admin-input" name="imagen" type="file" accept="image/*">
+                <label class="admin-label">Imagen actual</label>
+                <img id="edit-imagen-actual" src="" style="width:80px; height:80px; object-fit:cover; border-radius:6px; border:1px solid #ddd; display:none;">
+                <p id="edit-sin-imagen" style="font-size:0.85rem; color:#888; margin:0;">Sin imagen</p>
+            </div>
+            <div class="admin-campo">
+                <label class="admin-label">O subir nueva imagen (máximo 3)</label>
+                <input class="admin-input" name="imagen" type="file" accept="image/*" multiple id="editar-imagenes">
+                <p style="font-size:0.75rem; color:#888; margin:4px 0 0;">Puedes seleccionar hasta 3 imágenes</p>
+                <div id="preview-editar" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;"></div>
             </div>
             <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:8px;">
                 <button type="button" onclick="cerrarModal('modal-editar')" class="btn-admin btn-admin--secondary">CANCELAR</button>

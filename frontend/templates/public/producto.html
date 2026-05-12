@@ -14,22 +14,56 @@
 
         <div style="display:grid; grid-template-columns:1fr 1fr 420px; gap:16px; align-items:start;">
 
-            <!-- Imagen secundaria (miniatura) -->
+            <!-- Miniaturas (navegación) -->
             <div style="position:sticky; top:100px;">
-                <div style="aspect-ratio:3/4; background:#e0e0e0; overflow:hidden;">
-                    {% if producto.image_src %}
-                    <img src="{{ producto.image_src }}"
-                        style="width:100%; height:100%; object-fit:cover;">
+                <div id="thumbnails-container" style="display:flex; flex-direction:column; gap:8px;">
+                    {% if producto.images %}
+                        {% for img in producto.images %}
+                        <div style="aspect-ratio:3/4; background:#e0e0e0; overflow:hidden; cursor:pointer; border:2px solid #ddd; transition:border 0.2s;"
+                            onclick="cambiarImagenPrincipal({{ loop.index0 }})"
+                            class="thumbnail-img"
+                            data-index="{{ loop.index0 }}">
+                            <img src="{{ img.image_src }}"
+                                style="width:100%; height:100%; object-fit:cover;">
+                        </div>
+                        {% endfor %}
+                    {% elif producto.image_src %}
+                        <div style="aspect-ratio:3/4; background:#e0e0e0; overflow:hidden; border:2px solid #111;">
+                            <img src="{{ producto.image_src }}"
+                                style="width:100%; height:100%; object-fit:cover;">
+                        </div>
                     {% endif %}
                 </div>
             </div>
 
-            <!-- Imagen principal (grande) -->
+            <!-- Imagen principal (grande) con navegación -->
             <div style="position:sticky; top:100px;">
-                <div style="aspect-ratio:3/4; background:#e0e0e0; overflow:hidden;">
-                    {% if producto.image_src %}
-                    <img src="{{ producto.image_src }}"
+                <div style="aspect-ratio:3/4; background:#e0e0e0; overflow:hidden; position:relative;">
+                    <img id="main-product-image"
+                        src="{% if producto.images %}{{ producto.images[0].image_src }}{% else %}{{ producto.image_src }}{% endif %}"
                         style="width:100%; height:100%; object-fit:cover; object-position:center top;">
+                    
+                    <!-- Controles de navegación (solo si hay múltiples imágenes) -->
+                    {% if producto.images and producto.images|length > 1 %}
+                    <button onclick="imagenAnterior()" 
+                        style="position:absolute; left:10px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); border:none; color:white; width:40px; height:40px; border-radius:50%; cursor:pointer; font-size:1.2rem; display:flex; align-items:center; justify-content:center; transition:background 0.2s;"
+                        onmouseover="this.style.background='rgba(0,0,0,0.7)'" onmouseout="this.style.background='rgba(0,0,0,0.5)'">
+                        ‹
+                    </button>
+                    <button onclick="imagenSiguiente()" 
+                        style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); border:none; color:white; width:40px; height:40px; border-radius:50%; cursor:pointer; font-size:1.2rem; display:flex; align-items:center; justify-content:center; transition:background 0.2s;"
+                        onmouseover="this.style.background='rgba(0,0,0,0.7)'" onmouseout="this.style.background='rgba(0,0,0,0.5)'">
+                        ›
+                    </button>
+                    
+                    <!-- Indicadores de progreso -->
+                    <div style="position:absolute; bottom:12px; left:50%; transform:translateX(-50%); display:flex; gap:6px;">
+                        {% for img in producto.images %}
+                        <div class="image-indicator" data-index="{{ loop.index0 }}" 
+                            style="width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.5); cursor:pointer; transition:background 0.2s;"
+                            onclick="cambiarImagenPrincipal({{ loop.index0 }})"></div>
+                        {% endfor %}
+                    </div>
                     {% endif %}
                 </div>
             </div>
@@ -173,6 +207,50 @@
 
 <script>
 let tallaSeleccionada = null;
+let indiceImagenActual = 0;
+let totalImagenes = {% if producto.images %}{{ producto.images|length }}{% else %}1{% endif %};
+
+function cambiarImagenPrincipal(indice) {
+    const mainImage = document.getElementById('main-product-image');
+    const thumbnails = document.querySelectorAll('.thumbnail-img');
+    const indicators = document.querySelectorAll('.image-indicator');
+    
+    indiceImagenActual = indice;
+    
+    // Actualizar imagen principal
+    if (thumbnails[indice]) {
+        const imgSrc = thumbnails[indice].querySelector('img').src;
+        mainImage.src = imgSrc;
+    }
+    
+    // Actualizar thumbnail activo
+    thumbnails.forEach((thumb, idx) => {
+        if (idx === indice) {
+            thumb.style.borderColor = '#111';
+        } else {
+            thumb.style.borderColor = '#ddd';
+        }
+    });
+    
+    // Actualizar indicadores
+    indicators.forEach((ind, idx) => {
+        if (idx === indice) {
+            ind.style.background = 'rgba(255,255,255,0.9)';
+        } else {
+            ind.style.background = 'rgba(255,255,255,0.5)';
+        }
+    });
+}
+
+function imagenSiguiente() {
+    const siguienteIndice = (indiceImagenActual + 1) % totalImagenes;
+    cambiarImagenPrincipal(siguienteIndice);
+}
+
+function imagenAnterior() {
+    const anteriorIndice = (indiceImagenActual - 1 + totalImagenes) % totalImagenes;
+    cambiarImagenPrincipal(anteriorIndice);
+}
 
 function seleccionarTalla(btn, talla) {
     document.querySelectorAll('.talla-btn').forEach(b => b.classList.remove('talla-btn--selected'));
@@ -202,6 +280,20 @@ function agregarDesdeProducto(btn) {
     }
     agregarAlCarrito(parseInt(btn.dataset.id), tallaSeleccionada || null);
 }
+
+// Inicializar primer indicador como activo
+document.addEventListener('DOMContentLoaded', function() {
+    if (totalImagenes > 1) {
+        const primerIndicador = document.querySelector('[data-index="0"]');
+        if (primerIndicador) {
+            primerIndicador.style.background = 'rgba(255,255,255,0.9)';
+        }
+        const primerThumbnail = document.querySelector('.thumbnail-img[data-index="0"]');
+        if (primerThumbnail) {
+            primerThumbnail.style.borderColor = '#111';
+        }
+    }
+});
 </script>
 
 {% endblock %}

@@ -110,18 +110,79 @@
         <span class="login-logo__badge">Panel de administración</span>
     </div>
 
-    <label>Correo electrónico</label>
-    <input type="email" id="email" placeholder="admin@ejemplo.com" autocomplete="username">
+    <!-- TABS -->
+    <div style="display: flex; gap: 16px; margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <button type="button" id="tab-login" onclick="showTab('login')" 
+                style="flex:1; padding: 12px 0; background: none; border: none; color: #e86018; font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; border-bottom: 2px solid #e86018; text-transform: uppercase;">
+            INGRESAR
+        </button>
+        <button type="button" id="tab-register" onclick="showTab('register')" 
+                style="flex:1; padding: 12px 0; background: none; border: none; color: rgba(255,255,255,0.35); font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; border-bottom: 2px solid transparent; text-transform: uppercase;">
+            CREAR CUENTA
+        </button>
+    </div>
 
-    <label>Contraseña</label>
-    <input type="password" id="password" placeholder="••••••••" autocomplete="current-password"
-           onkeydown="if(event.key==='Enter') login()">
+    <!-- LOGIN FORM -->
+    <div id="login-form" style="display: block;">
+        <label>Correo electrónico</label>
+        <input type="email" id="email" placeholder="admin@ejemplo.com" autocomplete="username">
 
-    <button type="submit" onclick="login()">INGRESAR</button>
+        <label>Contraseña</label>
+        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password"
+               onkeydown="if(event.key==='Enter') login()">
+
+        <button type="submit" onclick="login()">INGRESAR</button>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="register-form" style="display: none;">
+        <label>Nombre completo</label>
+        <input type="text" id="reg-name" placeholder="Tu nombre" autocomplete="off">
+
+        <label>Correo electrónico</label>
+        <input type="email" id="reg-email" placeholder="admin@ejemplo.com" autocomplete="username">
+
+        <label>Contraseña</label>
+        <input type="password" id="reg-password" placeholder="••••••••" autocomplete="new-password">
+
+        <label>Confirmar contraseña</label>
+        <input type="password" id="reg-password-confirm" placeholder="••••••••" autocomplete="new-password"
+               onkeydown="if(event.key==='Enter') register()">
+
+        <button type="submit" onclick="register()">CREAR CUENTA</button>
+    </div>
+
     <p id="msg"></p>
+
+    
 </div>
 
 <script>
+function showTab(tab) {
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const tabLogin = document.getElementById('tab-login');
+    const tabRegister = document.getElementById('tab-register');
+
+    if (tab === 'login') {
+        loginForm.style.display = 'block';
+        registerForm.style.display = 'none';
+        tabLogin.style.color = '#e86018';
+        tabLogin.style.borderBottomColor = '#e86018';
+        tabRegister.style.color = 'rgba(255,255,255,0.35)';
+        tabRegister.style.borderBottomColor = 'transparent';
+        document.getElementById('msg').style.display = 'none';
+    } else {
+        loginForm.style.display = 'none';
+        registerForm.style.display = 'block';
+        tabLogin.style.color = 'rgba(255,255,255,0.35)';
+        tabLogin.style.borderBottomColor = 'transparent';
+        tabRegister.style.color = '#e86018';
+        tabRegister.style.borderBottomColor = '#e86018';
+        document.getElementById('msg').style.display = 'none';
+    }
+}
+
 async function login() {
     const email    = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
@@ -148,6 +209,61 @@ async function login() {
             msg.style.color = '#ef4444';
             msg.style.display = 'block';
             msg.textContent = data.msg || 'Error al iniciar sesión.';
+        }
+    } catch (e) {
+        msg.style.color = '#ef4444';
+        msg.style.display = 'block';
+        msg.textContent = 'Error de conexión.';
+    }
+}
+
+async function register() {
+    const name     = document.getElementById('reg-name').value.trim();
+    const email    = document.getElementById('reg-email').value.trim();
+    const password = document.getElementById('reg-password').value;
+    const confirm  = document.getElementById('reg-password-confirm').value;
+    const msg      = document.getElementById('msg');
+
+    if (!name || !email || !password || !confirm) {
+        msg.style.color = '#ef4444';
+        msg.style.display = 'block';
+        msg.textContent = 'Completa todos los campos.';
+        return;
+    }
+
+    if (password !== confirm) {
+        msg.style.color = '#ef4444';
+        msg.style.display = 'block';
+        msg.textContent = 'Las contraseñas no coinciden.';
+        return;
+    }
+
+    if (password.length < 6) {
+        msg.style.color = '#ef4444';
+        msg.style.display = 'block';
+        msg.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/admin/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+            msg.style.color = '#10b981';
+            msg.style.display = 'block';
+            msg.textContent = 'Cuenta creada. Redirigiendo...';
+            setTimeout(() => {
+                window.location.href = '/admin/login';
+            }, 2000);
+        } else {
+            msg.style.color = '#ef4444';
+            msg.style.display = 'block';
+            msg.textContent = data.msg || 'Error al crear la cuenta.';
         }
     } catch (e) {
         msg.style.color = '#ef4444';
