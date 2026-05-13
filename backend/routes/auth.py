@@ -53,6 +53,9 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
+        from backend.utils.email import send_welcome
+        send_welcome(mail, new_user)
+
         return jsonify({
             "msg": "Usuario registrado con éxito",
             "user": new_user.to_dict()
@@ -186,6 +189,41 @@ def update_perfil():
 
     db.session.commit()
     return jsonify({'msg': 'Perfil actualizado', 'user': user.to_dict()}), 200
+
+
+@auth_bp.route('/api/auth/forgot-password', methods=['POST'])
+def forgot_password():
+    email = (request.get_json() or {}).get('email', '').strip().lower()
+    if not email:
+        return jsonify({'msg': 'Ingresa tu email'}), 400
+    user = User.query.filter_by(email=email).first()
+    if user:
+        token = s.dumps(email, salt='password-reset')
+        link = url_for('reset_password_view', token=token, _external=True)
+        from backend.utils.email import send_password_reset
+        send_password_reset(mail, user, link)
+    return jsonify({'msg': 'Si ese email está registrado recibirás un enlace en breve'}), 200
+
+
+@auth_bp.route('/api/auth/reset-password', methods=['POST'])
+def reset_password():
+    data = request.get_json() or {}
+    token = data.get('token', '').strip()
+    password = data.get('password', '').strip()
+    if not token or not password:
+        return jsonify({'msg': 'Datos incompletos'}), 400
+    if len(password) < 6:
+        return jsonify({'msg': 'La contraseña debe tener al menos 6 caracteres'}), 400
+    try:
+        email = s.loads(token, salt='password-reset', max_age=3600)
+    except Exception:
+        return jsonify({'msg': 'El enlace es inválido o ha expirado'}), 400
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({'msg': 'Usuario no encontrado'}), 404
+    user.set_password(password)
+    db.session.commit()
+    return jsonify({'msg': 'Contraseña actualizada. Ya puedes iniciar sesión.'}), 200
 
 
 @auth_bp.route('/api/auth/magic-verify/<token>')

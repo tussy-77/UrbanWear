@@ -60,6 +60,7 @@ function abrirModal() {
     const modal = document.getElementById('login-modal');
     modal.style.display = 'flex';
     document.getElementById('sub-form').style.display = 'none';
+    document.getElementById('forgot-form').style.display = 'none';
     document.getElementById('auth-msg').style.display = 'none';
     document.getElementById('input-email').value = '';
     document.getElementById('input-password').value = '';
@@ -75,11 +76,48 @@ function mostrarFormEmail(modo) {
     const passInput = document.getElementById('input-password');
     const btn = document.getElementById('sub-form-btn');
     const linkRegistro = document.getElementById('link-registro');
+    const linkForgot = document.getElementById('link-forgot');
 
+    document.getElementById('forgot-form').style.display = 'none';
     subForm.style.display = 'block';
     passInput.style.display = modo === 'password' ? 'block' : 'none';
     btn.textContent = modo === 'password' ? 'INICIAR SESIÓN' : 'ENVIAR CLAVE';
     linkRegistro.style.display = modo === 'password' ? 'block' : 'none';
+    linkForgot.style.display = modo === 'password' ? 'block' : 'none';
+}
+
+function mostrarRecuperacion() {
+    document.getElementById('sub-form').style.display = 'none';
+    document.getElementById('forgot-form').style.display = 'block';
+    const email = document.getElementById('input-email').value;
+    if (email) document.getElementById('forgot-email').value = email;
+    document.getElementById('forgot-msg').style.display = 'none';
+}
+
+function ocultarRecuperacion() {
+    document.getElementById('forgot-form').style.display = 'none';
+    document.getElementById('sub-form').style.display = 'block';
+}
+
+async function enviarRecuperacion() {
+    const email = document.getElementById('forgot-email').value.trim();
+    const msgEl = document.getElementById('forgot-msg');
+    if (!email) { mostrarForgotMsg('Ingresa tu email.', 'error'); return; }
+
+    const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    mostrarForgotMsg(data.msg, res.ok ? 'ok' : 'error');
+}
+
+function mostrarForgotMsg(texto, tipo) {
+    const el = document.getElementById('forgot-msg');
+    el.textContent = texto;
+    el.style.color = tipo === 'ok' ? '#276749' : '#c53030';
+    el.style.display = 'block';
 }
 
 async function submitAuth() {
