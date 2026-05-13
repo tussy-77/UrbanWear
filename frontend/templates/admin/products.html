@@ -111,7 +111,7 @@
 <div class="admin-modal" id="modal-agregar">
     <div class="admin-modal__panel">
         <h3 class="admin-modal__title">Agregar Producto</h3>
-        <form method="POST" action="/admin/productos/agregar" enctype="multipart/form-data">
+        <form method="POST" action="/admin/productos/agregar" enctype="multipart/form-data" id="form-agregar">
             <div class="admin-campo">
                 <label class="admin-label">Nombre</label>
                 <input class="admin-input" name="nombre" required placeholder="Ej: Camiseta Oversize Negra">
@@ -150,9 +150,10 @@
             </div>
             <div class="admin-campo">
                 <label class="admin-label">O subir imagen desde PC (máximo 3)</label>
-                <input class="admin-input" name="imagen" type="file" accept="image/*" multiple id="agregar-imagenes">
-                <p style="font-size:0.75rem; color:#888; margin:4px 0 0;">Puedes seleccionar hasta 3 imágenes</p>
-                <div id="preview-agregar" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;"></div>
+                <div id="slots-agregar" style="display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap;"></div>
+                <!--input oculto que acumula los archivos para enviarlos-->
+                <input type="file" id="picker-agregar" accept="image/*" style="display: none;">
+               
             </div>
             <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:8px;">
                 <button type="button" onclick="cerrarModal('modal-agregar')" class="btn-admin btn-admin--secondary">CANCELAR</button>
@@ -210,9 +211,9 @@
             </div>
             <div class="admin-campo">
                 <label class="admin-label">O subir nueva imagen (máximo 3)</label>
-                <input class="admin-input" name="imagen" type="file" accept="image/*" multiple id="editar-imagenes">
-                <p style="font-size:0.75rem; color:#888; margin:4px 0 0;">Puedes seleccionar hasta 3 imágenes</p>
-                <div id="preview-editar" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;"></div>
+                <div id="slots-editar" style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;"></div>
+                <!-- Input oculto que acumula los archivos para enviarlos -->
+                <input type="file" id="picker-editar" accept="image/*" style="display:none;">
             </div>
             <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:8px;">
                 <button type="button" onclick="cerrarModal('modal-editar')" class="btn-admin btn-admin--secondary">CANCELAR</button>
