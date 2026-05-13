@@ -266,11 +266,36 @@
                 CONTINUAR
             </button>
 
+            <p id="link-forgot" style="display:none; text-align:right; margin:4px 0 0;">
+                <a href="#" onclick="mostrarRecuperacion(); return false;"
+                   style="font-size:0.75rem; color:#888; text-decoration:none;">
+                    ¿Olvidaste tu contraseña?
+                </a>
+            </p>
+
             <p id="link-registro" class="login-modal__register">
                 ¿No tienes cuenta?
                 <a href="/user_register">Crear una aquí</a>
             </p>
             <p id="auth-msg" class="login-modal__msg"></p>
+        </div>
+
+        <!-- Formulario de recuperación -->
+        <div id="forgot-form" class="login-modal__sub-form" style="display:none;">
+            <p style="font-size:0.82rem; color:#555; margin-bottom:14px; line-height:1.6;">
+                Ingresa tu email y te enviamos un enlace para crear una nueva contraseña.
+            </p>
+            <input type="email" id="forgot-email" placeholder="Tu email" class="login-modal__input">
+            <button onclick="enviarRecuperacion()" class="login-modal__submit-btn">
+                ENVIAR ENLACE
+            </button>
+            <p id="forgot-msg" style="display:none; margin-top:12px; font-size:0.82rem; font-weight:600;"></p>
+            <p style="margin-top:12px; text-align:center;">
+                <a href="#" onclick="ocultarRecuperacion(); return false;"
+                   style="font-size:0.75rem; color:#888; text-decoration:none;">
+                    Volver
+                </a>
+            </p>
         </div>
 
     </div>

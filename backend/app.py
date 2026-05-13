@@ -45,12 +45,15 @@ def create_app():
     jwt = JWTManager(app)
     migrate = Migrate(app, db)
     
-    app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-    app.config['MAIL_PORT'] = 587
-    app.config['MAIL_USE_TLS'] = True
-    app.config['MAIL_USERNAME'] = 'tu@gmail.com'
-    app.config['MAIL_PASSWORD'] = 'tu_app_password'  # App Password, no tu contraseña normal
-    app.config['MAIL_DEFAULT_SENDER'] = 'tu@gmail.com'
+    app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
+    app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
+    app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'true').lower() == 'true'
+    app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME', '')
+    app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD', '')
+    app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME', '')
+    app.config['MAIL_SUPPRESS_SEND'] = not os.getenv('MAIL_USERNAME')
+    app.config['APP_BASE_URL'] = os.getenv('APP_BASE_URL', 'http://127.0.0.1:5000')
+    app.config['ADMIN_EMAIL'] = os.getenv('ADMIN_EMAIL', '')
 
     mail.init_app(app)
     oauth.init_app(app)
@@ -208,6 +211,21 @@ def create_app():
                 db.session.delete(item)
 
             db.session.commit()
+
+            user = User.query.get(user_id)
+            email_items = [
+                {
+                    'product_name': Product.query.get(oi.product_id).name if Product.query.get(oi.product_id) else 'Producto',
+                    'size': oi.size,
+                    'quantity': oi.quantity,
+                    'subtotal': oi.price_at_purchase * oi.quantity,
+                }
+                for oi in nueva_orden.items
+            ]
+            from backend.utils.email import send_order_confirmation, send_order_admin
+            send_order_confirmation(mail, user, nueva_orden.id, email_items, nueva_orden.total_price)
+            send_order_admin(mail, user, nueva_orden.id, email_items, nueva_orden.total_price)
+
             return jsonify({"msg": "Compra realizada", "order_id": nueva_orden.id}), 201
 
         except Exception as e:
@@ -217,6 +235,10 @@ def create_app():
     @app.route('/pedido-confirmado')
     def pedido_confirmado():
         return render_template('public/producto_confirmado.html')
+
+    @app.route('/reset-password/<token>')
+    def reset_password_view(token):
+        return render_template('auth/reset_password.html', token=token)
 
     # ── MercadoPago ──────────────────────────────────────────────────
 
