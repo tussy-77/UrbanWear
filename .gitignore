@@ -3,3 +3,6 @@ venv/
 __pycache__/
 # Temporales de Claude/Cline
 tmpclaude-*
+# Imágenes subidas por usuarios
+frontend/static/uploads/*
+!frontend/static/uploads/.gitkeep

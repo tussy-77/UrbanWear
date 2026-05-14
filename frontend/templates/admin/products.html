@@ -111,7 +111,7 @@
 <div class="admin-modal" id="modal-agregar">
     <div class="admin-modal__panel">
         <h3 class="admin-modal__title">Agregar Producto</h3>
-        <form method="POST" action="/admin/productos/agregar" enctype="multipart/form-data">
+        <form method="POST" action="/admin/productos/agregar" enctype="multipart/form-data" id="form-agregar">
             <div class="admin-campo">
                 <label class="admin-label">Nombre</label>
                 <input class="admin-input" name="nombre" required placeholder="Ej: Camiseta Oversize Negra">
@@ -149,8 +149,11 @@
                 <input class="admin-input" name="imagen_url" type="url" placeholder="https://...">
             </div>
             <div class="admin-campo">
-                <label class="admin-label">O subir imagen desde PC</label>
-                <input class="admin-input" name="imagen" type="file" accept="image/*">
+                <label class="admin-label">O subir imagen desde PC (máximo 3)</label>
+                <div id="slots-agregar" style="display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap;"></div>
+                <!--input oculto que acumula los archivos para enviarlos-->
+                <input type="file" id="picker-agregar" accept="image/*" style="display: none;">
+               
             </div>
             <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:8px;">
                 <button type="button" onclick="cerrarModal('modal-agregar')" class="btn-admin btn-admin--secondary">CANCELAR</button>
@@ -202,8 +205,15 @@
                 <input class="admin-input" name="imagen_url" id="edit-imagen-url" type="url">
             </div>
             <div class="admin-campo">
-                <label class="admin-label">O subir nueva imagen</label>
-                <input class="admin-input" name="imagen" type="file" accept="image/*">
+                <label class="admin-label">Imagen actual</label>
+                <img id="edit-imagen-actual" src="" style="width:80px; height:80px; object-fit:cover; border-radius:6px; border:1px solid #ddd; display:none;">
+                <p id="edit-sin-imagen" style="font-size:0.85rem; color:#888; margin:0;">Sin imagen</p>
+            </div>
+            <div class="admin-campo">
+                <label class="admin-label">O subir nueva imagen (máximo 3)</label>
+                <div id="slots-editar" style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;"></div>
+                <!-- Input oculto que acumula los archivos para enviarlos -->
+                <input type="file" id="picker-editar" accept="image/*" style="display:none;">
             </div>
             <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:8px;">
                 <button type="button" onclick="cerrarModal('modal-editar')" class="btn-admin btn-admin--secondary">CANCELAR</button>

@@ -23,6 +23,15 @@ class Product(db.Model):
         nullable=False
     )
 
+    # Relación con las imágenes del producto
+    images = db.relationship(
+        'ProductImage',
+        backref='product',
+        lazy='joined',
+        cascade='all, delete-orphan',
+        order_by='ProductImage.position'
+    )
+
     created_at = db.Column(
         db.DateTime,
         server_default=db.func.current_timestamp()

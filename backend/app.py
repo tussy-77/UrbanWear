@@ -3,9 +3,9 @@ from functools import wraps
 from sqlalchemy import text
 from backend.config import Config
 from backend.database import db
-from backend.models import User, Category, Product, Order, OrderItem, Cart, CartItem
+from backend.models import User, Category, Product, Order, OrderItem, Cart, CartItem, ProductImage
 import os
-import mercadopago
+#import mercadopago
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from backend.routes.auth import auth_bp
@@ -414,6 +414,35 @@ def create_app():
         session['admin_name'] = user.name
         return jsonify({"msg": "ok"})
 
+    @app.route('/api/admin/register', methods=['POST'])
+    def admin_register_api():
+        data = request.get_json()
+        
+        if not data or not data.get('email') or not data.get('password') or not data.get('name'):
+            return jsonify({"msg": "Faltan datos obligatorios"}), 400
+
+        if User.query.filter_by(email=data.get('email')).first():
+            return jsonify({"msg": "El correo electrónico ya está registrado"}), 400
+
+        try:
+            new_admin = User(
+                name=data.get('name'),
+                email=data.get('email'),
+                role=UserRole.admin
+            )
+            new_admin.set_password(data.get('password'))
+            db.session.add(new_admin)
+            db.session.commit()
+
+            return jsonify({
+                "msg": "Cuenta de administrador creada con éxito",
+                "user": new_admin.to_dict()
+            }), 201
+
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"msg": f"Error al crear la cuenta: {str(e)}"}), 500
+
     @app.route('/admin/logout')
     def admin_logout():
         session.pop('admin_id', None)
@@ -502,18 +531,15 @@ def create_app():
         stock       = request.form.get('stock', 10)
         tallas      = request.form.get('tallas', '')
         imagen_url  = request.form.get('imagen_url', '')
-        file        = request.files.get('imagen')
+        files       = request.files.getlist('imagen')
 
-        if file and file.filename:
-            filename = secure_filename(file.filename)
-            if not os.path.exists(app.config['UPLOAD_FOLDER']):
-                os.makedirs(app.config['UPLOAD_FOLDER'])
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            image_final = filename
+        image_final = ''
+        
+        # Determinar imagen principal
+        if files and files[0].filename:
+            image_final = secure_filename(files[0].filename)
         elif imagen_url:
             image_final = imagen_url
-        else:
-            image_final = ''
 
         nuevo = Product(
             name        = nombre,
@@ -526,6 +552,23 @@ def create_app():
             category_id = 1
         )
         db.session.add(nuevo)
+        db.session.commit()
+
+        # Guardar todas las imágenes
+        if not os.path.exists(app.config['UPLOAD_FOLDER']):
+            os.makedirs(app.config['UPLOAD_FOLDER'])
+        
+        for position, file in enumerate(files):
+            if file and file.filename:
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                product_image = ProductImage(
+                    product_id=nuevo.id,
+                    image_url=filename,
+                    position=position
+                )
+                db.session.add(product_image)
+        
         db.session.commit()
         return redirect(url_for('admin_productos'))
 
@@ -541,13 +584,35 @@ def create_app():
         producto.gender      = request.form.get('genero', 'unisex')
 
         imagen_url = request.form.get('imagen_url', '')
-        file       = request.files.get('imagen')
+        files      = request.files.getlist('imagen')
 
-        if file and file.filename:
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            producto.image_url = filename
+        # Si hay nuevas imágenes, reemplazar todas
+        if files and files[0].filename:
+            if not os.path.exists(app.config['UPLOAD_FOLDER']):
+                os.makedirs(app.config['UPLOAD_FOLDER'])
+            
+            # Eliminar imágenes antiguas
+            ProductImage.query.filter_by(product_id=product_id).delete()
+            
+            # Guardar todas las nuevas imágenes
+            for position, file in enumerate(files):
+                if file and file.filename:
+                    filename = secure_filename(file.filename)
+                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                    
+                    # La primera imagen es la imagen principal del producto
+                    if position == 0:
+                        producto.image_url = filename
+                    
+                    # Guardar en ProductImage
+                    product_image = ProductImage(
+                        product_id=product_id,
+                        image_url=filename,
+                        position=position
+                    )
+                    db.session.add(product_image)
         elif imagen_url:
+            # Si solo cambia la URL externa
             producto.image_url = imagen_url
 
         db.session.commit()
