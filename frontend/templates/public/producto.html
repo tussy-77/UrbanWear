@@ -20,7 +20,7 @@
                     {% if producto.images %}
                         {% for img in producto.images %}
                         <div style="aspect-ratio:3/4; background:#e0e0e0; overflow:hidden; cursor:pointer; border:2px solid #ddd; transition:border 0.2s;"
-                            onclick="cambiarImagenPrincipal({{ loop.index0 }})"
+                            onclick="cambiarImagenPrincipal(+this.dataset.index)"
                             class="thumbnail-img"
                             data-index="{{ loop.index0 }}">
                             <img src="{{ img.image_src }}"
@@ -61,7 +61,7 @@
                         {% for img in producto.images %}
                         <div class="image-indicator" data-index="{{ loop.index0 }}" 
                             style="width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.5); cursor:pointer; transition:background 0.2s;"
-                            onclick="cambiarImagenPrincipal({{ loop.index0 }})"></div>
+                            onclick="cambiarImagenPrincipal(+this.dataset.index)"></div>
                         {% endfor %}
                     </div>
                     {% endif %}
@@ -100,7 +100,8 @@
                     </div>
                     <div style="display:flex; gap:8px; flex-wrap:wrap;" id="tallas-container">
                         {% for talla in producto.sizes.split(',') %}
-                        <button onclick="seleccionarTalla(this, '{{ talla.strip() }}')"
+                        <button onclick="seleccionarTalla(this, this.dataset.talla)"
+                            data-talla="{{ talla.strip() }}"
                             class="talla-btn">
                             {{ talla.strip() }}
                         </button>
@@ -205,10 +206,15 @@
 .talla-btn--agotado { color: #ccc; border-color: #eee; cursor: not-allowed; text-decoration: line-through; }
 </style>
 
+<script id="producto-meta" type="application/json">
+{"totalImagenes": {{ producto.images|length if producto.images else 1 }}}
+</script>
+
 <script>
 let tallaSeleccionada = null;
 let indiceImagenActual = 0;
-let totalImagenes = {% if producto.images %}{{ producto.images|length }}{% else %}1{% endif %};
+const _pm = JSON.parse(document.getElementById('producto-meta').textContent);
+let totalImagenes = _pm.totalImagenes;
 
 function cambiarImagenPrincipal(indice) {
     const mainImage = document.getElementById('main-product-image');
