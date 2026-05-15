@@ -1242,29 +1242,30 @@ button {
 .login-option-btn {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 13px;
     width: 100%;
-    padding: 13px 18px;
-    margin-bottom: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.06);
-    font-size: 0.74rem;
+    max-width: 360px;
+    padding: 12px 20px;
+    margin: 0 auto 8px;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.04);
+    font-size: 0.72rem;
     font-weight: 500;
     letter-spacing: 1.5px;
-    color: rgba(255, 255, 255, 0.80);
+    color: rgba(255,255,255,0.65);
     cursor: pointer;
-    transition: background 0.2s, border-color 0.2s, color 0.2s;
+    transition: background 0.22s, border-color 0.22s, color 0.22s;
     font-family: inherit;
     text-transform: uppercase;
 }
-.login-option-btn svg { flex-shrink: 0; opacity: 0.7; }
-.login-option-btn svg path { fill: rgba(255,255,255,0.7); }
+.login-option-btn svg { flex-shrink: 0; }
+.login-option-btn svg path { fill: rgba(255,255,255,0.38); }
 
 .login-option-btn:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.25);
-    color: #fff;
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.16);
+    color: rgba(255,255,255,0.88);
 }
 .profile-nav-item {
     display: flex;

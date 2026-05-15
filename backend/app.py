@@ -133,11 +133,11 @@ def create_app():
 
     @app.route("/user_login")
     def cliente_login_view():
-        return render_template('auth/user_login.html')
+        return redirect('/')
 
     @app.route("/user_register")
     def cliente_register_view():
-        return render_template('auth/user_register.html')
+        return redirect('/')
     
 
     @app.route("/test-db")

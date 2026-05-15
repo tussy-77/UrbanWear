@@ -55,54 +55,139 @@ function cerrarSesion() {
 }
 
 let authMode = null;
+let _vistaActual = 'main';
+let _regEmail = '';
 
-function abrirModal() {
-    const modal = document.getElementById('login-modal');
-    modal.style.display = 'flex';
-    document.getElementById('sub-form').style.display = 'none';
-    document.getElementById('forgot-form').style.display = 'none';
-    document.getElementById('auth-msg').style.display = 'none';
-    document.getElementById('input-email').value = '';
-    document.getElementById('input-password').value = '';
+const VISTA_TITULOS = {
+    main:            '',
+    magic:           'Recibir clave de acceso rápido por email',
+    password:        'Ingresar con email y contraseña',
+    register:        '',
+    'register-code': 'ingresa el código que enviamos a tu correo y completa tu registro',
+    forgot:          'Recuperar contraseña',
+};
+
+function abrirModal(vista = 'main') {
+    document.getElementById('login-modal').style.display = 'flex';
+    _irVista(vista);
 }
 
 function cerrarModal() {
     document.getElementById('login-modal').style.display = 'none';
 }
 
-function mostrarFormEmail(modo) {
-    authMode = modo;
-    const subForm = document.getElementById('sub-form');
-    const passInput = document.getElementById('input-password');
-    const btn = document.getElementById('sub-form-btn');
-    const linkRegistro = document.getElementById('link-registro');
-    const linkForgot = document.getElementById('link-forgot');
-
-    document.getElementById('forgot-form').style.display = 'none';
-    subForm.style.display = 'block';
-    passInput.style.display = modo === 'password' ? 'block' : 'none';
-    btn.textContent = modo === 'password' ? 'INICIAR SESIÓN' : 'ENVIAR CLAVE';
-    linkRegistro.style.display = modo === 'password' ? 'block' : 'none';
-    linkForgot.style.display = modo === 'password' ? 'block' : 'none';
+function mostrarVista(vista) {
+    _irVista(vista);
 }
 
-function mostrarRecuperacion() {
-    document.getElementById('sub-form').style.display = 'none';
-    document.getElementById('forgot-form').style.display = 'block';
-    const email = document.getElementById('input-email').value;
-    if (email) document.getElementById('forgot-email').value = email;
-    document.getElementById('forgot-msg').style.display = 'none';
+function volverModal() {
+    if (_vistaActual === 'register-code') _irVista('register');
+    else _irVista('main');
 }
 
-function ocultarRecuperacion() {
-    document.getElementById('forgot-form').style.display = 'none';
-    document.getElementById('sub-form').style.display = 'block';
+function _irVista(vista) {
+    _vistaActual = vista;
+    ['main', 'magic', 'password', 'register', 'register-code', 'forgot'].forEach(v => {
+        const el = document.getElementById(`view-${v}`);
+        if (el) el.style.display = v === vista ? 'block' : 'none';
+    });
+    document.getElementById('modal-title').textContent = VISTA_TITULOS[vista] ?? '';
+    const back = document.getElementById('modal-back');
+    if (vista === 'main') back.classList.remove('visible');
+    else back.classList.add('visible');
+
+    ['magic-msg', 'auth-msg', 'forgot-msg', 'register-msg', 'register-code-msg'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+}
+
+// Mantener compatibilidad con llamadas anteriores
+function mostrarFormEmail(modo) { mostrarVista(modo); }
+
+async function submitMagic() {
+    const email = document.getElementById('magic-email').value.trim();
+    if (!email) { mostrarMsg('magic-msg', 'Ingresa tu email.', 'error'); return; }
+
+    const res = await fetch('/api/auth/magic-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    mostrarMsg('magic-msg', data.msg, res.ok ? 'ok' : 'error');
+}
+
+function _msgLight(elId, texto, ok) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    el.textContent = texto;
+    el.style.color = ok ? 'rgba(134,239,172,0.9)' : 'rgba(252,165,165,0.9)';
+    el.style.display = 'block';
+}
+
+async function submitRegisterEmail() {
+    const email = document.getElementById('reg-email').value.trim();
+    if (!email) { _msgLight('register-msg', 'Ingresa tu email.', false); return; }
+
+    const btn = document.querySelector('#view-register .login-modal__submit-btn');
+    btn.disabled = true; btn.textContent = 'Enviando...';
+    try {
+        const res  = await fetch('/api/auth/register/send-code', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            _regEmail = email;
+            _irVista('register-code');
+        } else {
+            _msgLight('register-msg', data.msg || 'Error al enviar el código.', false);
+        }
+    } catch { _msgLight('register-msg', 'Error de conexión.', false); }
+    finally { btn.disabled = false; btn.textContent = 'ENVIAR'; }
+}
+
+async function submitRegisterCode() {
+    const code     = document.getElementById('reg-code').value.trim();
+    const password = document.getElementById('reg-password').value;
+    const confirm  = document.getElementById('reg-confirm').value;
+
+    if (code.length !== 6)      { _msgLight('register-code-msg', 'Ingresa el código de 6 dígitos.', false); return; }
+    if (password.length < 6)    { _msgLight('register-code-msg', 'Contraseña mínimo 6 caracteres.', false); return; }
+    if (password !== confirm)   { _msgLight('register-code-msg', 'Las contraseñas no coinciden.', false); return; }
+
+    const btn = document.querySelector('#view-register-code .login-modal__submit-btn');
+    btn.disabled = true; btn.textContent = 'Creando cuenta...';
+    try {
+        const res  = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: _regEmail, code, password })
+        });
+        const data = await res.json();
+        if (res.ok && data.access_token) {
+            localStorage.setItem('urban_token', data.access_token);
+            localStorage.setItem('client_name', data.name || _regEmail.split('@')[0]);
+            cerrarModal();
+            actualizarInterfazUsuario();
+            actualizarVistaCarrito();
+        } else {
+            _msgLight('register-code-msg', data.msg || 'Error al crear la cuenta.', false);
+        }
+    } catch { _msgLight('register-code-msg', 'Error de conexión.', false); }
+    finally { btn.disabled = false; btn.textContent = 'CREAR'; }
+}
+
+function toggleRegPassword() {
+    const input = document.getElementById('reg-password');
+    input.type = input.type === 'password' ? 'text' : 'password';
 }
 
 async function enviarRecuperacion() {
     const email = document.getElementById('forgot-email').value.trim();
-    const msgEl = document.getElementById('forgot-msg');
-    if (!email) { mostrarForgotMsg('Ingresa tu email.', 'error'); return; }
+    if (!email) { mostrarMsg('forgot-msg', 'Ingresa tu email.', 'error'); return; }
 
     const res = await fetch('/api/auth/forgot-password', {
         method: 'POST',
@@ -110,74 +195,48 @@ async function enviarRecuperacion() {
         body: JSON.stringify({ email })
     });
     const data = await res.json();
-    mostrarForgotMsg(data.msg, res.ok ? 'ok' : 'error');
+    mostrarMsg('forgot-msg', data.msg, res.ok ? 'ok' : 'error');
 }
 
-function mostrarForgotMsg(texto, tipo) {
-    const el = document.getElementById('forgot-msg');
+function mostrarMsg(elId, texto, tipo) {
+    const el = document.getElementById(elId);
+    if (!el) return;
     el.textContent = texto;
-    el.style.color = tipo === 'ok' ? '#276749' : '#c53030';
+    el.style.color = tipo === 'ok' ? 'rgba(134,239,172,0.9)' : 'rgba(252,165,165,0.9)';
     el.style.display = 'block';
 }
 
-async function submitAuth() {
-    const email = document.getElementById('input-email').value.trim();
+async function submitPassword() {
+    const email    = document.getElementById('input-email').value.trim();
     const password = document.getElementById('input-password').value;
 
-    if (!email) { mostrarAuthMsg('Ingresa tu email.', 'error'); return; }
+    if (!email)    { mostrarMsg('auth-msg', 'Ingresa tu email.', 'error'); return; }
+    if (!password) { mostrarMsg('auth-msg', 'Ingresa tu contraseña.', 'error'); return; }
 
-    if (authMode === 'password') {
-        if (!password) { mostrarAuthMsg('Ingresa tu contraseña.', 'error'); return; }
+    try {
+        const res  = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
 
-        try {
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-            const data = await res.json();
-
-            if (res.ok && data.access_token) {
-                localStorage.setItem('urban_token', data.access_token);
-                localStorage.setItem('client_name', data.name || email);
-                cerrarModal();
-                actualizarInterfazUsuario();
-                actualizarVistaCarrito();
-            } else {
-                mostrarAuthMsg(data.msg || 'Credenciales incorrectas.', 'error');
-            }
-        } catch (e) {
-            mostrarAuthMsg('Error de conexión.', 'error');
+        if (res.ok && data.access_token) {
+            localStorage.setItem('urban_token', data.access_token);
+            localStorage.setItem('client_name', data.name || email);
+            cerrarModal();
+            actualizarInterfazUsuario();
+            actualizarVistaCarrito();
+        } else {
+            mostrarMsg('auth-msg', data.msg || 'Credenciales incorrectas.', 'error');
         }
-
-    } else if (authMode === 'magic') {
-        try {
-            const res = await fetch('/api/auth/magic-link', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                mostrarAuthMsg('✅ Revisa tu email, te enviamos una clave de acceso.', 'success');
-            } else {
-                mostrarAuthMsg(data.msg || 'Error al enviar el email.', 'error');
-            }
-        } catch (e) {
-            mostrarAuthMsg('Error de conexión.', 'error');
-        }
+    } catch (e) {
+        mostrarMsg('auth-msg', 'Error de conexión.', 'error');
     }
 }
 
 function loginGoogle() {
     window.location.href = '/api/auth/google';
-}
-
-function mostrarAuthMsg(texto, tipo) {
-    const msg = document.getElementById('auth-msg');
-    msg.style.color = tipo === 'error' ? '#e53e3e' : '#2f855a';
-    msg.textContent = texto;
-    msg.style.display = 'block';
 }
 
 // 4. LÓGICA DEL CARRITO

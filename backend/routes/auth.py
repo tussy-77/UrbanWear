@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify, redirect, url_for
 from dotenv import load_dotenv
 import os
+import random
+import time
 from backend.database import db
 from backend.models.user import User, UserRole
 from flask_jwt_extended import create_access_token
@@ -12,6 +14,9 @@ from backend.models.address import Address
 
 
 load_dotenv()
+
+# Codes temporary store: {email: {'code': str, 'expires': float}}
+_reg_codes: dict = {}
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -33,31 +38,60 @@ google = oauth.register(
 
 
 
+@auth_bp.route('/api/auth/register/send-code', methods=['POST'])
+def register_send_code():
+    data = request.get_json() or {}
+    email = data.get('email', '').strip().lower()
+    if not email:
+        return jsonify({'msg': 'El email es obligatorio'}), 400
+    if User.query.filter_by(email=email).first():
+        return jsonify({'msg': 'El correo ya está registrado'}), 400
+
+    code = str(random.randint(100000, 999999))
+    _reg_codes[email] = {'code': code, 'expires': time.time() + 600}
+
+    from backend.utils.email import send_register_code
+    send_register_code(mail, email, code)
+    return jsonify({'msg': 'Código enviado'}), 200
+
+
 @auth_bp.route('/api/auth/register', methods=['POST'])
 def register():
-    data = request.get_json()
+    data = request.get_json() or {}
+    email    = data.get('email', '').strip().lower()
+    code     = data.get('code', '').strip()
+    password = data.get('password', '')
 
-    if not data or not data.get('email') or not data.get('password') or not data.get('name'):
+    if not email or not code or not password:
         return jsonify({"msg": "Faltan datos obligatorios"}), 400
 
-    if User.query.filter_by(email=data.get('email')).first():
-        return jsonify({"msg": "El correo electrónico ya está registrado"}), 400
+    stored = _reg_codes.get(email)
+    if not stored or stored['code'] != code:
+        return jsonify({'msg': 'Código incorrecto'}), 400
+    if time.time() > stored['expires']:
+        _reg_codes.pop(email, None)
+        return jsonify({'msg': 'El código expiró. Solicita uno nuevo.'}), 400
+
+    if User.query.filter_by(email=email).first():
+        return jsonify({"msg": "El correo ya está registrado"}), 400
+
+    name = data.get('name') or email.split('@')[0].replace('.', ' ').title()
 
     try:
-        new_user = User(
-            name=data.get('name'),
-            email=data.get('email'),
-            role=UserRole.customer
-        )
-        new_user.set_password(data.get('password'))
+        new_user = User(name=name, email=email, role=UserRole.customer)
+        new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()
+        _reg_codes.pop(email, None)
 
         from backend.utils.email import send_welcome
         send_welcome(mail, new_user)
 
+        access_token = create_access_token(identity=str(new_user.id))
         return jsonify({
             "msg": "Usuario registrado con éxito",
+            "access_token": access_token,
+            "name": new_user.name,
             "user": new_user.to_dict()
         }), 201
 

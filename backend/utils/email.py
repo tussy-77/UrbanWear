@@ -211,6 +211,29 @@ def send_order_admin(mail, user, order_id, items, total):
     _fire(mail, msg)
 
 
+# ── Código de verificación de registro ────────────────────────────────────────
+
+def send_register_code(mail, email, code):
+    body = f"""
+      <tr><td style="padding:16px 40px 8px;">
+        <p style="margin:0;color:#555;font-size:0.88rem;line-height:1.7;">
+          Ingresa este código en la pantalla de registro para crear tu cuenta.
+          Válido por <strong>10 minutos</strong>.
+        </p>
+      </td></tr>
+      <tr><td style="padding:8px 40px 32px; text-align:center;">
+        <div style="display:inline-block;padding:20px 40px;background:#f5f5f5;border-radius:8px;
+                    letter-spacing:14px;font-size:2rem;font-weight:800;color:#111;">{code}</div>
+      </td></tr>
+    """
+    msg = Message(
+        subject='Tu código de verificación — UrbanWear',
+        recipients=[email],
+        html=_base_html('Código de acceso', body)
+    )
+    _fire(mail, msg)
+
+
 # ── Recuperar contraseña ───────────────────────────────────────────────────────
 
 def send_password_reset(mail, user, reset_link):
