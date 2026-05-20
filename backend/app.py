@@ -10,6 +10,7 @@ from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from backend.routes.auth import auth_bp
 from backend.routes.cart import cart_bp
+from backend.routes.wishlist import wishlist_bp
 from flask_migrate import Migrate
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -60,6 +61,7 @@ def create_app():
      
     app.register_blueprint(auth_bp)
     app.register_blueprint(cart_bp)
+    app.register_blueprint(wishlist_bp)
     
     with app.app_context():
         db.create_all()
@@ -380,6 +382,10 @@ def create_app():
     @app.route('/informacion')
     def informacion_view():
         return render_template('public/informacion.html')
+
+    @app.route('/favoritos')
+    def favoritos_view():
+        return render_template('public/favoritos.html')
     
     @app.route('/producto/<int:product_id>')
     def producto_detalle(product_id):
