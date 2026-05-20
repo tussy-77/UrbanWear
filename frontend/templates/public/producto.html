@@ -38,10 +38,15 @@
 
             <!-- Imagen principal (grande) con navegación -->
             <div style="position:sticky; top:100px;">
-                <div style="aspect-ratio:3/4; background:#e0e0e0; overflow:hidden; position:relative;">
+                <div style="aspect-ratio:3/4; background:#e0e0e0; overflow:hidden; position:relative; cursor:zoom-in;" id="main-image-container" onclick="abrirZoomModal()">
                     <img id="main-product-image"
                         src="{% if producto.images %}{{ producto.images[0].image_src }}{% else %}{{ producto.image_src }}{% endif %}"
                         style="width:100%; height:100%; object-fit:cover; object-position:center top;">
+                    
+                    <!-- Indicador de zoom (lupa) -->
+                    <div style="position:absolute; bottom:12px; right:12px; background:rgba(0,0,0,0.6); color:white; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.2rem;">
+                        🔍
+                    </div>
                     
                     <!-- Controles de navegación (solo si hay múltiples imágenes) -->
                     {% if producto.images and producto.images|length > 1 %}
@@ -188,6 +193,55 @@
     </div>
 </div>
 
+<!-- Modal de Zoom -->
+<div id="zoom-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; align-items:center; justify-content:center; flex-direction:column;">
+    <div style="position:relative; width:90%; height:90%; display:flex; align-items:center; justify-content:center;">
+        <!-- Botón cerrar -->
+        <button onclick="cerrarZoomModal()" style="position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:white; width:40px; height:40px; border-radius:50%; font-size:24px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; z-index:10000;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+            ✕
+        </button>
+        
+        <!-- Contador de imágenes -->
+        <div style="position:absolute; top:20px; left:20px; color:white; font-size:14px; font-weight:600; background:rgba(0,0,0,0.6); padding:8px 12px; border-radius:4px;">
+            <span id="zoom-image-counter">1 / 1</span>
+        </div>
+        
+        <!-- Contenedor de imagen zoomable -->
+        <div id="zoom-container" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative;">
+            <img id="zoom-image" src="" style="max-width:100%; max-height:100%; object-fit:contain; cursor:grab; user-select:none;" draggable="false">
+            
+            <!-- Botones de navegación (solo si hay múltiples imágenes) -->
+            <button id="zoom-btn-anterior" onclick="zoomImagenAnterior()" 
+                style="position:absolute; left:10px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); border:none; color:white; width:40px; height:40px; border-radius:50%; cursor:pointer; font-size:1.2rem; display:flex; align-items:center; justify-content:center; transition:background 0.2s; z-index:100;"
+                onmouseover="this.style.background='rgba(0,0,0,0.7)'" onmouseout="this.style.background='rgba(0,0,0,0.5)'">
+                ‹
+            </button>
+            <button id="zoom-btn-siguiente" onclick="zoomImagenSiguiente()" 
+                style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); border:none; color:white; width:40px; height:40px; border-radius:50%; cursor:pointer; font-size:1.2rem; display:flex; align-items:center; justify-content:center; transition:background 0.2s; z-index:100;"
+                onmouseover="this.style.background='rgba(0,0,0,0.7)'" onmouseout="this.style.background='rgba(0,0,0,0.5)'">
+                ›
+            </button>
+        </div>
+        
+        <!-- Controles inferiores -->
+        <div style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%); display:flex; gap:12px; align-items:center; background:rgba(0,0,0,0.6); padding:12px 20px; border-radius:8px; backdrop-filter:blur(10px);">
+            <button onclick="zoomOut()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:white; width:40px; height:40px; border-radius:4px; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                −
+            </button>
+            <div style="color:white; font-size:14px; font-weight:600; min-width:50px; text-align:center;">
+                <span id="zoom-level">100%</span>
+            </div>
+            <button onclick="zoomIn()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:white; width:40px; height:40px; border-radius:4px; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                +
+            </button>
+            <div style="width:1px; height:24px; background:rgba(255,255,255,0.2); margin:0 8px;"></div>
+            <button onclick="resetZoom()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:white; padding:6px 12px; border-radius:4px; font-size:12px; cursor:pointer; transition:all 0.2s; font-weight:600;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                Restablecer
+            </button>
+        </div>
+    </div>
+</div>
+
 <style>
 .talla-btn {
     width: 52px;
@@ -204,6 +258,30 @@
 .talla-btn:hover { border-color: #111; }
 .talla-btn--selected { background: #111; color: #fff; border-color: #111; }
 .talla-btn--agotado { color: #ccc; border-color: #eee; cursor: not-allowed; text-decoration: line-through; }
+
+/* Estilos para modal de zoom */
+#zoom-modal {
+    display: none;
+}
+
+#zoom-modal.active {
+    display: flex !important;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+#zoom-container {
+    touch-action: manipulate;
+}
+
+#zoom-image {
+    will-change: transform;
+    transition: transform 0.1s ease-out;
+}
 </style>
 
 <script id="producto-meta" type="application/json">
@@ -215,6 +293,19 @@ let tallaSeleccionada = null;
 let indiceImagenActual = 0;
 const _pm = JSON.parse(document.getElementById('producto-meta').textContent);
 let totalImagenes = _pm.totalImagenes;
+
+// Variables para el zoom
+let zoomLevel = 100;
+let isPanning = false;
+let panX = 0;
+let panY = 0;
+let startPanX = 0;
+let startPanY = 0;
+const MAX_ZOOM = 300;
+const MIN_ZOOM = 100;
+const ZOOM_STEP = 25;
+let touchDistance = 0;
+let indiceImagenZoom = 0; // Índice de imagen en el modal de zoom
 
 function cambiarImagenPrincipal(indice) {
     const mainImage = document.getElementById('main-product-image');
@@ -287,8 +378,221 @@ function agregarDesdeProducto(btn) {
     agregarAlCarrito(parseInt(btn.dataset.id), tallaSeleccionada || null);
 }
 
-// Inicializar primer indicador como activo
+// Funciones de ZOOM
+function abrirZoomModal() {
+    const mainImage = document.getElementById('main-product-image');
+    const zoomImage = document.getElementById('zoom-image');
+    const zoomModal = document.getElementById('zoom-modal');
+    
+    indiceImagenZoom = indiceImagenActual;
+    zoomImage.src = mainImage.src;
+    zoomModal.classList.add('active');
+    zoomLevel = 100;
+    panX = 0;
+    panY = 0;
+    actualizarZoom();
+    actualizarNavegacionZoom();
+    
+    // Agregar event listeners
+    document.addEventListener('wheel', handleZoomWheel, { passive: false });
+    document.addEventListener('touchmove', handleTouchZoom, { passive: false });
+    document.addEventListener('mousemove', handlePan);
+    document.addEventListener('mousedown', handlePanStart);
+    document.addEventListener('mouseup', handlePanEnd);
+    document.addEventListener('keydown', handleKeyboard);
+}
+
+function cerrarZoomModal() {
+    const zoomModal = document.getElementById('zoom-modal');
+    zoomModal.classList.remove('active');
+    
+    // Remover event listeners
+    document.removeEventListener('wheel', handleZoomWheel);
+    document.removeEventListener('touchmove', handleTouchZoom);
+    document.removeEventListener('mousemove', handlePan);
+    document.removeEventListener('mousedown', handlePanStart);
+    document.removeEventListener('mouseup', handlePanEnd);
+    document.removeEventListener('keydown', handleKeyboard);
+    
+    // Reset
+    zoomLevel = 100;
+    panX = 0;
+    panY = 0;
+}
+
+function zoomIn() {
+    zoomLevel = Math.min(zoomLevel + ZOOM_STEP, MAX_ZOOM);
+    actualizarZoom();
+}
+
+function zoomOut() {
+    zoomLevel = Math.max(zoomLevel - ZOOM_STEP, MIN_ZOOM);
+    actualizarZoom();
+}
+
+function resetZoom() {
+    zoomLevel = 100;
+    panX = 0;
+    panY = 0;
+    actualizarZoom();
+}
+
+function zoomImagenSiguiente() {
+    if (totalImagenes > 1) {
+        indiceImagenZoom = (indiceImagenZoom + 1) % totalImagenes;
+        actualizarImagenZoom();
+    }
+}
+
+function zoomImagenAnterior() {
+    if (totalImagenes > 1) {
+        indiceImagenZoom = (indiceImagenZoom - 1 + totalImagenes) % totalImagenes;
+        actualizarImagenZoom();
+    }
+}
+
+function actualizarImagenZoom() {
+    const thumbnails = document.querySelectorAll('.thumbnail-img');
+    const zoomImage = document.getElementById('zoom-image');
+    
+    if (thumbnails[indiceImagenZoom]) {
+        const imgSrc = thumbnails[indiceImagenZoom].querySelector('img').src;
+        zoomImage.src = imgSrc;
+        
+        // Reset zoom cuando cambia imagen
+        zoomLevel = 100;
+        panX = 0;
+        panY = 0;
+        actualizarZoom();
+        actualizarNavegacionZoom();
+    }
+}
+
+function actualizarNavegacionZoom() {
+    const btnAnterior = document.getElementById('zoom-btn-anterior');
+    const btnSiguiente = document.getElementById('zoom-btn-siguiente');
+    const counter = document.getElementById('zoom-image-counter');
+    
+    // Actualizar contador
+    counter.textContent = `${indiceImagenZoom + 1} / ${totalImagenes}`;
+    
+    // Mostrar/ocultar botones según si hay múltiples imágenes
+    if (totalImagenes > 1) {
+        btnAnterior.style.display = 'flex';
+        btnSiguiente.style.display = 'flex';
+    } else {
+        btnAnterior.style.display = 'none';
+        btnSiguiente.style.display = 'none';
+    }
+}
+
+function actualizarZoom() {
+    const zoomImage = document.getElementById('zoom-image');
+    const zoomLevel_display = document.getElementById('zoom-level');
+    
+    zoomImage.style.transform = `scale(${zoomLevel / 100}) translate(${panX}px, ${panY}px)`;
+    zoomLevel_display.textContent = `${zoomLevel}%`;
+}
+
+function handleZoomWheel(e) {
+    if (document.getElementById('zoom-modal').classList.contains('active')) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
+        zoomLevel = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoomLevel + delta));
+        actualizarZoom();
+    }
+}
+
+function handleTouchZoom(e) {
+    const zoomModal = document.getElementById('zoom-modal');
+    if (!zoomModal.classList.contains('active')) return;
+    
+    if (e.touches.length === 2) {
+        e.preventDefault();
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        
+        const distance = Math.hypot(
+            touch2.clientX - touch1.clientX,
+            touch2.clientY - touch1.clientY
+        );
+        
+        if (touchDistance > 0) {
+            const delta = distance > touchDistance ? ZOOM_STEP : -ZOOM_STEP;
+            zoomLevel = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoomLevel + delta));
+            actualizarZoom();
+        }
+        
+        touchDistance = distance;
+    } else {
+        touchDistance = 0;
+    }
+}
+
+function handlePanStart(e) {
+    if (zoomLevel > 100) {
+        isPanning = true;
+        startPanX = e.clientX - panX;
+        startPanY = e.clientY - panY;
+    }
+}
+
+function handlePan(e) {
+    if (isPanning && zoomLevel > 100) {
+        const zoomImage = document.getElementById('zoom-image');
+        const container = document.getElementById('zoom-container');
+        
+        panX = e.clientX - startPanX;
+        panY = e.clientY - startPanY;
+        
+        // Limitar movimiento
+        const scale = zoomLevel / 100;
+        const maxPan = (scale - 1) * 50;
+        
+        panX = Math.max(-maxPan, Math.min(maxPan, panX));
+        panY = Math.max(-maxPan, Math.min(maxPan, panY));
+        
+        actualizarZoom();
+    }
+}
+
+function handlePanEnd(e) {
+    isPanning = false;
+}
+//refactorizar esta funcion, aplicar los principios SOLID si es posible mas adelante(probar)
+function handleKeyboard(e) {
+    const zoomModal = document.getElementById('zoom-modal');
+    if (!zoomModal.classList.contains('active')) return;
+    
+    if (e.key === 'Escape') {
+        cerrarZoomModal();
+    } else if (e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        zoomIn();
+    } else if (e.key === '-') {
+        e.preventDefault();
+        zoomOut();
+    } else if (e.key === '0') {
+        e.preventDefault();
+        resetZoom();
+    } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        zoomImagenSiguiente();
+    } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        zoomImagenAnterior();
+    }
+}
+
+// Click en overlay para cerrar
 document.addEventListener('DOMContentLoaded', function() {
+    const zoomModal = document.getElementById('zoom-modal');
+    zoomModal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            cerrarZoomModal();
+        }
+    });
+    
     if (totalImagenes > 1) {
         const primerIndicador = document.querySelector('[data-index="0"]');
         if (primerIndicador) {
