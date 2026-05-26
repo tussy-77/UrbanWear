@@ -11,7 +11,8 @@
       "Bash(python -m pip install mercadopago)",
       "Bash(c:/proyectos/sistema-ventas/venv/Scripts/pip install *)",
       "Bash(venv\\\\Scripts\\\\flask db *)",
-      "PowerShell(cd c:\\\\proyectos\\\\sistema-ventas; $env:FLASK_APP = \"run.py\"; .\\\\venv\\\\Scripts\\\\python.exe -m flask db upgrade 2>&1)"
+      "PowerShell(cd c:\\\\proyectos\\\\sistema-ventas; $env:FLASK_APP = \"run.py\"; .\\\\venv\\\\Scripts\\\\python.exe -m flask db upgrade 2>&1)",
+      "Bash(python -c \"import secrets; print\\('JWT:', secrets.token_hex\\(64\\)\\); print\\('SK:', secrets.token_hex\\(32\\)\\)\")"
     ]
   }
 }
