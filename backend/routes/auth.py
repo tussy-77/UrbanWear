@@ -23,9 +23,6 @@ auth_bp = Blueprint('auth', __name__)
 
 mail = Mail()
 oauth = OAuth()
-s = URLSafeTimedSerializer('CAMBIA_ESTO_POR_TU_SECRET_KEY')
-
-
 s = URLSafeTimedSerializer(os.getenv('SECRET_KEY'))
 
 google = oauth.register(

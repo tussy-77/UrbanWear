@@ -8,7 +8,7 @@ from backend.config import Config
 from backend.database import db
 from backend.models import User, Category, Product, Order, OrderItem, Cart, CartItem, ProductImage
 import os
-#import mercadopago
+import mercadopago
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from backend.routes.auth import auth_bp
@@ -59,7 +59,7 @@ def create_app():
 
     app.config.from_object(Config)
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-    app.config['SESSION_COOKIE_SECURE'] = False
+    app.config['SESSION_COOKIE_SECURE'] = not app.debug
     _allowed_origins = [
         o.strip()
         for o in os.getenv('CORS_ORIGINS', os.getenv('APP_BASE_URL', 'http://127.0.0.1:5000')).split(',')
@@ -368,14 +368,13 @@ def create_app():
         return jsonify({"init_point": init_point})
 
     def _verify_mp_signature() -> bool:
-        """Validate MercadoPago webhook HMAC-SHA256 signature.
-
-        Returns True if valid or if MP_WEBHOOK_SECRET is not configured (dev mode).
-        Returns False if the secret is set but the signature is missing or wrong.
-        """
+        """Validate MercadoPago webhook HMAC-SHA256 signature."""
         secret = os.getenv("MP_WEBHOOK_SECRET", "")
         if not secret:
-            return True  # secret not configured — skip in dev, set it in prod
+            if not app.debug:
+                app.logger.error("MP_WEBHOOK_SECRET no está configurado — rechazando webhook en producción")
+                return False
+            return True  # solo se permite omitir en desarrollo
 
         x_signature = request.headers.get("x-signature", "")
         x_request_id = request.headers.get("x-request-id", "")
@@ -421,8 +420,9 @@ def create_app():
                         elif status == "rejected":
                             order.status = "cancelado"
                         db.session.commit()
-            except Exception:
-                pass
+            except Exception as e:
+                app.logger.error(f"Error procesando webhook de MercadoPago (payment_id={payment_id}): {e}", exc_info=True)
+                return jsonify({"status": "error"}), 500
 
         return jsonify({"status": "ok"}), 200
 
@@ -435,8 +435,8 @@ def create_app():
                 if order and order.status == 'pendiente':
                     order.status = 'pagado'
                     db.session.commit()
-            except Exception:
-                pass
+            except Exception as e:
+                app.logger.error(f"Error actualizando orden a pagado (order_id={order_id}): {e}", exc_info=True)
         return render_template('public/pago_resultado.html', estado='exitoso', order_id=order_id)
 
     @app.route('/pago-fallido')
@@ -448,8 +448,8 @@ def create_app():
                 if order:
                     order.status = 'cancelado'
                     db.session.commit()
-            except Exception:
-                pass
+            except Exception as e:
+                app.logger.error(f"Error actualizando orden a cancelado (order_id={order_id}): {e}", exc_info=True)
         return render_template('public/pago_resultado.html', estado='fallido', order_id=order_id)
 
     @app.route('/pago-pendiente')
@@ -958,4 +958,5 @@ def create_app():
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    debug_mode = os.getenv('FLASK_DEBUG', '0') == '1'
+    app.run(debug=debug_mode)

@@ -362,18 +362,38 @@ async function iniciarCheckout() {
     document.getElementById('resumen-total').textContent = `$ ${total.toLocaleString()}`;
 
     const container = document.getElementById('resumen-items');
-    container.innerHTML = items.map(item => `
-        <div style="display:flex; gap:12px; margin-bottom:14px; align-items:center;">
-            <img src="/static/uploads/${item.image_url || ''}" 
-                onerror="this.src='https://placehold.co/60x60?text=Item'"
-                style="width:60px; height:60px; object-fit:cover; border-radius:6px; border:1px solid #eee;">
-            <div style="flex:1;">
-                <p style="margin:0; font-size:0.85rem; font-weight:600; color:#111;">${item.product_name}</p>
-                <p style="margin:4px 0 0; font-size:0.8rem; color:#888;">Cant: ${item.quantity}</p>
-            </div>
-            <span style="font-size:0.85rem; font-weight:600;">$ ${item.subtotal.toLocaleString()}</span>
-        </div>
-    `).join('');
+    container.innerHTML = '';
+    items.forEach(item => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex; gap:12px; margin-bottom:14px; align-items:center;';
+
+        const img = document.createElement('img');
+        img.src = `/static/uploads/${item.image_url || ''}`;
+        img.onerror = function() { this.src = 'https://placehold.co/60x60?text=Item'; };
+        img.style.cssText = 'width:60px; height:60px; object-fit:cover; border-radius:6px; border:1px solid #eee;';
+
+        const info = document.createElement('div');
+        info.style.cssText = 'flex:1;';
+
+        const name = document.createElement('p');
+        name.style.cssText = 'margin:0; font-size:0.85rem; font-weight:600; color:#111;';
+        name.textContent = item.product_name;
+
+        const qty = document.createElement('p');
+        qty.style.cssText = 'margin:4px 0 0; font-size:0.8rem; color:#888;';
+        qty.textContent = `Cant: ${item.quantity}`;
+
+        const price = document.createElement('span');
+        price.style.cssText = 'font-size:0.85rem; font-weight:600;';
+        price.textContent = `$ ${item.subtotal.toLocaleString()}`;
+
+        info.appendChild(name);
+        info.appendChild(qty);
+        row.appendChild(img);
+        row.appendChild(info);
+        row.appendChild(price);
+        container.appendChild(row);
+    });
 }
 
 function toggleStep(num) {
