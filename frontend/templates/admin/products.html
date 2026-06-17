@@ -57,6 +57,7 @@
                 </td>
                 <td style="text-align:center;">
                     <form method="POST" action="/admin/productos/destacar/{{ p.id }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="btn-admin {% if p.destacado %}btn-admin--primary{% else %}btn-admin--secondary{% endif %}"
                             style="padding:6px 10px;" title="{% if p.destacado %}Quitar de home{% else %}Mostrar en home{% endif %}">
                             {% if p.destacado %}
@@ -83,6 +84,7 @@
                             EDITAR
                         </button>
                         <form method="POST" action="/admin/productos/esencial/{{ p.id }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn-admin {% if p.esencial %}btn-admin--primary{% else %}btn-admin--secondary{% endif %}"
                                 style="padding:6px 10px; display:flex; align-items:center; gap:4px;" title="{% if p.esencial %}Quitar de Essential{% else %}Añadir a Essential{% endif %}">
                                 {% if p.esencial %}
@@ -95,6 +97,7 @@
                         </form>
                         <form method="POST" action="/admin/productos/eliminar/{{ p.id }}"
                             onsubmit="return confirm('¿Eliminar {{ p.name }}?')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn-admin btn-admin--danger" style="padding:6px 14px;">
                                 ELIMINAR
                             </button>
@@ -112,6 +115,7 @@
     <div class="admin-modal__panel">
         <h3 class="admin-modal__title">Agregar Producto</h3>
         <form method="POST" action="/admin/productos/agregar" enctype="multipart/form-data" id="form-agregar">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="admin-campo">
                 <label class="admin-label">Nombre</label>
                 <input class="admin-input" name="nombre" required placeholder="Ej: Camiseta Oversize Negra">
@@ -168,6 +172,7 @@
     <div class="admin-modal__panel">
         <h3 class="admin-modal__title">Editar Producto</h3>
         <form method="POST" id="form-editar" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="admin-campo">
                 <label class="admin-label">Nombre</label>
                 <input class="admin-input" name="nombre" id="edit-nombre" required>

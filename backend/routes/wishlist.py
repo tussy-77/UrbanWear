@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from sqlalchemy.orm import selectinload
 from backend.database import db
 from backend.models.wishlist import Wishlist
 from backend.models.product import Product
@@ -40,20 +41,26 @@ def toggle_wishlist(product_id):
 @jwt_required()
 def get_wishlist_products():
     user_id = get_jwt_identity()
-    items = Wishlist.query.filter_by(user_id=user_id).order_by(Wishlist.created_at.desc()).all()
 
-    productos = []
-    for item in items:
-        p = Product.query.get(item.product_id)
-        if not p:
-            continue
+    # Single JOIN + one selectinload for images — 2 queries regardless of wishlist size
+    products = (
+        Product.query
+        .join(Wishlist, Wishlist.product_id == Product.id)
+        .filter(Wishlist.user_id == user_id)
+        .order_by(Wishlist.created_at.desc())
+        .options(selectinload(Product.images))
+        .all()
+    )
+
+    result = []
+    for p in products:
         img = None
         if p.images:
             img = f'/static/uploads/{p.images[0].image_url}'
         elif p.image_url:
             img = p.image_url if p.image_url.startswith('/') or p.image_url.startswith('http') \
                 else f'/static/uploads/{p.image_url}'
-        productos.append({
+        result.append({
             'id':        p.id,
             'name':      p.name,
             'price':     float(p.price),
@@ -61,4 +68,4 @@ def get_wishlist_products():
             'gender':    p.gender,
         })
 
-    return jsonify({'products': productos}), 200
+    return jsonify({'products': result}), 200

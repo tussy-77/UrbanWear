@@ -205,9 +205,10 @@ async function cambiarEstado(orderId, nuevoEstado) {
     btn.style.opacity = '0.6';
 
     try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
         const res = await fetch(`/admin/pedidos/${orderId}/estado`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
             body: JSON.stringify({ estado: nuevoEstado })
         });
         const data = await res.json();

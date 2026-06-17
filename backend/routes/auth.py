@@ -1,22 +1,22 @@
-from flask import Blueprint, request, jsonify, redirect, url_for
+from flask import Blueprint, request, jsonify, redirect, url_for, current_app
 from dotenv import load_dotenv
 import os
-import random
-import time
+import secrets
+from datetime import datetime, timedelta
 from backend.database import db
 from backend.models.user import User, UserRole
+from backend.models.otp import PendingOTPCode
 from flask_jwt_extended import create_access_token
 from itsdangerous import URLSafeTimedSerializer
 from flask_mail import Mail, Message
 from authlib.integrations.flask_client import OAuth
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from backend.models.address import Address
+from backend.limiter import limiter
+from backend.utils.validators import validate_password
 
 
 load_dotenv()
-
-# Codes temporary store: {email: {'code': str, 'expires': float}}
-_reg_codes: dict = {}
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -39,23 +39,35 @@ google = oauth.register(
 
 
 @auth_bp.route('/api/auth/register/send-code', methods=['POST'])
+@limiter.limit("3 per minute")
 def register_send_code():
     data = request.get_json() or {}
     email = data.get('email', '').strip().lower()
     if not email:
         return jsonify({'msg': 'El email es obligatorio'}), 400
-    if User.query.filter_by(email=email).first():
-        return jsonify({'msg': 'El correo ya está registrado'}), 400
 
-    code = str(random.randint(100000, 999999))
-    _reg_codes[email] = {'code': code, 'expires': time.time() + 600}
+    if User.query.filter_by(email=email).first():
+        current_app.logger.info("register_send_code: email ya registrado '%s'", email)
+        return jsonify({'msg': 'Si ese correo no está registrado, recibirás un código en breve.'}), 200
+
+    code = str(secrets.randbelow(900000) + 100000)
+    expires_at = datetime.utcnow() + timedelta(minutes=10)
+
+    pending = PendingOTPCode.query.filter_by(email=email).first()
+    if pending:
+        pending.code = code
+        pending.expires_at = expires_at
+    else:
+        db.session.add(PendingOTPCode(email=email, code=code, expires_at=expires_at))
+    db.session.commit()
 
     from backend.utils.email import send_register_code
     send_register_code(mail, email, code)
-    return jsonify({'msg': 'Código enviado'}), 200
+    return jsonify({'msg': 'Si ese correo no está registrado, recibirás un código en breve.'}), 200
 
 
 @auth_bp.route('/api/auth/register', methods=['POST'])
+@limiter.limit("10 per minute")
 def register():
     data = request.get_json() or {}
     email    = data.get('email', '').strip().lower()
@@ -65,11 +77,16 @@ def register():
     if not email or not code or not password:
         return jsonify({"msg": "Faltan datos obligatorios"}), 400
 
-    stored = _reg_codes.get(email)
-    if not stored or stored['code'] != code:
+    pw_error = validate_password(password)
+    if pw_error:
+        return jsonify({"msg": pw_error}), 400
+
+    pending = PendingOTPCode.query.filter_by(email=email).first()
+    if not pending or pending.code != code:
         return jsonify({'msg': 'Código incorrecto'}), 400
-    if time.time() > stored['expires']:
-        _reg_codes.pop(email, None)
+    if pending.is_expired:
+        db.session.delete(pending)
+        db.session.commit()
         return jsonify({'msg': 'El código expiró. Solicita uno nuevo.'}), 400
 
     if User.query.filter_by(email=email).first():
@@ -81,8 +98,8 @@ def register():
         new_user = User(name=name, email=email, role=UserRole.customer)
         new_user.set_password(password)
         db.session.add(new_user)
+        db.session.delete(pending)
         db.session.commit()
-        _reg_codes.pop(email, None)
 
         from backend.utils.email import send_welcome
         send_welcome(mail, new_user)
@@ -95,13 +112,15 @@ def register():
             "user": new_user.to_dict()
         }), 201
 
-    except Exception as e:
+    except Exception:
         db.session.rollback()
-        return jsonify({"msg": f"Error al registrar: {str(e)}"}), 500
+        current_app.logger.exception("Error en registro de usuario")
+        return jsonify({"msg": "Error al registrar usuario"}), 500
 
 
 
 @auth_bp.route('/api/auth/login', methods=['POST'])
+@limiter.limit("5 per minute")
 def login():
     data = request.get_json()
 
@@ -123,6 +142,7 @@ def login():
 
 
 @auth_bp.route('/api/auth/magic-link', methods=['POST'])
+@limiter.limit("3 per minute")
 def magic_link():
     data = request.get_json()
     email = data.get('email')
@@ -226,6 +246,7 @@ def update_perfil():
 
 
 @auth_bp.route('/api/auth/forgot-password', methods=['POST'])
+@limiter.limit("3 per minute")
 def forgot_password():
     email = (request.get_json() or {}).get('email', '').strip().lower()
     if not email:
@@ -246,8 +267,9 @@ def reset_password():
     password = data.get('password', '').strip()
     if not token or not password:
         return jsonify({'msg': 'Datos incompletos'}), 400
-    if len(password) < 6:
-        return jsonify({'msg': 'La contraseña debe tener al menos 6 caracteres'}), 400
+    pw_error = validate_password(password)
+    if pw_error:
+        return jsonify({'msg': pw_error}), 400
     try:
         email = s.loads(token, salt='password-reset', max_age=3600)
     except Exception:
@@ -299,7 +321,6 @@ def google_callback():
             name=nombre,
             role=UserRole.customer
         )
-        import secrets
         user.set_password(secrets.token_hex(16))
         
         

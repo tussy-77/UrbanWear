@@ -42,7 +42,7 @@
 
     <!-- Formulario hero -->
     <form method="POST" action="/admin/editorial/guardar/{{ hero.id }}" enctype="multipart/form-data">
-
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
             <div class="admin-campo">
                 <label class="admin-label">Etiqueta superior</label>
@@ -151,7 +151,7 @@
 
     <!-- Formulario editorial -->
     <form method="POST" action="/admin/editorial/guardar/{{ editorial.id }}" enctype="multipart/form-data">
-
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
             <div class="admin-campo">
                 <label class="admin-label">Etiqueta superior (TAG)</label>
@@ -271,6 +271,7 @@
                 {% else %}<span class="status-badge status-badge--default" style="margin-left:8px;">INACTIVO</span>{% endif %}
             </p>
             <form method="POST" action="/admin/editorial/guardar/{{ cat_hombre.id }}" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="admin-campo">
                     <label class="admin-label">Etiqueta</label>
                     <input class="admin-input" type="text" name="tag" value="{{ cat_hombre.tag }}" placeholder="NUEVA COLECCIÓN">
@@ -312,6 +313,7 @@
                 {% else %}<span class="status-badge status-badge--default" style="margin-left:8px;">INACTIVO</span>{% endif %}
             </p>
             <form method="POST" action="/admin/editorial/guardar/{{ cat_mujer.id }}" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="admin-campo">
                     <label class="admin-label">Etiqueta</label>
                     <input class="admin-input" type="text" name="tag" value="{{ cat_mujer.tag }}" placeholder="NUEVA COLECCIÓN">
@@ -386,7 +388,7 @@
     </div>
 
     <form method="POST" action="/admin/editorial/guardar/{{ banner_secundario.id }}" enctype="multipart/form-data">
-
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
             <div class="admin-campo">
                 <label class="admin-label">Etiqueta superior (TAG)</label>

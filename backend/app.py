@@ -1,6 +1,9 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session, Response
 from functools import wraps
 from sqlalchemy import text
+import secrets
+import hashlib
+import hmac
 from backend.config import Config
 from backend.database import db
 from backend.models import User, Category, Product, Order, OrderItem, Cart, CartItem, ProductImage
@@ -19,7 +22,29 @@ from datetime import datetime
 from backend.routes.auth import auth_bp, mail, oauth
 from backend.models import User, Category, Product, Order, OrderItem, Cart, CartItem, Address, Banner
 from backend.models.user import UserRole
+from backend.utils.validators import validate_password
 
+
+
+def _csrf_token():
+    if '_csrf_token' not in session:
+        session['_csrf_token'] = secrets.token_hex(32)
+    return session['_csrf_token']
+
+def _validate_csrf():
+    token = session.get('_csrf_token')
+    if not token:
+        return False
+    submitted = request.form.get('csrf_token') or request.headers.get('X-CSRF-Token')
+    return bool(submitted) and secrets.compare_digest(token, submitted)
+
+def csrf_protect(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not _validate_csrf():
+            return jsonify({"msg": "Petición inválida"}), 403
+        return f(*args, **kwargs)
+    return decorated
 
 
 def create_app():
@@ -30,11 +55,17 @@ def create_app():
     static_folder = os.path.join(base_dir, 'frontend', 'static')
 
     app = Flask(__name__, template_folder=template_folder, static_folder=static_folder, static_url_path='/static')
-    
+    app.jinja_env.globals['csrf_token'] = _csrf_token
+
     app.config.from_object(Config)
-    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  
-    app.config['SESSION_COOKIE_SECURE'] = False 
-    CORS(app)
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    app.config['SESSION_COOKIE_SECURE'] = False
+    _allowed_origins = [
+        o.strip()
+        for o in os.getenv('CORS_ORIGINS', os.getenv('APP_BASE_URL', 'http://127.0.0.1:5000')).split(',')
+        if o.strip()
+    ]
+    CORS(app, origins=_allowed_origins)
     
     # Configuración de subida (Asegúrate de que la ruta sea absoluta para evitar fallos)
     UPLOAD_FOLDER = os.path.join(static_folder, 'uploads')
@@ -45,6 +76,28 @@ def create_app():
     bcrypt = Bcrypt(app)
     jwt = JWTManager(app)
     migrate = Migrate(app, db)
+
+    @app.before_request
+    def _check_pending_migrations():
+        # Runs once: warns in console if there are unapplied migrations
+        if not getattr(app, '_migrations_checked', False):
+            app._migrations_checked = True
+            try:
+                from alembic.runtime.migration import MigrationContext
+                from alembic.script import ScriptDirectory
+                from flask_migrate import get_config
+                config = get_config('migrations')
+                script = ScriptDirectory.from_config(config)
+                with db.engine.connect() as conn:
+                    context = MigrationContext.configure(conn)
+                    current = set(context.get_current_heads())
+                    heads = set(script.get_heads())
+                    if current != heads:
+                        app.logger.warning(
+                            "⚠️  HAY MIGRACIONES PENDIENTES. Ejecuta: flask db upgrade"
+                        )
+            except Exception:
+                pass  # no migrations folder yet, or alembic not configured
     
     app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
     app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
@@ -58,7 +111,19 @@ def create_app():
 
     mail.init_app(app)
     oauth.init_app(app)
-     
+
+    from backend.limiter import limiter
+    limiter.init_app(app)
+
+    from backend.cache import cache
+    app.config['CACHE_TYPE'] = os.getenv('CACHE_TYPE', 'SimpleCache')
+    app.config['CACHE_DEFAULT_TIMEOUT'] = 300
+    cache.init_app(app)
+
+    @app.errorhandler(429)
+    def ratelimit_handler(e):
+        return jsonify({"msg": "Demasiados intentos. Espera un momento e inténtalo de nuevo."}), 429
+
     app.register_blueprint(auth_bp)
     app.register_blueprint(cart_bp)
     app.register_blueprint(wishlist_bp)
@@ -147,9 +212,10 @@ def create_app():
         try:
             db.session.execute(text("SELECT 1"))
             return "Database connected successfully!"
-        except Exception as e:
-            return str(e)
-        
+        except Exception:
+            app.logger.exception("Error en test-db")
+            return "Error de conexión", 500
+
     @app.route("/catalogo")
     def catalogo():
         todos_los_productos = Product.query.all()
@@ -176,19 +242,29 @@ def create_app():
             return jsonify({"msg": "El carrito está vacío"}), 400
 
         try:
-            # Validar stock de todos los items antes de crear la orden
             items_snapshot = list(cart.items)
+            product_ids = [item.product_id for item in items_snapshot]
+
+            # Lock rows before reading — serializes concurrent checkouts on same products
+            productos = {
+                p.id: p
+                for p in Product.query
+                    .filter(Product.id.in_(product_ids))
+                    .with_for_update()
+                    .all()
+            }
+
             for item in items_snapshot:
-                producto = Product.query.get(item.product_id)
+                producto = productos.get(item.product_id)
                 if not producto:
-                    return jsonify({"msg": f"Un producto del carrito ya no existe"}), 400
+                    return jsonify({"msg": "Un producto del carrito ya no existe"}), 400
                 if producto.stock < item.quantity:
                     if producto.stock == 0:
                         return jsonify({"msg": f'"{producto.name}" se agotó. Retíralo del carrito para continuar.'}), 400
                     return jsonify({"msg": f'Solo quedan {producto.stock} unidades de "{producto.name}".'}), 400
 
             total_pago = sum(
-                Product.query.get(item.product_id).price * item.quantity
+                productos[item.product_id].price * item.quantity
                 for item in items_snapshot
             )
 
@@ -201,7 +277,7 @@ def create_app():
             db.session.flush()
 
             for item in items_snapshot:
-                producto = Product.query.get(item.product_id)
+                producto = productos[item.product_id]
                 db.session.add(OrderItem(
                     order_id=nueva_orden.id,
                     product_id=item.product_id,
@@ -213,6 +289,7 @@ def create_app():
                 db.session.delete(item)
 
             db.session.commit()
+            cache.delete('admin_dashboard')
 
             user = User.query.get(user_id)
             email_items = [
@@ -230,10 +307,11 @@ def create_app():
 
             return jsonify({"msg": "Compra realizada", "order_id": nueva_orden.id}), 201
 
-        except Exception as e:
+        except Exception:
             db.session.rollback()
-            return jsonify({"msg": "Error interno", "error": str(e)}), 500
-            
+            app.logger.exception("Error en checkout user_id=%s", user_id)
+            return jsonify({"msg": "Error interno al procesar la compra"}), 500
+
     @app.route('/pedido-confirmado')
     def pedido_confirmado():
         return render_template('public/producto_confirmado.html')
@@ -289,8 +367,41 @@ def create_app():
         init_point = preference.get("sandbox_init_point") or preference.get("init_point")
         return jsonify({"init_point": init_point})
 
+    def _verify_mp_signature() -> bool:
+        """Validate MercadoPago webhook HMAC-SHA256 signature.
+
+        Returns True if valid or if MP_WEBHOOK_SECRET is not configured (dev mode).
+        Returns False if the secret is set but the signature is missing or wrong.
+        """
+        secret = os.getenv("MP_WEBHOOK_SECRET", "")
+        if not secret:
+            return True  # secret not configured — skip in dev, set it in prod
+
+        x_signature = request.headers.get("x-signature", "")
+        x_request_id = request.headers.get("x-request-id", "")
+
+        ts = v1 = ""
+        for part in x_signature.split(","):
+            part = part.strip()
+            if part.startswith("ts="):
+                ts = part[3:]
+            elif part.startswith("v1="):
+                v1 = part[3:]
+
+        if not ts or not v1:
+            return False
+
+        data_id = request.args.get("data.id") or (request.get_json(silent=True) or {}).get("data", {}).get("id", "")
+        manifest = f"id:{data_id};request-id:{x_request_id};ts:{ts}"
+
+        expected = hmac.new(secret.encode(), manifest.encode(), hashlib.sha256).hexdigest()
+        return hmac.compare_digest(expected, v1)
+
     @app.route('/api/payment/webhook', methods=['POST'])
     def mp_webhook():
+        if not _verify_mp_signature():
+            return jsonify({"status": "unauthorized"}), 401
+
         data = request.get_json(silent=True) or {}
         topic = data.get("type") or request.args.get("type")
         payment_id = (data.get("data") or {}).get("id") or request.args.get("data.id")
@@ -427,6 +538,10 @@ def create_app():
         if not data or not data.get('email') or not data.get('password') or not data.get('name'):
             return jsonify({"msg": "Faltan datos obligatorios"}), 400
 
+        pw_error = validate_password(data.get('password', ''))
+        if pw_error:
+            return jsonify({"msg": pw_error}), 400
+
         if User.query.filter_by(email=data.get('email')).first():
             return jsonify({"msg": "El correo electrónico ya está registrado"}), 400
 
@@ -445,9 +560,10 @@ def create_app():
                 "user": new_admin.to_dict()
             }), 201
 
-        except Exception as e:
+        except Exception:
             db.session.rollback()
-            return jsonify({"msg": f"Error al crear la cuenta: {str(e)}"}), 500
+            app.logger.exception("Error en admin_register_api")
+            return jsonify({"msg": "Error al crear la cuenta"}), 500
 
     @app.route('/admin/logout')
     def admin_logout():
@@ -459,6 +575,7 @@ def create_app():
 
     @app.route('/admin')
     @admin_required
+    @cache.cached(timeout=300, key_prefix='admin_dashboard')
     def admin_dashboard():
         from sqlalchemy import func, extract
         import json
@@ -530,6 +647,7 @@ def create_app():
 
     @app.route('/admin/productos/agregar', methods=['POST'])
     @admin_required
+    @csrf_protect
     def admin_agregar_producto():
         nombre      = request.form.get('nombre')
         precio      = request.form.get('precio')
@@ -580,6 +698,7 @@ def create_app():
 
     @app.route('/admin/productos/editar/<int:product_id>', methods=['POST'])
     @admin_required
+    @csrf_protect
     def admin_editar_producto(product_id):
         producto             = Product.query.get_or_404(product_id)
         producto.name        = request.form.get('nombre')
@@ -626,6 +745,7 @@ def create_app():
 
     @app.route('/admin/productos/eliminar/<int:product_id>', methods=['POST'])
     @admin_required
+    @csrf_protect
     def admin_eliminar_producto(product_id):
         producto = Product.query.get_or_404(product_id)
         
@@ -645,6 +765,7 @@ def create_app():
 
     @app.route('/admin/pedidos/<int:order_id>/estado', methods=['POST'])
     @admin_required
+    @csrf_protect
     def admin_actualizar_estado(order_id):
         order = Order.query.get_or_404(order_id)
         nuevo_estado = (request.get_json() or {}).get('estado')
@@ -653,6 +774,7 @@ def create_app():
             return jsonify({"msg": "Estado inválido"}), 400
         order.status = nuevo_estado
         db.session.commit()
+        cache.delete('admin_dashboard')
         return jsonify({"msg": "Estado actualizado", "estado": nuevo_estado})
 
     @app.route('/admin/usuarios')
@@ -662,6 +784,7 @@ def create_app():
         return render_template('admin/customers.html', usuarios=usuarios)
     @app.route('/admin/productos/destacar/<int:product_id>', methods=['POST'])
     @admin_required
+    @csrf_protect
     def admin_destacar_producto(product_id):
         producto = Product.query.get_or_404(product_id)
         producto.destacado = not producto.destacado
@@ -670,6 +793,7 @@ def create_app():
 
     @app.route('/admin/productos/esencial/<int:product_id>', methods=['POST'])
     @admin_required
+    @csrf_protect
     def admin_esencial_producto(product_id):
         producto = Product.query.get_or_404(product_id)
         producto.esencial = not producto.esencial
@@ -742,6 +866,7 @@ def create_app():
 
     @app.route('/admin/editorial/guardar/<int:banner_id>', methods=['POST'])
     @admin_required
+    @csrf_protect
     def admin_guardar_banner(banner_id):
         banner = Banner.query.get_or_404(banner_id)
         banner.name        = request.form.get('name',        banner.name)
@@ -772,6 +897,7 @@ def create_app():
 
     @app.route('/admin/editorial/nuevo', methods=['POST'])
     @admin_required
+    @csrf_protect
     def admin_nuevo_banner():
         banner = Banner(name=request.form.get('name', 'Nuevo banner'))
         db.session.add(banner)
@@ -780,11 +906,52 @@ def create_app():
 
     @app.route('/admin/editorial/eliminar/<int:banner_id>', methods=['POST'])
     @admin_required
+    @csrf_protect
     def admin_eliminar_banner(banner_id):
         banner = Banner.query.get_or_404(banner_id)
         db.session.delete(banner)
         db.session.commit()
         return redirect(url_for('admin_editorial'))
+
+    # ── SEO ──────────────────────────────────────────────────────────
+
+    @app.route('/robots.txt')
+    def robots_txt():
+        base = request.host_url.rstrip('/')
+        content = (
+            "User-agent: *\n"
+            "Allow: /\n"
+            "Disallow: /admin\n"
+            "Disallow: /admin/\n"
+            "Disallow: /api/\n"
+            f"\nSitemap: {base}/sitemap.xml\n"
+        )
+        return Response(content, mimetype='text/plain')
+
+    @app.route('/sitemap.xml')
+    def sitemap():
+        base = request.host_url.rstrip('/')
+        pages = [
+            (f"{base}/",                       '1.0', 'daily'),
+            (f"{base}/catalogo",               '0.9', 'daily'),
+            (f"{base}/catalogo?genero=hombre", '0.8', 'weekly'),
+            (f"{base}/catalogo?genero=mujer",  '0.8', 'weekly'),
+        ]
+        for p in Product.query.filter(Product.stock > 0).order_by(Product.id).all():
+            pages.append((f"{base}/producto/{p.id}", '0.7', 'weekly'))
+
+        lines = [
+            '<?xml version="1.0" encoding="UTF-8"?>',
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+        ]
+        for loc, priority, changefreq in pages:
+            lines.append(
+                f'  <url><loc>{loc}</loc>'
+                f'<priority>{priority}</priority>'
+                f'<changefreq>{changefreq}</changefreq></url>'
+            )
+        lines.append('</urlset>')
+        return Response('\n'.join(lines), mimetype='application/xml')
 
     return app
 
