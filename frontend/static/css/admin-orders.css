@@ -1,0 +1,62 @@
+.tab-estado {
+    padding: 7px 16px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    background: #fff;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    color: #555;
+    text-decoration: none;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.tab-estado:hover { border-color: #bbb; background: #f9f9f9; }
+.tab-estado--active { background: #111; color: #fff; border-color: #111; }
+.tab-count {
+    background: rgba(255,255,255,0.2);
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+}
+.tab-estado--active .tab-count { background: rgba(255,255,255,0.2); }
+.tab-estado:not(.tab-estado--active) .tab-count { background: #f0f0f0; color: #666; }
+
+.order-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+.order-badge--pendiente  { background: #fff8e1; color: #b7791f; }
+.order-badge--pagado     { background: #e0f2fe; color: #0369a1; }
+.order-badge--enviado    { background: #ede9fe; color: #6d28d9; }
+.order-badge--entregado  { background: #f0fff4; color: #276749; }
+.order-badge--cancelado  { background: #fff5f5; color: #c53030; }
+
+.accion-btn {
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 0.3px;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+.accion-btn--success { background: #f0fff4; color: #276749; border-color: #9ae6b4; }
+.accion-btn--success:hover { background: #c6f6d5; }
+.accion-btn--primary { background: #ede9fe; color: #6d28d9; border-color: #c4b5fd; }
+.accion-btn--primary:hover { background: #ddd6fe; }
+.accion-btn--done    { background: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
+.accion-btn--done:hover { background: #bae6fd; }
+.accion-btn--danger  { background: #fff5f5; color: #c53030; border-color: #fed7d7; }
+.accion-btn--danger:hover { background: #fed7d7; }

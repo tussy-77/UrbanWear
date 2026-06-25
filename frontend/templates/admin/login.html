@@ -5,101 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin — UrbanWear</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #0a0a0a;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .login-card {
-            background: rgba(18, 18, 18, 0.90);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 16px;
-            padding: 52px 44px;
-            width: 100%;
-            max-width: 420px;
-            box-shadow: 0 24px 64px rgba(0,0,0,0.6);
-        }
-
-        .login-logo {
-            text-align: center;
-            margin-bottom: 36px;
-        }
-        .login-logo__icon { color: #e86018; font-size: 1.4rem; }
-        .login-logo__text {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #fff;
-            letter-spacing: 0.5px;
-            margin-left: 6px;
-        }
-        .login-logo__badge {
-            display: block;
-            margin-top: 6px;
-            font-size: 0.65rem;
-            font-weight: 600;
-            letter-spacing: 3px;
-            color: rgba(255,255,255,0.35);
-            text-transform: uppercase;
-        }
-
-        label {
-            display: block;
-            font-size: 0.7rem;
-            font-weight: 600;
-            letter-spacing: 1.5px;
-            color: rgba(255,255,255,0.4);
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-
-        input {
-            width: 100%;
-            padding: 12px 16px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.10);
-            border-radius: 8px;
-            color: #fff;
-            font-size: 0.9rem;
-            font-family: inherit;
-            margin-bottom: 20px;
-            transition: border-color 0.2s;
-        }
-        input::placeholder { color: rgba(255,255,255,0.25); }
-        input:focus { outline: none; border-color: rgba(232,96,24,0.6); }
-
-        button[type="submit"] {
-            width: 100%;
-            padding: 13px;
-            background: #e86018;
-            border: none;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 0.78rem;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            cursor: pointer;
-            font-family: inherit;
-            transition: background 0.2s;
-            margin-top: 4px;
-        }
-        button[type="submit"]:hover { background: #cf5514; }
-
-        #msg {
-            margin-top: 16px;
-            font-size: 0.82rem;
-            text-align: center;
-            display: none;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-login.css') }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body>
 
@@ -110,20 +17,7 @@
         <span class="login-logo__badge">Panel de administración</span>
     </div>
 
-    <!-- TABS -->
-    <div style="display: flex; gap: 16px; margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.1);">
-        <button type="button" id="tab-login" onclick="showTab('login')" 
-                style="flex:1; padding: 12px 0; background: none; border: none; color: #e86018; font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; border-bottom: 2px solid #e86018; text-transform: uppercase;">
-            INGRESAR
-        </button>
-        <button type="button" id="tab-register" onclick="showTab('register')" 
-                style="flex:1; padding: 12px 0; background: none; border: none; color: rgba(255,255,255,0.35); font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; border-bottom: 2px solid transparent; text-transform: uppercase;">
-            CREAR CUENTA
-        </button>
-    </div>
-
-    <!-- LOGIN FORM -->
-    <div id="login-form" style="display: block;">
+    <div id="login-form">
         <label>Correo electrónico</label>
         <input type="email" id="email" placeholder="admin@ejemplo.com" autocomplete="username">
 
@@ -134,144 +28,11 @@
         <button type="submit" onclick="login()">INGRESAR</button>
     </div>
 
-    <!-- REGISTER FORM -->
-    <div id="register-form" style="display: none;">
-        <label>Nombre completo</label>
-        <input type="text" id="reg-name" placeholder="Tu nombre" autocomplete="off">
-
-        <label>Correo electrónico</label>
-        <input type="email" id="reg-email" placeholder="admin@ejemplo.com" autocomplete="username">
-
-        <label>Contraseña</label>
-        <input type="password" id="reg-password" placeholder="••••••••" autocomplete="new-password">
-
-        <label>Confirmar contraseña</label>
-        <input type="password" id="reg-password-confirm" placeholder="••••••••" autocomplete="new-password"
-               onkeydown="if(event.key==='Enter') register()">
-
-        <button type="submit" onclick="register()">CREAR CUENTA</button>
-    </div>
-
     <p id="msg"></p>
 
-    
 </div>
 
-<script>
-function showTab(tab) {
-    const loginForm = document.getElementById('login-form');
-    const registerForm = document.getElementById('register-form');
-    const tabLogin = document.getElementById('tab-login');
-    const tabRegister = document.getElementById('tab-register');
-
-    if (tab === 'login') {
-        loginForm.style.display = 'block';
-        registerForm.style.display = 'none';
-        tabLogin.style.color = '#e86018';
-        tabLogin.style.borderBottomColor = '#e86018';
-        tabRegister.style.color = 'rgba(255,255,255,0.35)';
-        tabRegister.style.borderBottomColor = 'transparent';
-        document.getElementById('msg').style.display = 'none';
-    } else {
-        loginForm.style.display = 'none';
-        registerForm.style.display = 'block';
-        tabLogin.style.color = 'rgba(255,255,255,0.35)';
-        tabLogin.style.borderBottomColor = 'transparent';
-        tabRegister.style.color = '#e86018';
-        tabRegister.style.borderBottomColor = '#e86018';
-        document.getElementById('msg').style.display = 'none';
-    }
-}
-
-async function login() {
-    const email    = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    const msg      = document.getElementById('msg');
-
-    if (!email || !password) {
-        msg.style.color = '#ef4444';
-        msg.style.display = 'block';
-        msg.textContent = 'Completa todos los campos.';
-        return;
-    }
-
-    try {
-        const res  = await fetch('/api/admin/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-
-        if (res.ok) {
-            window.location.href = '/admin';
-        } else {
-            msg.style.color = '#ef4444';
-            msg.style.display = 'block';
-            msg.textContent = data.msg || 'Error al iniciar sesión.';
-        }
-    } catch (e) {
-        msg.style.color = '#ef4444';
-        msg.style.display = 'block';
-        msg.textContent = 'Error de conexión.';
-    }
-}
-
-async function register() {
-    const name     = document.getElementById('reg-name').value.trim();
-    const email    = document.getElementById('reg-email').value.trim();
-    const password = document.getElementById('reg-password').value;
-    const confirm  = document.getElementById('reg-password-confirm').value;
-    const msg      = document.getElementById('msg');
-
-    if (!name || !email || !password || !confirm) {
-        msg.style.color = '#ef4444';
-        msg.style.display = 'block';
-        msg.textContent = 'Completa todos los campos.';
-        return;
-    }
-
-    if (password !== confirm) {
-        msg.style.color = '#ef4444';
-        msg.style.display = 'block';
-        msg.textContent = 'Las contraseñas no coinciden.';
-        return;
-    }
-
-    if (password.length < 6) {
-        msg.style.color = '#ef4444';
-        msg.style.display = 'block';
-        msg.textContent = 'La contraseña debe tener al menos 6 caracteres.';
-        return;
-    }
-
-    try {
-        const res = await fetch('/api/admin/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, password })
-        });
-        const data = await res.json();
-
-        if (res.ok) {
-            msg.style.color = '#10b981';
-            msg.style.display = 'block';
-            msg.textContent = 'Cuenta creada. Redirigiendo...';
-            setTimeout(() => {
-                window.location.href = '/admin/login';
-            }, 2000);
-        } else {
-            msg.style.color = '#ef4444';
-            msg.style.display = 'block';
-            msg.textContent = data.msg || 'Error al crear la cuenta.';
-        }
-    } catch (e) {
-        msg.style.color = '#ef4444';
-        msg.style.display = 'block';
-        msg.textContent = 'Error de conexión.';
-    }
-}
-</script>
+<script src="{{ url_for('static', filename='js/admin-login.js') }}"></script>
 
 </body>
 </html>

@@ -1,28 +1,24 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session, Response
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session, Response
 from functools import wraps
-from sqlalchemy import text
 from sqlalchemy.orm import noload
 import secrets
 import hashlib
 import hmac
 from backend.config import Config
 from backend.database import db
-from backend.models import User, Category, Product, Order, OrderItem, Cart, CartItem, ProductImage
+from backend.models import User, Category, Product, Order, OrderItem, Cart, CartItem, ProductImage, Banner
 import os
 import mercadopago
 from flask_bcrypt import Bcrypt
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-from backend.routes.auth import auth_bp
+from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
+from backend.routes.auth import auth_bp, mail, oauth
 from backend.routes.cart import cart_bp
 from backend.routes.wishlist import wishlist_bp
 from flask_migrate import Migrate
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from werkzeug.middleware.proxy_fix import ProxyFix
-from itsdangerous import URLSafeTimedSerializer
 from datetime import datetime
-from backend.routes.auth import auth_bp, mail, oauth
-from backend.models import User, Category, Product, Order, OrderItem, Cart, CartItem, Address, Banner
 from backend.models.user import UserRole
 from backend.utils.validators import validate_password
 
@@ -47,6 +43,13 @@ def csrf_protect(f):
             return jsonify({"msg": "Petición inválida"}), 403
         return f(*args, **kwargs)
     return decorated
+
+
+_ALLOWED_IMAGE_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.webp', '.gif'}
+
+
+def _is_allowed_image(filename):
+    return os.path.splitext(filename)[1].lower() in _ALLOWED_IMAGE_EXTENSIONS
 
 
 def create_app():
@@ -147,6 +150,31 @@ def create_app():
             return jsonify({"msg": "Error interno del servidor."}), 500
         return render_template('errors/500.html'), 500
 
+    _CSP = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self'; "
+        "object-src 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self'; "
+        "frame-ancestors 'none'"
+    )
+
+    @app.after_request
+    def _set_security_headers(response):
+        response.headers['Content-Security-Policy'] = _CSP
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-Frame-Options'] = 'DENY'
+        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+        # HSTS solo tiene sentido detrás de HTTPS real (producción); en debug local
+        # se sirve por http:// y el navegador lo ignoraría de todos modos.
+        if not app.debug:
+            response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+        return response
+
     app.register_blueprint(auth_bp)
     app.register_blueprint(cart_bp)
     app.register_blueprint(wishlist_bp)
@@ -230,15 +258,6 @@ def create_app():
     def cliente_register_view():
         return redirect('/')
     
-
-    @app.route("/test-db")
-    def test_db():
-        try:
-            db.session.execute(text("SELECT 1"))
-            return "Database connected successfully!"
-        except Exception:
-            app.logger.exception("Error en test-db")
-            return "Error de conexión", 500
 
     @app.route("/catalogo")
     def catalogo():
@@ -578,7 +597,13 @@ def create_app():
     def admin_required(f):
         @wraps(f)
         def decorated(*args, **kwargs):
-            if not session.get('admin_id'):
+            admin_id = session.get('admin_id')
+            user = User.query.get(admin_id) if admin_id else None
+            if not user or user.role != UserRole.admin:
+                session.pop('admin_id', None)
+                session.pop('admin_name', None)
+                if request.path.startswith('/api/'):
+                    return jsonify({"msg": "No autorizado"}), 403
                 return redirect(url_for('admin_login'))
             return f(*args, **kwargs)
         return decorated
@@ -590,6 +615,8 @@ def create_app():
         return render_template('admin/login.html')
 
     @app.route('/api/admin/login', methods=['POST'])
+    @limiter.limit("5 per minute")
+    @csrf_protect
     def admin_login_api():
         data = request.get_json()
         user = User.query.filter_by(email=data.get('email')).first()
@@ -602,6 +629,8 @@ def create_app():
         return jsonify({"msg": "ok"})
 
     @app.route('/api/admin/register', methods=['POST'])
+    @admin_required
+    @csrf_protect
     def admin_register_api():
         data = request.get_json()
         
@@ -727,7 +756,7 @@ def create_app():
         stock       = request.form.get('stock', 10)
         tallas      = request.form.get('tallas', '')
         imagen_url  = request.form.get('imagen_url', '')
-        files       = request.files.getlist('imagen')
+        files       = [f for f in request.files.getlist('imagen') if not f.filename or _is_allowed_image(f.filename)]
 
         image_final = ''
 
@@ -781,7 +810,7 @@ def create_app():
         producto.gender      = request.form.get('genero', 'unisex')
 
         imagen_url = request.form.get('imagen_url', '')
-        files      = request.files.getlist('imagen')
+        files      = [f for f in request.files.getlist('imagen') if not f.filename or _is_allowed_image(f.filename)]
 
         # Si hay nuevas imágenes, reemplazar todas
         if files and files[0].filename:
@@ -969,7 +998,7 @@ def create_app():
 
         imagen_url = request.form.get('imagen_url', '').strip()
         file       = request.files.get('imagen')
-        if file and file.filename:
+        if file and file.filename and _is_allowed_image(file.filename):
             filename = secure_filename(file.filename)
             if not os.path.exists(app.config['UPLOAD_FOLDER']):
                 os.makedirs(app.config['UPLOAD_FOLDER'])
