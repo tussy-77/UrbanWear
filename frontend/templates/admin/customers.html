@@ -2,10 +2,11 @@
 {% block title %}Usuarios — Admin{% endblock %}
 {% block topbar_title %}Gestión de Usuarios{% endblock %}
 
+{% from 'admin/_pagination.html' import render_pagination %}
 {% block content %}
 <div style="margin-bottom:24px;">
     <h2 style="font-size:1.1rem; font-weight:800; margin:0;">Usuarios</h2>
-    <p style="font-size:0.82rem; color:#888; margin:4px 0 0;">{{ usuarios|length }} usuarios registrados</p>
+    <p style="font-size:0.82rem; color:#888; margin:4px 0 0;">{{ total_usuarios }} usuarios registrados</p>
 </div>
 
 <div class="admin-card" style="padding:0; overflow:hidden;">
@@ -36,5 +37,7 @@
         </tbody>
     </table>
 </div>
+
+{{ render_pagination(pagination, 'admin_usuarios') }}
 
 {% endblock %}

@@ -1,5 +1,6 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from sqlalchemy.exc import IntegrityError
 from backend.database import db
 from backend.models.cart import Cart, CartItem
 from backend.models import Product
@@ -47,7 +48,17 @@ def add_to_cart():
         item = CartItem(cart_id=cart.id, product_id=product_id, quantity=quantity, size=size)
         db.session.add(item)
 
-    db.session.commit()
+    try:
+        db.session.commit()
+    except IntegrityError:
+        # Otra solicitud concurrente ya insertó el mismo (cart_id, product_id, size).
+        db.session.rollback()
+        current_app.logger.warning(
+            "add_to_cart: conflicto de concurrencia cart_id=%s product_id=%s size=%s",
+            cart.id, product_id, size,
+        )
+        return jsonify({"msg": "Hubo un conflicto al añadir el producto, intenta de nuevo"}), 409
+
     return jsonify({"msg": "Producto añadido al carrito"}), 200
 
 # --- 2. VER EL CONTENIDO DEL CARRITO ---
@@ -69,7 +80,9 @@ def get_cart():
             total += subtotal
             items.append({
                 "id": item.id,
+                "product_id": item.product.id,
                 "product_name": item.product.name,
+                "image": item.product.image_src,
                 "price": float(item.product.price),
                 "quantity": item.quantity,
                 "size": item.size,

@@ -9,6 +9,12 @@ async function initWishlist() {
         const res = await fetch('/api/wishlist', {
             headers: { Authorization: `Bearer ${token}` }
         });
+        if (res.status === 401 || res.status === 422) {
+            localStorage.removeItem('urban_token');
+            localStorage.removeItem('client_name');
+            if (typeof actualizarInterfazUsuario === 'function') actualizarInterfazUsuario();
+            return;
+        }
         if (!res.ok) return;
         const data = await res.json();
         _wishlistIds = new Set(data.ids);
@@ -59,6 +65,15 @@ async function toggleWishlist(btn, productId) {
             method: 'POST',
             headers: { Authorization: `Bearer ${token}` }
         });
+        if (res.status === 401 || res.status === 422) {
+            localStorage.removeItem('urban_token');
+            localStorage.removeItem('client_name');
+            if (typeof actualizarInterfazUsuario === 'function') actualizarInterfazUsuario();
+            if (wasSaved) { _wishlistIds.add(productId); } else { _wishlistIds.delete(productId); }
+            _setHeartActive(btn, wasSaved);
+            if (typeof abrirModal === 'function') abrirModal('main');
+            return;
+        }
         if (!res.ok) throw new Error();
         const data = await res.json();
         if (typeof mostrarToast === 'function') {

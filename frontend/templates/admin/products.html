@@ -1,12 +1,13 @@
 {% extends 'admin/base_admin.html' %}
 {% block title %}Productos — Admin{% endblock %}
 {% block topbar_title %}Gestión de Productos{% endblock %}
+{% from 'admin/_pagination.html' import render_pagination %}
 {% block content %}
 
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
     <div>
         <h2 style="font-size:1.1rem; font-weight:800; margin:0;">Productos</h2>
-        <p style="font-size:0.82rem; color:#888; margin:4px 0 0;">{{ productos|length }} productos en total</p>
+        <p style="font-size:0.82rem; color:#888; margin:4px 0 0;">{{ total_productos }} productos en total</p>
     </div>
     <button onclick="abrirModalAgregar()" class="btn-admin btn-admin--primary">+ AGREGAR PRODUCTO</button>
 </div>
@@ -109,6 +110,8 @@
         </tbody>
     </table>
 </div>
+
+{{ render_pagination(pagination, 'admin_productos') }}
 
 <!-- Modal Agregar -->
 <div class="admin-modal" id="modal-agregar">

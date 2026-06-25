@@ -29,10 +29,10 @@
         </button>
     </div>
 
-    <!-- Contador (Full Width) -->
+    <!-- Contador -->
     <p id="catalogo-count" class="catalogo-count"></p>
 
-    <!-- Grid de productos (Full Width) -->
+    <!-- Grid de productos -->
     <div class="catalogo-grid" id="catalogo-grid">
         {% for producto in productos %}
         <div class="catalogo-card" data-gender="{{ producto.gender or 'unisex' }}" data-stock="{{ producto.stock }}">

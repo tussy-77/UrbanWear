@@ -5,7 +5,7 @@ class Order(db.Model):
     __tablename__ = 'orders'
     __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     total_price = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(50), nullable=False, default='pendiente')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -27,7 +27,7 @@ class OrderItem(db.Model):
     __tablename__ = 'order_items'
     __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
-    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), nullable=False)
+    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), nullable=False, index=True)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     price_at_purchase = db.Column(db.Float, nullable=False)

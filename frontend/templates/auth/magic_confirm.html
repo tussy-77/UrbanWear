@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmar inicio de sesión — UrbanWear</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Inter', Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+            padding: 24px;
+        }
+        .card { max-width: 380px; }
+        h1 { font-size: 1.3rem; margin: 0 0 12px; }
+        p { color: #888; font-size: 0.95rem; line-height: 1.5; margin: 0 0 28px; }
+        button {
+            padding: 14px 32px;
+            background: #fff;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        button:disabled { opacity: 0.5; cursor: default; }
+        .ok { color: #4ade80; }
+        .error { color: #f87171; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        {% if estado == 'pendiente' %}
+            <h1>Confirmar inicio de sesión</h1>
+            <p>Detectamos una solicitud de acceso desde otro dispositivo. Si fuiste tú, confirma aquí para que ese dispositivo inicie sesión.</p>
+            <button id="btn-confirmar" onclick="confirmar()">CONFIRMAR INICIO DE SESIÓN</button>
+            <p id="resultado" style="margin-top:20px; display:none;"></p>
+        {% elif estado == 'ya_confirmado' %}
+            <h1 class="ok">Ya confirmado</h1>
+            <p>Esta solicitud ya fue confirmada. Puedes cerrar esta pestaña y volver al otro dispositivo.</p>
+        {% else %}
+            <h1 class="error">Enlace inválido o expirado</h1>
+            <p>Vuelve al dispositivo donde solicitaste el acceso e intenta de nuevo.</p>
+        {% endif %}
+    </div>
+
+    {% if estado == 'pendiente' %}
+    <script>
+        async function confirmar() {
+            const btn = document.getElementById('btn-confirmar');
+            const resultado = document.getElementById('resultado');
+            btn.disabled = true;
+            btn.textContent = 'CONFIRMANDO…';
+            try {
+                const res = await fetch('{{ url_for("auth.confirmar_magic", token=token) }}', { method: 'POST' });
+                const data = await res.json();
+                resultado.style.display = 'block';
+                if (res.ok) {
+                    resultado.className = 'ok';
+                    resultado.textContent = data.msg;
+                    btn.style.display = 'none';
+                } else {
+                    resultado.className = 'error';
+                    resultado.textContent = data.msg || 'No se pudo confirmar.';
+                    btn.disabled = false;
+                    btn.textContent = 'CONFIRMAR INICIO DE SESIÓN';
+                }
+            } catch {
+                resultado.style.display = 'block';
+                resultado.className = 'error';
+                resultado.textContent = 'Error de conexión.';
+                btn.disabled = false;
+                btn.textContent = 'CONFIRMAR INICIO DE SESIÓN';
+            }
+        }
+    </script>
+    {% endif %}
+</body>
+</html>

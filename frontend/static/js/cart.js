@@ -74,6 +74,7 @@ function abrirModal(vista = 'main') {
 
 function cerrarModal() {
     document.getElementById('login-modal').style.display = 'none';
+    detenerEsperaMagicLink();
 }
 
 function mostrarVista(vista) {
@@ -105,17 +106,69 @@ function _irVista(vista) {
 // Mantener compatibilidad con llamadas anteriores
 function mostrarFormEmail(modo) { mostrarVista(modo); }
 
+let magicPollTimer = null;
+let magicPollTimeout = null;
+
 async function submitMagic() {
     const email = document.getElementById('magic-email').value.trim();
     if (!email) { mostrarMsg('magic-msg', 'Ingresa tu email.', 'error'); return; }
 
-    const res = await fetch('/api/auth/magic-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-    });
-    const data = await res.json();
-    mostrarMsg('magic-msg', data.msg, res.ok ? 'ok' : 'error');
+    const btn = document.querySelector('#view-magic .login-modal__submit-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
+
+    try {
+        const res = await fetch('/api/auth/magic-link', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.session_token) {
+            mostrarMsg('magic-msg', 'Revisa tu correo y confirma el acceso. Esperando confirmación…', 'ok');
+            esperarConfirmacionMagicLink(data.session_token, email);
+        } else {
+            mostrarMsg('magic-msg', data.msg || 'No se pudo enviar el email.', 'error');
+        }
+    } catch {
+        mostrarMsg('magic-msg', 'Error de conexión.', 'error');
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = 'ENVIAR'; }
+    }
+}
+
+function esperarConfirmacionMagicLink(sessionToken, email) {
+    detenerEsperaMagicLink();
+
+    magicPollTimer = setInterval(async () => {
+        try {
+            const res = await fetch(`/api/auth/magic-status/${sessionToken}`);
+            if (res.status === 404) {
+                detenerEsperaMagicLink();
+                mostrarMsg('magic-msg', 'El enlace expiró. Solicita uno nuevo.', 'error');
+                return;
+            }
+            const data = await res.json();
+            if (data.status === 'approved') {
+                detenerEsperaMagicLink();
+                localStorage.setItem('urban_token', data.access_token);
+                localStorage.setItem('client_name', data.name || email);
+                cerrarModal();
+                actualizarInterfazUsuario();
+                actualizarVistaCarrito();
+            }
+        } catch { /* reintenta en el próximo intervalo */ }
+    }, 3000);
+
+    // Deja de esperar tras 10 minutos (igual que la expiración del enlace).
+    magicPollTimeout = setTimeout(detenerEsperaMagicLink, 10 * 60 * 1000);
+}
+
+function detenerEsperaMagicLink() {
+    clearInterval(magicPollTimer);
+    clearTimeout(magicPollTimeout);
+    magicPollTimer = null;
+    magicPollTimeout = null;
 }
 
 function _msgLight(elId, texto, ok) {
@@ -248,6 +301,12 @@ async function actualizarVistaCarrito() {
         const res = await fetch('/api/cart', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
+        if (res.status === 401 || res.status === 422) {
+            localStorage.removeItem('urban_token');
+            localStorage.removeItem('client_name');
+            actualizarInterfazUsuario();
+            return;
+        }
         const data = await res.json();
         
         const container = document.getElementById('cart-sidebar-items');
@@ -260,19 +319,22 @@ async function actualizarVistaCarrito() {
                 container.innerHTML = '<p class="cart-empty-msg">Tu carrito está vacío</p>';
             } else {
                 data.items.forEach(item => {
-                    const sizeBadge = item.size
-                        ? `<span style="background:rgba(255,255,255,0.12); color:rgba(255,255,255,0.7); font-size:0.68rem; font-weight:700; padding:2px 7px; border-radius:4px; letter-spacing:0.5px;">${item.size}</span>`
+                    const imageHtml = item.image
+                        ? `<img src="${item.image}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">`
+                        : '🛍';
+                    const sizeHtml = item.size
+                        ? `<p class="cart-sidebar-item__size">Talla: ${item.size}</p>`
                         : '';
                     container.innerHTML += `
-                        <div class="cart-sidebar-item" style="display:flex; gap:10px; margin-bottom:15px;">
-                            <img src="https://placehold.co/60x60?text=Item" style="width:60px; border-radius:5px;">
-                            <div style="flex:1;">
-                                <p style="margin:0; font-weight:bold; font-size:0.85rem;">${item.product_name}</p>
-                                <div style="display:flex; align-items:center; gap:6px; margin:3px 0;">
-                                    <p style="margin:0; font-size:0.78rem; color:rgba(255,255,255,0.5);">Cant: ${item.quantity}</p>
-                                    ${sizeBadge}
+                        <div class="cart-sidebar-item">
+                            <div class="cart-sidebar-item__image">${imageHtml}</div>
+                            <div class="cart-sidebar-item__info">
+                                <p class="cart-sidebar-item__name">${item.product_name}</p>
+                                ${sizeHtml}
+                                <p class="cart-sidebar-item__qty">Cantidad: ${item.quantity}</p>
+                                <div class="cart-sidebar-item__price">
+                                    <span class="cart-sidebar-item__subtotal">$${item.subtotal.toLocaleString()}</span>
                                 </div>
-                                <p style="margin:0; color:#fff; font-size:0.85rem;">$${item.subtotal.toLocaleString()}</p>
                             </div>
                         </div>`;
                 });
@@ -298,7 +360,10 @@ function cerrarCarrito() {
 
 async function agregarAlCarrito(productId, size) {
     const token = getAuthToken();
-    if (!token) { mostrarToast('Inicia sesión para agregar al carrito', 'error'); return; }
+    if (!token) {
+        if (typeof abrirModal === 'function') abrirModal('main');
+        return;
+    }
 
     try {
         const body = { product_id: productId, quantity: 1 };
@@ -309,6 +374,13 @@ async function agregarAlCarrito(productId, size) {
             headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         });
+        if (res.status === 401 || res.status === 422) {
+            localStorage.removeItem('urban_token');
+            localStorage.removeItem('client_name');
+            actualizarInterfazUsuario();
+            abrirModal('main');
+            return;
+        }
         const data = await res.json();
         if (res.ok) {
             actualizarVistaCarrito();

@@ -368,7 +368,7 @@ async function iniciarCheckout() {
         row.style.cssText = 'display:flex; gap:12px; margin-bottom:14px; align-items:center;';
 
         const img = document.createElement('img');
-        img.src = `/static/uploads/${item.image_url || ''}`;
+        img.src = item.image || 'https://placehold.co/60x60?text=Item';
         img.onerror = function() { this.src = 'https://placehold.co/60x60?text=Item'; };
         img.style.cssText = 'width:60px; height:60px; object-fit:cover; border-radius:6px; border:1px solid #eee;';
 

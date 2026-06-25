@@ -17,12 +17,12 @@
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
 
             <!-- Miniaturas (navegación) -->
-            <div style="position:sticky; top:100px;">
+            <div style="position:sticky; top:80px;">
                 <div id="thumbnails-container" style="display:flex; flex-direction:column; gap:8px;">
                     {% if producto.images %}
                         {% for img in producto.images %}
-                        <div style="aspect-ratio:3/4; background:#e0e0e0; overflow:hidden; cursor:pointer; border:2px solid #ddd; transition:border 0.2s;"
-                            onclick="cambiarImagenPrincipal(+this.dataset.index)"
+                        <div style="aspect-ratio:3/4; background:#e0e0e0; overflow:hidden; cursor:zoom-in; border:2px solid #ddd; transition:border 0.2s;"
+                            onclick="cambiarImagenPrincipal(+this.dataset.index); abrirZoomModal()"
                             class="thumbnail-img"
                             data-index="{{ loop.index0 }}">
                             <img src="{{ img.image_src }}"
@@ -31,7 +31,8 @@
                         </div>
                         {% endfor %}
                     {% elif producto.image_src %}
-                        <div style="aspect-ratio:3/4; background:#e0e0e0; overflow:hidden; border:2px solid #111;">
+                        <div style="aspect-ratio:3/4; background:#e0e0e0; overflow:hidden; border:2px solid transparent; cursor:zoom-in;"
+                            onclick="abrirZoomModal()">
                             <img src="{{ producto.image_src }}"
                                 alt="{{ producto.name }}"
                                 style="width:100%; height:100%; object-fit:cover;">
@@ -41,18 +42,13 @@
             </div>
 
             <!-- Imagen principal (grande) con navegación -->
-            <div style="position:sticky; top:100px;">
+            <div style="position:sticky; top:80px;">
                 <div style="aspect-ratio:3/4; background:#e0e0e0; overflow:hidden; position:relative; cursor:zoom-in;" id="main-image-container" onclick="abrirZoomModal()">
                     <img id="main-product-image"
                         src="{% if producto.images %}{{ producto.images[0].image_src }}{% else %}{{ producto.image_src }}{% endif %}"
                         alt="{{ producto.name }}"
                         style="width:100%; height:100%; object-fit:cover; object-position:center top;">
-                    
-                    <!-- Indicador de zoom (lupa) -->
-                    <div style="position:absolute; bottom:12px; right:12px; background:rgba(0,0,0,0.6); color:white; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.2rem;">
-                        🔍
-                    </div>
-                    
+
                     <!-- Controles de navegación (solo si hay múltiples imágenes) -->
                     {% if producto.images and producto.images|length > 1 %}
                     <button onclick="imagenAnterior()" 
@@ -78,8 +74,10 @@
                 </div>
             </div>
 
+        </div><!-- fin galería -->
+
             <!-- Info del producto -->
-            <div style="padding:8px 0 0 24px; position:sticky; top:100px;">
+            <div style="padding:32px 28px 40px 36px; position:sticky; top:80px; max-height:calc(100vh - 80px); overflow-y:auto;">
 
                 {% if producto.item_number %}
                 <p style="font-size:0.75rem; color:#888; margin-bottom:8px; letter-spacing:0.5px;">
@@ -201,7 +199,6 @@
                 {% endif %}
 
             </div>
-        </div>
     </div><!-- fin grid principal -->
 </div>
 
@@ -334,11 +331,7 @@ function cambiarImagenPrincipal(indice) {
     
     // Actualizar thumbnail activo
     thumbnails.forEach((thumb, idx) => {
-        if (idx === indice) {
-            thumb.style.borderColor = '#111';
-        } else {
-            thumb.style.borderColor = '#ddd';
-        }
+        thumb.style.borderColor = '#ddd';
     });
     
     // Actualizar indicadores
@@ -609,10 +602,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const primerIndicador = document.querySelector('[data-index="0"]');
         if (primerIndicador) {
             primerIndicador.style.background = 'rgba(255,255,255,0.9)';
-        }
-        const primerThumbnail = document.querySelector('.thumbnail-img[data-index="0"]');
-        if (primerThumbnail) {
-            primerThumbnail.style.borderColor = '#111';
         }
     }
 });

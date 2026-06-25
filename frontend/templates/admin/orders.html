@@ -1,6 +1,7 @@
 {% extends 'admin/base_admin.html' %}
 {% block title %}Pedidos — Admin{% endblock %}
 {% block topbar_title %}Gestión de Pedidos{% endblock %}
+{% from 'admin/_pagination.html' import render_pagination %}
 {% block content %}
 
 {# Macro vacío — las acciones reales se inyectan por JS en DOMContentLoaded #}
@@ -10,23 +11,23 @@
 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
     <div>
         <h2 style="font-size:1.1rem; font-weight:800; margin:0;">Pedidos</h2>
-        <p style="font-size:0.82rem; color:#888; margin:4px 0 0;">{{ pedidos|length }} pedidos en total</p>
+        <p style="font-size:0.82rem; color:#888; margin:4px 0 0;">{{ total_pedidos }} pedidos en total</p>
     </div>
 </div>
 
 <!-- Tabs de filtro -->
 <div style="display:flex; gap:6px; margin-bottom:20px; flex-wrap:wrap;">
-    {% set estados = [('todos','Todos', pedidos|length),
-                      ('pendiente','Pendiente', pedidos|selectattr('status','eq','pendiente')|list|length),
-                      ('pagado','Pagado', pedidos|selectattr('status','eq','pagado')|list|length),
-                      ('enviado','Enviado', pedidos|selectattr('status','eq','enviado')|list|length),
-                      ('entregado','Entregado', pedidos|selectattr('status','eq','entregado')|list|length),
-                      ('cancelado','Cancelado', pedidos|selectattr('status','eq','cancelado')|list|length)] %}
+    {% set estados = [('todos','Todos', total_pedidos),
+                      ('pendiente','Pendiente', conteos.get('pendiente', 0)),
+                      ('pagado','Pagado', conteos.get('pagado', 0)),
+                      ('enviado','Enviado', conteos.get('enviado', 0)),
+                      ('entregado','Entregado', conteos.get('entregado', 0)),
+                      ('cancelado','Cancelado', conteos.get('cancelado', 0))] %}
     {% for val, label, count in estados %}
-    <button onclick="filtrarPedidos('{{ val }}')" id="tab-{{ val }}"
-        class="tab-estado {% if val == 'todos' %}tab-estado--active{% endif %}">
+    <a href="{{ url_for('admin_pedidos', estado=val) }}"
+        class="tab-estado {% if val == estado_filtro %}tab-estado--active{% endif %}">
         {{ label }} <span class="tab-count">{{ count }}</span>
-    </button>
+    </a>
     {% endfor %}
 </div>
 
@@ -87,6 +88,8 @@
     </table>
 </div>
 
+{{ render_pagination(pagination, 'admin_pedidos', extra_args={'estado': estado_filtro}) }}
+
 <!-- Toast -->
 <div id="admin-toast" style="position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:8px;font-size:0.82rem;font-weight:600;z-index:9999;opacity:0;transition:opacity 0.25s;pointer-events:none;"></div>
 
@@ -101,6 +104,7 @@
     cursor: pointer;
     font-family: inherit;
     color: #555;
+    text-decoration: none;
     transition: all 0.15s;
     display: flex;
     align-items: center;
@@ -248,17 +252,6 @@ function toggleItems(orderId) {
     }
     box.style.display = open ? 'none' : 'block';
     chevron.style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)';
-}
-
-function filtrarPedidos(estado) {
-    // Actualizar tabs
-    document.querySelectorAll('.tab-estado').forEach(t => t.classList.remove('tab-estado--active'));
-    document.getElementById(`tab-${estado}`).classList.add('tab-estado--active');
-
-    // Mostrar/ocultar filas
-    document.querySelectorAll('#tabla-pedidos tbody tr[id^="fila-"]').forEach(fila => {
-        fila.style.display = (estado === 'todos' || fila.dataset.status === estado) ? '' : 'none';
-    });
 }
 
 function mostrarToast(msg, tipo) {

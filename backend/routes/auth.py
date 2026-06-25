@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, redirect, url_for, current_app
+from flask import Blueprint, request, jsonify, redirect, url_for, current_app, render_template
 from dotenv import load_dotenv
 import os
 import secrets
@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from backend.database import db
 from backend.models.user import User, UserRole
 from backend.models.otp import PendingOTPCode
+from backend.models.magic_session import MagicLoginSession
 from flask_jwt_extended import create_access_token
 from itsdangerous import URLSafeTimedSerializer
 from flask_mail import Mail, Message
@@ -13,7 +14,7 @@ from authlib.integrations.flask_client import OAuth
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from backend.models.address import Address
 from backend.limiter import limiter
-from backend.utils.validators import validate_password
+from backend.utils.validators import validate_password, validate_address
 
 
 load_dotenv()
@@ -49,6 +50,8 @@ def register_send_code():
 
     code = str(secrets.randbelow(900000) + 100000)
     expires_at = datetime.utcnow() + timedelta(minutes=10)
+
+    PendingOTPCode.query.filter(PendingOTPCode.expires_at < datetime.utcnow()).delete()
 
     pending = PendingOTPCode.query.filter_by(email=email).first()
     if pending:
@@ -141,8 +144,8 @@ def login():
 @auth_bp.route('/api/auth/magic-link', methods=['POST'])
 @limiter.limit("3 per minute")
 def magic_link():
-    data = request.get_json()
-    email = data.get('email')
+    data = request.get_json() or {}
+    email = (data.get('email') or '').strip().lower()
 
     if not email:
         return jsonify({'msg': 'El email es obligatorio'}), 400
@@ -151,17 +154,32 @@ def magic_link():
     if not user:
         return jsonify({'msg': 'No existe una cuenta con ese email.'}), 404
 
-    token = s.dumps(email, salt='magic-login')
-    link = url_for('auth.verificar_magic', token=token, _external=True)
+    # Limpieza oportunista de sesiones vencidas de otros intentos.
+    MagicLoginSession.query.filter(MagicLoginSession.expires_at < datetime.utcnow()).delete()
+
+    session_token = secrets.token_urlsafe(32)
+    db.session.add(MagicLoginSession(
+        session_token=session_token,
+        email=email,
+        expires_at=datetime.utcnow() + timedelta(minutes=10),
+    ))
+    db.session.commit()
+
+    # El enlace del correo solo confirma esta sesión — no inicia sesión en el
+    # dispositivo donde se abre el correo, para permitir confirmar desde otro
+    # dispositivo (p. ej. el celular) y que la sesión inicie en el dispositivo
+    # que la solicitó (p. ej. la PC).
+    confirm_token = s.dumps({'email': email, 'session_token': session_token}, salt='magic-login')
+    link = url_for('auth.verificar_magic', token=confirm_token, _external=True)
 
     msg = Message('Tu acceso rápido — UrbanWear', recipients=[email])
     msg.html = f'''
         <div style="font-family:sans-serif; max-width:400px; margin:auto; padding:32px;">
             <h2 style="color:#111;">Hola, {user.name} 👋</h2>
-            <p style="color:#555;">Haz clic para iniciar sesión. Válido por <strong>10 minutos</strong>:</p>
+            <p style="color:#555;">Confirma para iniciar sesión en el dispositivo desde donde lo solicitaste. Válido por <strong>10 minutos</strong>:</p>
             <a href="{link}" style="display:inline-block; padding:12px 28px; background:#111;
                color:#fff; border-radius:8px; text-decoration:none; font-weight:bold;">
-               Iniciar Sesión en UrbanWear
+               Confirmar Inicio de Sesión
             </a>
             <p style="color:#aaa; font-size:0.8rem; margin-top:24px;">
                 Si no solicitaste esto, ignora este email.
@@ -169,7 +187,7 @@ def magic_link():
         </div>
     '''
     mail.send(msg)
-    return jsonify({'msg': 'Email enviado'}), 200
+    return jsonify({'msg': 'Email enviado', 'session_token': session_token}), 200
 
 @auth_bp.route('/api/auth/perfil', methods=['GET'])
 @jwt_required()
@@ -191,17 +209,21 @@ def get_direcciones():
 @jwt_required()
 def add_direccion():
     user_id = get_jwt_identity()
-    data = request.get_json()
+    data = request.get_json() or {}
+
+    error = validate_address(data)
+    if error:
+        return jsonify({'msg': error}), 400
 
     nueva = Address(
         user_id    = user_id,
-        department = data.get('department'),
-        city       = data.get('city'),
-        address    = data.get('address'),
-        extra      = data.get('extra', ''),
-        barrio     = data.get('barrio', ''),
-        receiver   = data.get('receiver', ''),
-        is_default = data.get('is_default', False)
+        department = data.get('department').strip(),
+        city       = data.get('city').strip(),
+        address    = data.get('address').strip(),
+        extra      = (data.get('extra') or '').strip(),
+        barrio     = (data.get('barrio') or '').strip(),
+        receiver   = (data.get('receiver') or '').strip(),
+        is_default = bool(data.get('is_default', False))
     )
     db.session.add(nueva)
     db.session.commit()
@@ -282,17 +304,64 @@ def reset_password():
 @auth_bp.route('/api/auth/magic-verify/<token>')
 def verificar_magic(token):
     try:
-        email = s.loads(token, salt='magic-login', max_age=600)  # 10 min
+        payload = s.loads(token, salt='magic-login', max_age=600)  # 10 min
+        email = payload['email']
+        session_token = payload['session_token']
     except Exception:
-        return 'Enlace inválido o expirado.', 400
+        return render_template('auth/magic_confirm.html', estado='invalido'), 400
+
+    sesion = MagicLoginSession.query.filter_by(session_token=session_token, email=email).first()
+    if not sesion or sesion.is_expired:
+        return render_template('auth/magic_confirm.html', estado='invalido'), 400
+
+    if sesion.access_token:
+        return render_template('auth/magic_confirm.html', estado='ya_confirmado')
+
+    return render_template('auth/magic_confirm.html', estado='pendiente', token=token)
+
+
+@auth_bp.route('/api/auth/magic-confirm/<token>', methods=['POST'])
+def confirmar_magic(token):
+    try:
+        payload = s.loads(token, salt='magic-login', max_age=600)
+        email = payload['email']
+        session_token = payload['session_token']
+    except Exception:
+        return jsonify({'msg': 'Enlace inválido o expirado.'}), 400
+
+    sesion = MagicLoginSession.query.filter_by(session_token=session_token, email=email).first()
+    if not sesion or sesion.is_expired:
+        return jsonify({'msg': 'Enlace inválido o expirado.'}), 400
 
     user = User.query.filter_by(email=email).first()
     if not user:
-        return 'Usuario no encontrado.', 404
+        return jsonify({'msg': 'Usuario no encontrado.'}), 404
 
-    access_token = create_access_token(identity=str(user.id))
-    # Redirige al home con el token en la URL — el JS lo captura y guarda
-    return redirect(f'/?token={access_token}&name={user.name}')
+    # Idempotente: si ya se confirmó (doble clic, prefetch del cliente de correo), no se
+    # genera un access_token nuevo cada vez.
+    if not sesion.access_token:
+        sesion.access_token = create_access_token(identity=str(user.id))
+        sesion.user_name = user.name
+        db.session.commit()
+
+    return jsonify({'msg': 'Sesión confirmada. Ya puedes volver a tu otro dispositivo.'}), 200
+
+
+@auth_bp.route('/api/auth/magic-status/<session_token>')
+@limiter.limit("60 per minute")
+def estado_magic(session_token):
+    sesion = MagicLoginSession.query.filter_by(session_token=session_token).first()
+    if not sesion or sesion.is_expired:
+        return jsonify({'status': 'expired'}), 404
+
+    if not sesion.access_token:
+        return jsonify({'status': 'pending'}), 200
+
+    access_token = sesion.access_token
+    name = sesion.user_name
+    db.session.delete(sesion)  # de un solo uso
+    db.session.commit()
+    return jsonify({'status': 'approved', 'access_token': access_token, 'name': name}), 200
 
 
 

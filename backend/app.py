@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session, Response
 from functools import wraps
 from sqlalchemy import text
+from sqlalchemy.orm import noload
 import secrets
 import hashlib
 import hmac
@@ -17,6 +18,7 @@ from backend.routes.wishlist import wishlist_bp
 from flask_migrate import Migrate
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
+from werkzeug.middleware.proxy_fix import ProxyFix
 from itsdangerous import URLSafeTimedSerializer
 from datetime import datetime
 from backend.routes.auth import auth_bp, mail, oauth
@@ -55,6 +57,9 @@ def create_app():
     static_folder = os.path.join(base_dir, 'frontend', 'static')
 
     app = Flask(__name__, template_folder=template_folder, static_folder=static_folder, static_url_path='/static')
+    # Confía en el header X-Forwarded-Proto de un solo proxy (ngrok, nginx, etc.) para que
+    # url_for(_external=True) genere https:// en vez de http:// — necesario para OAuth de Google.
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
     app.jinja_env.globals['csrf_token'] = _csrf_token
 
     app.config.from_object(Config)
@@ -116,13 +121,31 @@ def create_app():
     limiter.init_app(app)
 
     from backend.cache import cache
-    app.config['CACHE_TYPE'] = os.getenv('CACHE_TYPE', 'SimpleCache')
+    redis_url = os.getenv('REDIS_URL')
+    if redis_url:
+        app.config['CACHE_TYPE'] = 'RedisCache'
+        app.config['CACHE_REDIS_URL'] = redis_url
+    else:
+        app.config['CACHE_TYPE'] = os.getenv('CACHE_TYPE', 'SimpleCache')
     app.config['CACHE_DEFAULT_TIMEOUT'] = 300
     cache.init_app(app)
 
     @app.errorhandler(429)
     def ratelimit_handler(e):
         return jsonify({"msg": "Demasiados intentos. Espera un momento e inténtalo de nuevo."}), 429
+
+    @app.errorhandler(404)
+    def not_found_handler(e):
+        if request.path.startswith('/api/'):
+            return jsonify({"msg": "Recurso no encontrado."}), 404
+        return render_template('errors/404.html'), 404
+
+    @app.errorhandler(500)
+    def server_error_handler(e):
+        db.session.rollback()
+        if request.path.startswith('/api/'):
+            return jsonify({"msg": "Error interno del servidor."}), 500
+        return render_template('errors/500.html'), 500
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(cart_bp)
@@ -135,6 +158,7 @@ def create_app():
     # ---------Rutas de la API y Vistas-----------------
 
     @app.route("/api/search")
+    @limiter.limit("30 per minute")
     def search_products():
         q = request.args.get("q", "").strip()
         if not q:
@@ -245,11 +269,14 @@ def create_app():
             items_snapshot = list(cart.items)
             product_ids = [item.product_id for item in items_snapshot]
 
-            # Lock rows before reading — serializes concurrent checkouts on same products
+            # Lock rows before reading — serializes concurrent checkouts on same products.
+            # noload(images) is required: Product.images is lazy='joined' by default, and
+            # Postgres rejects FOR UPDATE on the nullable side of that outer join.
             productos = {
                 p.id: p
                 for p in Product.query
                     .filter(Product.id.in_(product_ids))
+                    .options(noload(Product.images))
                     .with_for_update()
                     .all()
             }
@@ -330,7 +357,7 @@ def create_app():
         order_id = data.get('order_id')
 
         order = Order.query.get(order_id)
-        if not order or order.user_id != user_id:
+        if not order or str(order.user_id) != str(user_id):
             return jsonify({"msg": "Orden no encontrada"}), 404
 
         sdk = mercadopago.SDK(os.getenv("MP_ACCESS_TOKEN", ""))
@@ -346,6 +373,8 @@ def create_app():
             })
 
         base_url = os.getenv("APP_BASE_URL", "http://127.0.0.1:5000")
+        es_url_publica = "127.0.0.1" not in base_url and "localhost" not in base_url
+
         preference_data = {
             "items": items,
             "external_reference": str(order_id),
@@ -354,10 +383,15 @@ def create_app():
                 "failure": f"{base_url}/pago-fallido",
                 "pending": f"{base_url}/pago-pendiente"
             },
-            "auto_return": "approved",
-            "notification_url": f"{base_url}/api/payment/webhook",
             "statement_descriptor": "UrbanWear"
         }
+
+        # MercadoPago rechaza auto_return y notification_url cuando no son URLs públicas
+        # (p. ej. localhost/127.0.0.1 durante desarrollo). En producción, APP_BASE_URL
+        # debe ser la URL pública real para que el webhook funcione.
+        if es_url_publica:
+            preference_data["auto_return"] = "approved"
+            preference_data["notification_url"] = f"{base_url}/api/payment/webhook"
 
         result = sdk.preference().create(preference_data)
         if result["status"] not in (200, 201):
@@ -396,6 +430,47 @@ def create_app():
         expected = hmac.new(secret.encode(), manifest.encode(), hashlib.sha256).hexdigest()
         return hmac.compare_digest(expected, v1)
 
+    def _mp_status_to_order_status(mp_status):
+        if mp_status == "approved":
+            return "pagado"
+        if mp_status == "rejected":
+            return "cancelado"
+        if mp_status in ("in_process", "pending"):
+            return "pendiente"
+        return None
+
+    def _sync_order_with_verified_payment(order_id_raw, payment_id):
+        """Bloquea la orden y sincroniza su estado consultando el pago directamente
+        en la API de MercadoPago. Nunca confía en el status que llega por query string,
+        porque /pago-exitoso y /pago-fallido son rutas públicas sin verificación de firma."""
+        if not order_id_raw or not payment_id:
+            return
+        try:
+            order_id = int(order_id_raw)
+        except (TypeError, ValueError):
+            return
+
+        order = Order.query.with_for_update().get(order_id)
+        if not order:
+            return
+
+        sdk = mercadopago.SDK(os.getenv("MP_ACCESS_TOKEN", ""))
+        payment_info = sdk.payment().get(payment_id)
+        payment = payment_info.get("response", {}) or {}
+
+        if str(payment.get("external_reference")) != str(order_id):
+            app.logger.warning(
+                "payment_id=%s no pertenece a la orden %s (external_reference real=%s); se ignora",
+                payment_id, order_id, payment.get("external_reference"),
+            )
+            db.session.rollback()
+            return
+
+        new_status = _mp_status_to_order_status(payment.get("status"))
+        if new_status and order.status != new_status:
+            order.status = new_status
+        db.session.commit()
+
     @app.route('/api/payment/webhook', methods=['POST'])
     def mp_webhook():
         if not _verify_mp_signature():
@@ -411,16 +486,15 @@ def create_app():
                 payment_info = sdk.payment().get(payment_id)
                 payment = payment_info.get("response", {})
                 order_id = payment.get("external_reference")
-                status = payment.get("status")
                 if order_id:
-                    order = Order.query.get(int(order_id))
+                    order = Order.query.with_for_update().get(int(order_id))
                     if order:
-                        if status == "approved":
-                            order.status = "pagado"
-                        elif status == "rejected":
-                            order.status = "cancelado"
+                        new_status = _mp_status_to_order_status(payment.get("status"))
+                        if new_status and order.status != new_status:
+                            order.status = new_status
                         db.session.commit()
             except Exception as e:
+                db.session.rollback()
                 app.logger.error(f"Error procesando webhook de MercadoPago (payment_id={payment_id}): {e}", exc_info=True)
                 return jsonify({"status": "error"}), 500
 
@@ -429,27 +503,23 @@ def create_app():
     @app.route('/pago-exitoso')
     def pago_exitoso():
         order_id = request.args.get('external_reference')
-        if order_id:
-            try:
-                order = Order.query.get(int(order_id))
-                if order and order.status == 'pendiente':
-                    order.status = 'pagado'
-                    db.session.commit()
-            except Exception as e:
-                app.logger.error(f"Error actualizando orden a pagado (order_id={order_id}): {e}", exc_info=True)
+        payment_id = request.args.get('payment_id') or request.args.get('collection_id')
+        try:
+            _sync_order_with_verified_payment(order_id, payment_id)
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Error verificando pago exitoso (order_id={order_id}, payment_id={payment_id}): {e}", exc_info=True)
         return render_template('public/pago_resultado.html', estado='exitoso', order_id=order_id)
 
     @app.route('/pago-fallido')
     def pago_fallido():
         order_id = request.args.get('external_reference')
-        if order_id:
-            try:
-                order = Order.query.get(int(order_id))
-                if order:
-                    order.status = 'cancelado'
-                    db.session.commit()
-            except Exception as e:
-                app.logger.error(f"Error actualizando orden a cancelado (order_id={order_id}): {e}", exc_info=True)
+        payment_id = request.args.get('payment_id') or request.args.get('collection_id')
+        try:
+            _sync_order_with_verified_payment(order_id, payment_id)
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Error verificando pago fallido (order_id={order_id}, payment_id={payment_id}): {e}", exc_info=True)
         return render_template('public/pago_resultado.html', estado='fallido', order_id=order_id)
 
     @app.route('/pago-pendiente')
@@ -642,8 +712,10 @@ def create_app():
     @app.route('/admin/productos')
     @admin_required
     def admin_productos():
-        productos = Product.query.order_by(Product.id.desc()).all()
-        return render_template('admin/products.html', productos=productos)
+        page = request.args.get('page', 1, type=int)
+        paginacion = Product.query.order_by(Product.id.desc()).paginate(page=page, per_page=30, error_out=False)
+        return render_template('admin/products.html', productos=paginacion.items, pagination=paginacion,
+                                total_productos=paginacion.total)
 
     @app.route('/admin/productos/agregar', methods=['POST'])
     @admin_required
@@ -658,7 +730,7 @@ def create_app():
         files       = request.files.getlist('imagen')
 
         image_final = ''
-        
+
         # Determinar imagen principal
         if files and files[0].filename:
             image_final = secure_filename(files[0].filename)
@@ -760,8 +832,20 @@ def create_app():
     @app.route('/admin/pedidos')
     @admin_required
     def admin_pedidos():
-        pedidos = Order.query.order_by(Order.created_at.desc()).all()
-        return render_template('admin/orders.html', pedidos=pedidos)
+        from sqlalchemy import func
+        page = request.args.get('page', 1, type=int)
+        estado_filtro = request.args.get('estado', 'todos')
+
+        query = Order.query.order_by(Order.created_at.desc())
+        if estado_filtro != 'todos':
+            query = query.filter(Order.status == estado_filtro)
+        paginacion = query.paginate(page=page, per_page=30, error_out=False)
+
+        conteos_raw = dict(db.session.query(Order.status, func.count(Order.id)).group_by(Order.status).all())
+        total_pedidos = sum(conteos_raw.values())
+
+        return render_template('admin/orders.html', pedidos=paginacion.items, pagination=paginacion,
+                                estado_filtro=estado_filtro, conteos=conteos_raw, total_pedidos=total_pedidos)
 
     @app.route('/admin/pedidos/<int:order_id>/estado', methods=['POST'])
     @admin_required
@@ -780,8 +864,10 @@ def create_app():
     @app.route('/admin/usuarios')
     @admin_required
     def admin_usuarios():
-        usuarios = User.query.order_by(User.created_at.desc()).all()
-        return render_template('admin/customers.html', usuarios=usuarios)
+        page = request.args.get('page', 1, type=int)
+        paginacion = User.query.order_by(User.created_at.desc()).paginate(page=page, per_page=30, error_out=False)
+        return render_template('admin/customers.html', usuarios=paginacion.items, pagination=paginacion,
+                                total_usuarios=paginacion.total)
     @app.route('/admin/productos/destacar/<int:product_id>', methods=['POST'])
     @admin_required
     @csrf_protect

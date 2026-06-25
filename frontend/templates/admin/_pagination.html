@@ -1,0 +1,37 @@
+{% macro render_pagination(pagination, endpoint, extra_args={}) %}
+{% if pagination.pages > 1 %}
+<div style="display:flex; align-items:center; justify-content:center; gap:6px; margin-top:20px; flex-wrap:wrap;">
+    {% if pagination.has_prev %}
+    <a href="{{ url_for(endpoint, page=pagination.prev_num, **extra_args) }}" class="admin-page-btn">‹ ANTERIOR</a>
+    {% endif %}
+
+    {% for num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+        {% if num %}
+            <a href="{{ url_for(endpoint, page=num, **extra_args) }}"
+               class="admin-page-btn{% if num == pagination.page %} admin-page-btn--active{% endif %}">{{ num }}</a>
+        {% else %}
+            <span style="color:#bbb; padding:0 4px;">…</span>
+        {% endif %}
+    {% endfor %}
+
+    {% if pagination.has_next %}
+    <a href="{{ url_for(endpoint, page=pagination.next_num, **extra_args) }}" class="admin-page-btn">SIGUIENTE ›</a>
+    {% endif %}
+</div>
+<style>
+.admin-page-btn {
+    padding: 7px 14px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #fff;
+    color: #555;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-decoration: none;
+    font-family: inherit;
+}
+.admin-page-btn:hover { border-color: #bbb; background: #f9f9f9; }
+.admin-page-btn--active { background: #111; color: #fff; border-color: #111; }
+</style>
+{% endif %}
+{% endmacro %}

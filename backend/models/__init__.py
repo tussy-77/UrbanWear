@@ -8,3 +8,4 @@ from .address import Address
 from .banner import Banner
 from .wishlist import Wishlist
 from .otp import PendingOTPCode
+from .magic_session import MagicLoginSession
